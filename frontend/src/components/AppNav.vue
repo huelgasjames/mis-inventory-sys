@@ -114,8 +114,9 @@ function toggleAccordion(section) {
         <div :class="{ 'collapse': !managementOpen, 'show': managementOpen }">
           <ul class="nav nav-pills flex-column ms-3" :class="{ 'd-none': !managementOpen && !isCollapsed }">
             <li class="nav-item">
-              <router-link to="/departments" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-building me-2"></i>Departments
+              <router-link to="/deployment" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-box-arrow-right"></i>
+                <span :class="{ 'd-none': isCollapsed }">Deploy Assets</span>
               </router-link>
             </li>
             <li class="nav-item">

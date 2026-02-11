@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Computer extends Model
 {
@@ -108,6 +108,30 @@ class Computer extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_to');
+    }
+
+    /**
+     * Get deployments for this computer
+     */
+    public function deployments(): HasMany
+    {
+        return $this->hasMany(Deployment::class);
+    }
+
+    /**
+     * Get current deployment
+     */
+    public function currentDeployment(): BelongsTo
+    {
+        return $this->belongsTo(Deployment::class)->where('status', 'deployed');
+    }
+
+    /**
+     * Check if computer is currently deployed
+     */
+    public function isDeployed(): bool
+    {
+        return $this->deployments()->where('status', 'deployed')->exists();
     }
 
     /**

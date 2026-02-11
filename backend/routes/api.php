@@ -5,6 +5,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\ComputerController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\DeploymentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -67,3 +68,12 @@ Route::get('/reports/repair-history', [ReportController::class, 'repairHistory']
 Route::get('/reports/deployment-history', [ReportController::class, 'deploymentHistory']);
 Route::get('/reports/dashboard-stats', [ReportController::class, 'dashboardStats']);
 Route::post('/reports/export', [ReportController::class, 'exportReport']);
+
+// Deployment management routes
+Route::get('/deployments', [DeploymentController::class, 'index']);
+Route::post('/deployments', [DeploymentController::class, 'store']);
+Route::get('/deployments/{id}', [DeploymentController::class, 'show']);
+Route::put('/deployments/{id}', [DeploymentController::class, 'update']);
+Route::delete('/deployments/{id}', [DeploymentController::class, 'destroy']);
+Route::get('/deployments/stats', [DeploymentController::class, 'stats']);
+Route::post('/deployments/{id}/return', [DeploymentController::class, 'returnComputer']);
