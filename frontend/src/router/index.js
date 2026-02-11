@@ -5,8 +5,18 @@ import Components from '@/views/Components.vue'
 import Computers from '@/views/Computers.vue'
 import Deployment from '@/views/Deployment.vue'
 import Processors from '@/views/Processors.vue'
-import ComponentManager from '@/views/ComponentManager.vue'
+import Motherboards from '@/views/computerComponents/Motherboards.vue'
+import RAM from '@/views/computerComponents/RAM.vue'
+import Storage from '@/views/computerComponents/Storage.vue'
+import VideoCards from '@/views/computerComponents/VideoCards.vue'
+import PSUs from '@/views/computerComponents/PSUs.vue'
+import DVDROMs from '@/views/computerComponents/DVDROMs.vue'
 import Users from '@/views/Users.vue'
+import Departments from '@/views/Departments.vue'
+import LaboratoryManagement from '@/views/LaboratoryManagement.vue'
+import Reports from '@/views/Reports.vue'
+import Settings from '@/views/Settings.vue'
+
 
 const routes = [
   {
@@ -47,55 +57,55 @@ const routes = [
   {
     path: '/motherboards',
     name: 'Motherboards',
-    component: ComponentManager,
+    component: Motherboards,
     meta: { requiresAuth: true }
   },
   {
     path: '/rams',
     name: 'RAM',
-    component: ComponentManager,
+    component: RAM,
     meta: { requiresAuth: true }
   },
   {
     path: '/storage',
     name: 'Storage',
-    component: ComponentManager,
+    component: Storage,
     meta: { requiresAuth: true }
   },
   {
     path: '/video-cards',
     name: 'VideoCards',
-    component: ComponentManager,
+    component: VideoCards,
     meta: { requiresAuth: true }
   },
   {
     path: '/psus',
     name: 'PSUs',
-    component: ComponentManager,
+    component: PSUs,
     meta: { requiresAuth: true }
   },
   {
     path: '/dvd-roms',
     name: 'DVDROMs',
-    component: ComponentManager,
+    component: DVDROMs,
     meta: { requiresAuth: true }
   },
   {
     path: '/departments',
     name: 'Departments',
-    component: ComponentManager,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/department-inventory',
-    name: 'DepartmentInventory',
-    component: ComponentManager,
+    component: Departments,
     meta: { requiresAuth: true }
   },
   {
     path: '/laboratory-management',
     name: 'LaboratoryManagement',
-    component: ComponentManager,
+    component: LaboratoryManagement,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/department-inventory',
+    name: 'DepartmentInventory',
+    component: Departments,
     meta: { requiresAuth: true }
   },
   {
@@ -107,13 +117,13 @@ const routes = [
   {
     path: '/reports',
     name: 'Reports',
-    component: ComponentManager,
+    component: Reports,
     meta: { requiresAuth: true }
   },
   {
     path: '/settings',
     name: 'Settings',
-    component: ComponentManager,
+    component: Settings,
     meta: { requiresAuth: true }
   }
 ]

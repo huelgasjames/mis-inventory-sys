@@ -26,6 +26,7 @@ class Asset extends Model
         'assigned_to',
         'notes',
         'specifications',
+        'description',
     ];
 
     protected $casts = [

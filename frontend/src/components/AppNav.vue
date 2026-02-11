@@ -120,6 +120,12 @@ function toggleAccordion(section) {
               </router-link>
             </li>
             <li class="nav-item">
+              <router-link to="/departments" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-building"></i>
+                <span :class="{ 'd-none': isCollapsed }">Departments</span>
+              </router-link>
+            </li>
+            <li class="nav-item">
               <router-link to="/department-inventory" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-pc-display-horizontal me-2"></i>Department Inventory
               </router-link>
