@@ -31,21 +31,21 @@ function toggleAccordion(section) {
 </script>
 
 <template>
-  <aside :class="['d-flex', 'flex-column', 'flex-shrink-0', 'p-3', 'bg-white', 'border-end', { 'collapsed': isCollapsed }]" style="width: 250px; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; transition: width 0.3s ease;">
+  <aside :class="['d-flex', 'flex-column', 'flex-shrink-0', 'p-3', 'bg-white', 'border-end', { 'collapsed': isCollapsed }]" style="width: 250px; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; transition: width 0.3s ease; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 5px rgba(0,0,0,0.1);">
     <div class="mb-4 text-center">
       <router-link to="/dashboard" class="d-block text-decoration-none">
         <img 
           v-if="isCollapsed" 
           src="/pnc-logo.png" 
           alt="MiSD Logo" 
-          class="img-fluid" 
+          class="img-fluid rounded-circle" 
           style="width: 40px; height: auto; object-fit: contain;"
         >
         <div v-else class="d-flex align-items-center justify-content-center">
           <img 
             src="/pnc-logo.png" 
             alt="MiSD Inventory Logo" 
-            class="img-fluid me-2" 
+            class="img-fluid me-2 rounded-circle" 
             style="width: 40px; height: auto; object-fit: contain;"
           >
           <span class="fs-5 fw-bold" style="color: #0F6F43;">MiSD Inventory</span>
@@ -53,14 +53,9 @@ function toggleAccordion(section) {
       </router-link>
     </div>
     <nav class="d-flex flex-column gap-1">
-      <router-link to="/dashboard" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+      <router-link to="/dashboard" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
         <i class="bi bi-house-door-fill"></i>
         <span :class="{ 'd-none': isCollapsed }">Dashboard</span>
-      </router-link>
-
-      <router-link to="/department-inventory" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
-        <i class="bi bi-building"></i>
-        <span :class="{ 'd-none': isCollapsed }">Department Inventory</span>
       </router-link>
 
       
@@ -75,31 +70,31 @@ function toggleAccordion(section) {
           <i :class="['bi', componentsOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !componentsOpen, 'show': componentsOpen }">
-          <router-link to="/processors" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/processors" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-cpu"></i>
             <span :class="{ 'd-none': isCollapsed }">Processors</span>
           </router-link>
-          <router-link to="/motherboards" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/motherboards" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-motherboard"></i>
             <span :class="{ 'd-none': isCollapsed }">Motherboards</span>
           </router-link>
-          <router-link to="/video-cards" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/video-cards" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-gpu-card"></i>
             <span :class="{ 'd-none': isCollapsed }">Video Cards</span>
           </router-link>
-          <router-link to="/dvd-roms" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/dvd-roms" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-disc"></i>
             <span :class="{ 'd-none': isCollapsed }">DVD ROMs</span>
           </router-link>
-          <router-link to="/psus" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/psus" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-lightning-charge"></i>
             <span :class="{ 'd-none': isCollapsed }">PSUs</span>
           </router-link>
-          <router-link to="/rams" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/rams" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-memory"></i>
             <span :class="{ 'd-none': isCollapsed }">RAM</span>
           </router-link>
-          <router-link to="/storage" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/storage" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-hdd"></i>
             <span :class="{ 'd-none': isCollapsed }">Storage</span>
           </router-link>
@@ -119,27 +114,27 @@ function toggleAccordion(section) {
         <div :class="{ 'collapse': !managementOpen, 'show': managementOpen }">
           <ul class="nav nav-pills flex-column ms-3" :class="{ 'd-none': !managementOpen && !isCollapsed }">
             <li class="nav-item">
-              <router-link to="/departments" class="nav-link text-decoration-none text-dark hover-bg-light" :class="{ 'active': $route.path === '/departments' }">
+              <router-link to="/departments" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-building me-2"></i>Departments
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/department-inventory" class="nav-link text-decoration-none text-dark hover-bg-light" :class="{ 'active': $route.path === '/department-inventory' }">
+              <router-link to="/department-inventory" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-pc-display-horizontal me-2"></i>Department Inventory
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/laboratory-management" class="nav-link text-decoration-none text-dark hover-bg-light" :class="{ 'active': $route.path === '/laboratory-management' }">
+              <router-link to="/laboratory-management" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-building me-2"></i>Laboratory Management
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/computers" class="nav-link text-decoration-none text-dark hover-bg-light" :class="{ 'active': $route.path === '/computers' }">
+              <router-link to="/computers" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-pc-display-horizontal me-2"></i>Computers
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/users" class="nav-link text-decoration-none text-dark hover-bg-light" :class="{ 'active': $route.path === '/users' }">
+              <router-link to="/users" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-people me-2"></i>Users
               </router-link>
             </li>
@@ -158,14 +153,14 @@ function toggleAccordion(section) {
           <i :class="['bi', otherOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !otherOpen, 'show': otherOpen }">
-          <a href="#" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          <router-link to="/reports" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-file-earmark-bar-graph-fill"></i>
             <span :class="{ 'd-none': isCollapsed }">Reports</span>
-          </a>
-          <a href="#" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light">
+          </router-link>
+          <router-link to="/settings" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-gear-fill"></i>
             <span :class="{ 'd-none': isCollapsed }">Settings</span>
-          </a>
+          </router-link>
         </div>
       </div>
     </nav>
@@ -175,30 +170,51 @@ function toggleAccordion(section) {
 <style scoped>
 aside {
   width: 250px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+aside::-webkit-scrollbar {
+  width: 6px;
+}
+
+aside::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+aside::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+aside::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
 }
 
 aside.collapsed {
   width: 70px;
 }
 
-.nav-link.router-link-active {
-  background-color: #0F6F43;
-  color: white;
+.nav-link.router-link-active,
+.nav-link.active {
+  background-color: #0F6F43 !important;
+  color: white !important;
   font-weight: 600;
 }
 
 .nav-link {
   color: #333;
+  transition: all 0.2s ease;
+  border-radius: 0.375rem;
 }
 
-.hover-bg-light:hover {
+.nav-link:hover {
   background-color: #f8f9fa;
   color: #0F6F43;
   transform: translateX(4px);
-  transition: all 0.2s ease;
 }
 
-aside.collapsed .hover-bg-light:hover {
+aside.collapsed .nav-link:hover {
   transform: translateX(0);
 }
 
@@ -220,5 +236,44 @@ aside.collapsed .hover-bg-light:hover {
 
 .user-select-none {
   user-select: none;
+}
+
+/* Management nav links styling */
+.nav-pills .nav-link {
+  border-radius: 0.375rem;
+  margin-bottom: 0.25rem;
+}
+
+.nav-pills .nav-link.router-link-active,
+.nav-pills .nav-link.active {
+  background-color: #0F6F43 !important;
+  color: white !important;
+}
+
+.nav-pills .nav-link:hover {
+  background-color: #e9ecef;
+  color: #0F6F43;
+}
+
+/* Logo styling */
+.img-fluid.rounded-circle {
+  border-radius: 50%;
+  border: 2px solid #0F6F43;
+}
+
+/* Text selection for accordion headers */
+.text-muted:hover {
+  color: #0F6F43 !important;
+}
+
+/* Ensure proper scrolling on mobile */
+@media (max-width: 768px) {
+  aside {
+    width: 70px;
+  }
+  
+  aside.collapsed {
+    width: 70px;
+  }
 }
 </style>

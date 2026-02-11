@@ -17,6 +17,20 @@
     <!-- Right side with login form -->
     <div class="login-right">
       <div class="login-form-container">
+        <!-- Student Login Button -->
+        <div class="text-center mb-4">
+          <button class="student-login-header-btn" disabled>
+            ADMIN LOGIN
+          </button>
+        </div>
+        
+        <!-- University Logo and Title -->
+        <div class="text-center mb-4">
+          <img src="/pnc-logo.png" alt="University of Cabuyao" class="university-logo-small">
+          <h1 class="university-title-small">University of Cabuyao</h1>
+          <p class="system-title-small">MiSD Inventory System</p>
+        </div>
+        
         <!-- Login Form -->
         <form @submit.prevent="handleLogin">
           <!-- Username Field -->
@@ -30,7 +44,6 @@
                 class="form-control" 
                 placeholder="Username"
                 v-model="username"
-                value="2001746"
                 required
               >
             </div>
@@ -69,7 +82,7 @@
           <!-- Login Button -->
           <button 
             type="submit" 
-            class="login-btn"
+            class="login-btn student-login-btn"
             :disabled="isLoading"
           >
             <span v-if="isLoading">
@@ -109,25 +122,35 @@ const handleLogin = async () => {
     isLoading.value = true
     errorMessage.value = ''
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
+    // Call backend API
+    const response = await fetch('http://localhost:8000/api/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        username: username.value,
+        password: password.value
+      })
+    })
     
-    // Simple validation (in real app, this would be an API call)
-    if (username.value && password.value) {
+    const data = await response.json()
+    
+    if (data.success) {
       // Store authentication state
       localStorage.setItem('isAuthenticated', 'true')
-      localStorage.setItem('user', JSON.stringify({
-        username: username.value,
-        role: 'student'
-      }))
+      localStorage.setItem('user', JSON.stringify(data.data.user))
+      localStorage.setItem('token', data.data.token)
       
       // Redirect to dashboard
       router.push('/dashboard')
     } else {
-      errorMessage.value = 'Please enter both username and password'
+      errorMessage.value = data.message || 'Login failed. Please try again.'
     }
   } catch (error) {
-    errorMessage.value = 'Login failed. Please try again.'
+    console.error('Login error:', error)
+    errorMessage.value = 'Network error. Please check your connection and try again.'
   } finally {
     isLoading.value = false
   }

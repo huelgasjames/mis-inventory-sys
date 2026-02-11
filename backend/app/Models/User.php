@@ -28,6 +28,22 @@ class User extends Authenticatable
     ];
 
     /**
+     * Override the username field for authentication
+     */
+    public function username()
+    {
+        return 'user_id';
+    }
+
+    /**
+     * Find user by username or email
+     */
+    public function findForPassport($username)
+    {
+        return $this->where('user_id', $username)->orWhere('email', $username)->first();
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

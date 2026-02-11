@@ -1,22 +1,22 @@
 <template>
-  <header class="app-header navbar navbar-expand bg-success navbar-dark">
+  <header class="navbar navbar-expand bg-success navbar-dark">
     <div class="container-fluid">
       <div class="navbar-brand d-flex align-items-center">
-        <img src="/pnc-logo.png" alt="MiSD Logo" class="img-fluid me-2" style="height: 30px;">
+        <img src="/pnc-logo.png" alt="MiSD Logo" class="img-fluid me-2 rounded-circle" style="height: 30px; border: 1px solid white;">
         <span class="fw-bold">MiSD Inventory Management</span>
       </div>
       
       <div class="d-flex align-items-center gap-3">
-        <div class="text-white">
+        <div class="text-white d-flex align-items-center">
           <span class="badge bg-white text-success me-2">Admin</span>
-          <small class="text-white-50">Role of User</small>
+          <small class="text-white-50">System Administrator</small>
         </div>
         
         <div class="dropdown">
-          <button class="btn btn-outline-light btn-sm" @click="toggleThemeDropdown">
+          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <i class="bi bi-gear"></i>
           </button>
-          <ul v-if="showThemeDropdown" class="dropdown-menu dropdown-menu-end">
+          <ul class="dropdown-menu dropdown-menu-end">
             <li><a class="dropdown-item" href="#" @click="setTheme('light')">
               <i class="bi bi-sun me-2"></i>Light
             </a></li>
@@ -45,8 +45,6 @@ import { defineEmits, ref, onMounted, onUnmounted } from 'vue'
 
 const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open'])
 
-const showThemeDropdown = ref(false)
-const themeDropdown = ref(null)
 const currentTheme = ref('light')
 
 const toggleMenu = () => {
@@ -61,15 +59,10 @@ const openProfile = () => {
   emit('profile-open')
 }
 
-const toggleThemeDropdown = () => {
-  showThemeDropdown.value = !showThemeDropdown.value
-}
-
 const setTheme = (theme) => {
   currentTheme.value = theme
   localStorage.setItem('theme', theme)
   applyTheme(theme)
-  showThemeDropdown.value = false
 }
 
 const applyTheme = (theme) => {
@@ -91,12 +84,6 @@ const applyTheme = (theme) => {
   }
 }
 
-const handleClickOutside = (event) => {
-  if (themeDropdown.value && !themeDropdown.value.contains(event.target)) {
-    showThemeDropdown.value = false
-  }
-}
-
 const handleSystemThemeChange = (e) => {
   if (currentTheme.value === 'auto') {
     applyTheme('auto')
@@ -109,22 +96,18 @@ onMounted(() => {
   currentTheme.value = savedTheme
   applyTheme(savedTheme)
   
-  // Add click outside listener
-  document.addEventListener('click', handleClickOutside)
-  
   // Add system theme change listener
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange)
 })
 
 onUnmounted(() => {
-  document.removeEventListener('click', handleClickOutside)
   window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleSystemThemeChange)
 })
 </script>
 
 <style scoped>
 .navbar {
-  background:  #0F6F43;
+  background: #0F6F43;
   color: white;
   padding: 1rem 2rem;
   display: flex;
@@ -144,6 +127,8 @@ onUnmounted(() => {
 .navbar-brand img {
   height: 30px;
   margin-right: 0.5rem;
+  border-radius: 50%;
+  border: 1px solid white;
 }
 
 .navbar-brand span {
@@ -152,21 +137,25 @@ onUnmounted(() => {
 
 .dropdown-menu {
   margin-top: 0.5rem;
+  border: none;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  border-radius: 0.375rem;
 }
 
 .dropdown-item {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   padding: 0.75rem 1rem;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.2s ease;
   color: #2d3748;
   font-size: 0.9rem;
 }
 
 .dropdown-item:hover {
-  background-color: #f7fafc;
+  background-color: #f8f9fa;
+  color: #0F6F43;
 }
 
 .dropdown-item i {
@@ -175,15 +164,22 @@ onUnmounted(() => {
   text-align: center;
 }
 
-.dropdown-item span {
-  font-weight: 500;
+.btn-outline-light {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: white;
+}
+
+.btn-outline-light:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  color: white;
 }
 
 /* Dark mode styles for the dropdown */
 :global(.dark-mode) .dropdown-menu {
   background: #2d3748;
   border-color: #4a5568;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
 }
 
 :global(.dark-mode) .dropdown-item {
@@ -192,6 +188,7 @@ onUnmounted(() => {
 
 :global(.dark-mode) .dropdown-item:hover {
   background-color: #4a5568;
+  color: #e2e8f0;
 }
 
 /* Dark mode styles for the navbar */

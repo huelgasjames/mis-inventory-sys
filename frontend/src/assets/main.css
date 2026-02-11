@@ -5,6 +5,97 @@
   min-height: 100vh;
 }
 
+/* Global Bootstrap overrides */
+.navbar {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card {
+  border: none !important;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075) !important;
+}
+
+.card-header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+}
+
+.btn {
+  border-radius: 0.375rem !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-primary {
+  background-color: #0F6F43 !important;
+  border-color: #0F6F43 !important;
+}
+
+.btn-primary:hover {
+  background-color: #0d5a36 !important;
+  border-color: #0d5a36 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(15, 111, 67, 0.3);
+}
+
+.btn-outline-primary {
+  border-color: #0F6F43 !important;
+  color: #0F6F43 !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: #0F6F43 !important;
+  border-color: #0F6F43 !important;
+  color: white !important;
+}
+
+.table {
+  margin-bottom: 0 !important;
+}
+
+.table th {
+  background-color: #f8f9fa !important;
+  border-top: none !important;
+  font-weight: 600 !important;
+  color: #495057 !important;
+}
+
+.badge {
+  font-weight: 500 !important;
+}
+
+.form-control {
+  border-radius: 0.375rem !important;
+  border: 1px solid #e9ecef !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-control:focus {
+  border-color: #0F6F43 !important;
+  box-shadow: 0 0 0 0.2rem rgba(15, 111, 67, 0.25) !important;
+}
+
+.form-select {
+  border-radius: 0.375rem !important;
+  border: 1px solid #e9ecef !important;
+  transition: all 0.2s ease !important;
+}
+
+.form-select:focus {
+  border-color: #0F6F43 !important;
+  box-shadow: 0 0 0 0.2rem rgba(15, 111, 67, 0.25) !important;
+}
+
+.modal-content {
+  border: none !important;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+}
+
+.modal-header {
+  background-color: #f8f9fa !important;
+  border-bottom: 1px solid #e9ecef !important;
+}
+
 /* Login Page Specific Styles */
 .login-container {
   min-height: 100vh;
@@ -12,13 +103,13 @@
 }
 
 .login-left {
-  flex: 0 0 50%;
+  flex: 0 0 70%;
   position: relative;
   overflow: hidden;
 }
 
 .login-right {
-  flex: 0 0 50%;
+  flex: 0 0 30%;
   background: var(--pnc-white);
   display: flex;
   align-items: center;
@@ -70,9 +161,31 @@
   opacity: 0.9;
 }
 
+.university-logo-small {
+  max-height: 60px;
+  margin-bottom: 1rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.university-title-small {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--pnc-primary);
+}
+
+.system-title-small {
+  font-size: 0.9rem;
+  font-weight: 400;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
 .login-form-container {
   width: 100%;
-  max-width: 350px;
+  max-width: 300px;
 }
 
 .form-group {
@@ -172,6 +285,19 @@
   box-shadow: none;
 }
 
+.student-login-btn {
+  background: linear-gradient(135deg, var(--pnc-primary), var(--pnc-primary-dark));
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.student-login-btn:hover {
+  background: linear-gradient(135deg, var(--pnc-primary-dark), var(--pnc-primary));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(15, 111, 67, 0.4);
+}
+
 .alert {
   padding: 0.75rem 1.25rem;
   margin-bottom: 1rem;
@@ -260,4 +386,55 @@
 
 @keyframes spinner-border {
   to { transform: rotate(360deg); }
+}
+
+/* Custom utility classes */
+.hover-bg-light:hover {
+  background-color: #f8f9fa !important;
+  color: #0F6F43 !important;
+}
+
+.text-primary-custom {
+  color: #0F6F43 !important;
+}
+
+.bg-primary-custom {
+  background-color: #0F6F43 !important;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .card {
+    background-color: #2d3748 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .card-header {
+    background-color: #4a5568 !important;
+    border-bottom-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .table {
+    color: #e2e8f0 !important;
+  }
+  
+  .table th {
+    background-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .form-control,
+  .form-select {
+    background-color: #2d3748 !important;
+    border-color: #4a5568 !important;
+    color: #e2e8f0 !important;
+  }
+  
+  .form-control:focus,
+  .form-select:focus {
+    background-color: #2d3748 !important;
+    border-color: #0F6F43 !important;
+    color: #e2e8f0 !important;
+  }
 }
