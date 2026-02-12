@@ -14,6 +14,7 @@ class Computer extends Model
     protected $fillable = [
         'computer_name',
         'asset_tag',
+        'pc_number',
         'serial_number',
         'department_id',
         'processor_id',

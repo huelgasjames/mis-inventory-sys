@@ -40,6 +40,7 @@ class ComputerController extends Controller
         $validated = $request->validate([
             'computer_name' => 'required|string',
             'asset_tag' => 'required|string',
+            'pc_number' => 'nullable|string',
             'serial_number' => 'nullable|string',
             'department_id' => 'nullable|exists:departments,id',
             'processor_id' => 'nullable|exists:processors,id',
@@ -61,6 +62,41 @@ class ComputerController extends Controller
             'success' => true,
             'message' => 'Computer created successfully',
             'data' => $computer
+        ]);
+    }
+
+    /**
+     * Update computer
+     */
+    public function update(Request $request, $id): JsonResponse
+    {
+        $computer = Computer::findOrFail($id);
+        
+        $validated = $request->validate([
+            'computer_name' => 'required|string',
+            'asset_tag' => 'required|string',
+            'pc_number' => 'nullable|string',
+            'serial_number' => 'nullable|string',
+            'department_id' => 'nullable|exists:departments,id',
+            'processor_id' => 'nullable|exists:processors,id',
+            'motherboard_id' => 'nullable|exists:motherboards,id',
+            'ram_id' => 'nullable|exists:rams,id',
+            'storage_id' => 'nullable|exists:storages,id',
+            'video_card_id' => 'nullable|exists:video_cards,id',
+            'psu_id' => 'nullable|exists:psus,id',
+            'dvd_rom_id' => 'nullable|exists:dvd_roms,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'status' => 'required|in:Working,Defective,For Disposal',
+            'location' => 'nullable|string',
+            'notes' => 'nullable|string',
+        ]);
+
+        $computer->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Computer updated successfully',
+            'data' => $computer->load(['department', 'assignedUser'])
         ]);
     }
 

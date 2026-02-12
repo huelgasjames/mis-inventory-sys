@@ -21,6 +21,10 @@ import Settings from '@/views/Settings.vue'
 const routes = [
   {
     path: '/',
+    redirect: '/login'
+  },
+  {
+    path: '/login',
     name: 'Login',
     component: Login
   },
@@ -136,12 +140,29 @@ const router = createRouter({
 // Navigation guard for protected routes
 router.beforeEach((to, from, next) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated')
+  const token = localStorage.getItem('token')
+  const user = localStorage.getItem('user')
   
-  if (to.meta.requiresAuth && !isAuthenticated) {
+  // Check if user is actually authenticated (has token and user data)
+  const isFullyAuthenticated = isAuthenticated === 'true' && token && user
+  
+  // If trying to access protected route without authentication
+  if (to.meta.requiresAuth && !isFullyAuthenticated) {
+    // Clear any invalid authentication data
+    localStorage.removeItem('isAuthenticated')
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    sessionStorage.removeItem('isAuthenticated')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
     next('/')
-  } else if (to.path === '/' && isAuthenticated) {
+  } 
+  // If already authenticated and trying to access login page
+  else if (to.path === '/' && isFullyAuthenticated) {
     next('/dashboard')
-  } else {
+  }
+  // Allow access to login page or other routes
+  else {
     next()
   }
 })

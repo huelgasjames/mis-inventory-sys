@@ -131,85 +131,102 @@
           </div>
         </div>
 
-        <!-- Computers Table -->
+        <!-- Computer Table -->
         <div class="card border-0 shadow-sm">
-          <div class="card-header bg-white border-bottom">
-            <div class="d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">Computer Inventory</h5>
-              <div class="d-flex gap-2">
-                <input type="text" class="form-control form-control-sm" placeholder="Quick search..." v-model="searchQuery">
-                <button class="btn btn-outline-primary btn-sm" @click="showCreateModal">
-                  <i class="bi bi-plus-circle me-2"></i>Add Computer
-                </button>
+          <div class="card-body p-0">
+            <!-- Loading State -->
+            <div v-if="loading" class="text-center py-5">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+              <p class="mt-2 text-muted">Loading computers...</p>
+            </div>
+
+            <!-- Computer Table -->
+            <div v-else-if="filteredComputers.length > 0">
+              <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Asset Tag</th>
+                      <th>PC Number</th>
+                      <th>Computer Name</th>
+                      <th>Department</th>
+                      <th>Status</th>
+                      <th>Assigned To</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr v-for="computer in filteredComputers" :key="computer.id">
+                      <td>
+                        <span class="badge bg-secondary">{{ computer.asset_tag }}</span>
+                      </td>
+                      <td>{{ computer.pc_number }}</td>
+                      <td>
+                        <strong>{{ computer.computer_name }}</strong>
+                      </td>
+                      <td>{{ computer.department?.name || 'N/A' }}</td>
+                      <td>
+                        <span :class="getStatusBadgeClass(computer.status)">
+                          {{ computer.status }}
+                        </span>
+                      </td>
+                      <td>
+                        <span v-if="computer.assigned_user" class="badge bg-success">
+                          {{ computer.assigned_user.name }}
+                        </span>
+                        <span v-else class="text-muted">Unassigned</span>
+                      </td>
+                      <td>
+                        <div class="btn-group btn-group-sm">
+                          <button 
+                            class="btn btn-outline-primary" 
+                            @click="viewComputer(computer)"
+                            title="View Details"
+                          >
+                            <i class="bi bi-eye"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-warning" 
+                            @click="editComputer(computer)"
+                            title="Edit"
+                          >
+                            <i class="bi bi-pencil"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-danger" 
+                            @click="deleteComputer(computer.id)"
+                            title="Delete"
+                          >
+                            <i class="bi bi-trash"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
-          <div class="card-body">
-            <div class="table-responsive">
-              <table class="table table-hover">
-                <thead>
-                  <tr>
-                    <th>Computer Name</th>
-                    <th>Asset Tag</th>
-                    <th>Department</th>
-                    <th>Processor</th>
-                    <th>Status</th>
-                    <th>Assigned To</th>
-                    <th>Location</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="computer in filteredComputers" :key="computer.id">
-                    <td>
-                      <div class="d-flex align-items-center">
-                        <i class="bi bi-pc-display me-2 text-primary"></i>
-                        <span class="fw-semibold">{{ computer.computer_name }}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <span class="badge bg-primary">{{ computer.asset_tag }}</span>
-                    </td>
-                    <td>
-                      <span v-if="computer.department" class="badge bg-light text-dark">
-                        {{ computer.department.name }}
-                      </span>
-                      <span v-else class="text-muted">-</span>
-                    </td>
-                    <td>
-                      <span v-if="computer.processor" class="badge bg-info">
-                        {{ computer.processor.model }}
-                      </span>
-                      <span v-else class="text-muted">-</span>
-                    </td>
-                    <td>
-                      <span :class="getStatusBadgeClass(computer.status)">
-                        {{ computer.status }}
-                      </span>
-                    </td>
-                    <td>
-                      <span v-if="computer.assigned_user" class="badge bg-success">
-                        {{ computer.assigned_user.name }}
-                      </span>
-                      <span v-else class="text-muted">Unassigned</span>
-                    </td>
-                    <td>{{ computer.location || '-' }}</td>
-                    <td>
-                      <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" @click="viewComputer(computer)">
-                          <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn btn-outline-warning" @click="editComputer(computer)">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-danger" @click="deleteComputer(computer.id)">
-                          <i class="bi bi-trash"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+
+            <!-- Empty State -->
+            <div v-else class="text-center py-5">
+              <div class="mb-4">
+                <i class="bi bi-pc-display text-muted" style="font-size: 4rem;"></i>
+              </div>
+              <h5 class="text-muted">No computers found</h5>
+              <p class="text-muted">
+                {{ searchQuery || statusFilter || departmentFilter 
+                  ? 'Try adjusting your search or filters' 
+                  : 'Get started by adding your first computer' }}
+              </p>
+              <button 
+                v-if="!searchQuery && !statusFilter && !departmentFilter" 
+                class="btn btn-primary"
+                @click="showCreateModal"
+              >
+                <i class="bi bi-plus-circle me-2"></i>Add Computer
+              </button>
             </div>
           </div>
         </div>
@@ -342,7 +359,16 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Asset Tag *</label>
-                <input type="text" class="form-control" v-model="newComputer.asset_tag" required>
+                <div class="input-group">
+                  <input type="text" class="form-control" v-model="newComputer.asset_tag" required readonly>
+                  <button type="button" class="btn btn-outline-secondary" @click="generateAssetTag">
+                    <i class="bi bi-arrow-clockwise"></i> Generate
+                  </button>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PC Number *</label>
+                <input type="text" class="form-control" v-model="newComputer.pc_number" placeholder="e.g., PC-001" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Serial Number</label>
@@ -384,10 +410,17 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Video Card</label>
+                <label class="form-label">GPU</label>
                 <select class="form-select" v-model="newComputer.video_card_id">
-                  <option value="">Select Video Card</option>
+                  <option value="">Select GPU</option>
                   <option v-for="gpu in components.video_cards" :key="gpu.id" :value="gpu.id">{{ gpu.model }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PSU</label>
+                <select class="form-select" v-model="newComputer.psu_id">
+                  <option value="">Select PSU</option>
+                  <option v-for="psu in components.psus" :key="psu.id" :value="psu.id">{{ psu.wattage }}W</option>
                 </select>
               </div>
               <div class="col-md-6">
@@ -443,7 +476,7 @@
               <div class="form-control bg-light">{{ selectedComputer.asset_tag }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Serial Number</label>
+              <label class="form-label">Product Number</label>
               <div class="form-control bg-light">{{ selectedComputer.serial_number || 'N/A' }}</div>
             </div>
             <div class="col-md-6">
@@ -535,13 +568,83 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit Computer Modal -->
+  <div class="modal fade" id="editComputerModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Computer</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateComputer">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Computer Name *</label>
+                <input type="text" class="form-control" v-model="editingComputer.computer_name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Asset Tag *</label>
+                <input type="text" class="form-control" v-model="editingComputer.asset_tag" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PC Number *</label>
+                <input type="text" class="form-control" v-model="editingComputer.pc_number" placeholder="e.g., PC-001" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Product Number</label>
+                <input type="text" class="form-control" v-model="editingComputer.serial_number">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Department *</label>
+                <select class="form-select" v-model="editingComputer.department_id" required>
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status *</label>
+                <select class="form-select" v-model="editingComputer.status" required>
+                  <option value="Working">Working</option>
+                  <option value="Defective">Defective</option>
+                  <option value="For Disposal">For Disposal</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Assigned To</label>
+                <select class="form-select" v-model="editingComputer.assigned_to">
+                  <option value="">Unassigned</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" v-model="editingComputer.location" placeholder="Room/Office">
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" v-model="editingComputer.description" rows="3"></textarea>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="updateComputer">Update Computer</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
+import { ref, computed, onMounted } from 'vue'
 import axios from 'axios'
+import { Modal } from 'bootstrap'
 
 const isNavCollapsed = ref(false)
 const computers = ref([])
@@ -554,10 +657,13 @@ const statusFilter = ref('')
 const departmentFilter = ref('')
 
 const selectedComputer = ref(null)
+const editingComputer = ref({})
+const loading = ref(false)
 
 const newComputer = ref({
   computer_name: '',
   asset_tag: '',
+  pc_number: '',
   serial_number: '',
   department_id: '',
   processor_id: '',
@@ -565,6 +671,7 @@ const newComputer = ref({
   ram_id: '',
   storage_id: '',
   video_card_id: '',
+  psu_id: '',
   status: 'Working',
   assigned_to: '',
   location: '',
@@ -659,6 +766,7 @@ const getStatusBadgeClass = (status) => {
 }
 
 const fetchComputers = async () => {
+  loading.value = true
   try {
     console.log('Fetching computers from API...')
     const response = await axios.get('http://localhost:8000/api/computers')
@@ -674,6 +782,7 @@ const fetchComputers = async () => {
         id: 1,
         computer_name: 'CS Lab Computer 1',
         asset_tag: 'PC001',
+        pc_number: 'PC-001',
         department_id: 1,
         department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
         status: 'Working',
@@ -691,6 +800,7 @@ const fetchComputers = async () => {
         id: 2,
         computer_name: 'Admin Office PC',
         asset_tag: 'PC002',
+        pc_number: 'PC-002',
         department_id: 2,
         department: { id: 2, name: 'Administration', category: { id: 2, name: 'Administrative', color: '#004D7A' } },
         status: 'Working',
@@ -708,6 +818,7 @@ const fetchComputers = async () => {
         id: 3,
         computer_name: 'Library PC 1',
         asset_tag: 'PC003',
+        pc_number: 'PC-003',
         department_id: 3,
         department: { id: 3, name: 'Library', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
         status: 'Defective',
@@ -725,6 +836,7 @@ const fetchComputers = async () => {
         id: 4,
         computer_name: 'Old Server PC',
         asset_tag: 'PC004',
+        pc_number: 'PC-004',
         department_id: 1,
         department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
         status: 'For Disposal',
@@ -739,6 +851,8 @@ const fetchComputers = async () => {
         video_card: null
       }
     ]
+  } finally {
+    loading.value = false
   }
 }
 
@@ -784,6 +898,11 @@ const fetchComponents = async () => {
       video_cards: [
         { id: 1, model: 'NVIDIA GTX 1650' },
         { id: 2, model: 'Integrated' }
+      ],
+      psus: [
+        { id: 1, wattage: 450, model: 'Corsair CV450' },
+        { id: 2, wattage: 550, model: 'Cooler Master MWE 550' },
+        { id: 3, wattage: 650, model: 'EVGA 650 WQ' }
       ]
     }
   }
@@ -806,10 +925,10 @@ const fetchUsers = async () => {
 
 const createComputer = async () => {
   try {
-    const response = await axios.post('http://localhost:8000/api/computers', newComputer.value)
+    const response = await axios.post('http://localhost:8000/api/computers/create', newComputer.value)
     
     if (response.data.success) {
-      bootstrap.Modal.getInstance(document.getElementById('createComputerModal')).hide()
+      Modal.getInstance(document.getElementById('createComputerModal')).hide()
       await refreshData()
       
       // Reset form
@@ -839,20 +958,36 @@ const createComputer = async () => {
 
 const viewComputer = (computer) => {
   selectedComputer.value = computer
-  const modal = new bootstrap.Modal(document.getElementById('viewComputerModal'))
+  const modal = new Modal(document.getElementById('viewComputerModal'))
   modal.show()
 }
 
 const editComputer = (computer) => {
-  console.log('Edit computer:', computer)
-  // TODO: Implement edit functionality
+  editingComputer.value = { ...computer }
+  const modal = new Modal(document.getElementById('editComputerModal'))
+  modal.show()
+}
+
+const updateComputer = async () => {
+  try {
+    const response = await axios.put(`http://localhost:8000/api/computers/${editingComputer.value.id}`, editingComputer.value)
+    
+    if (response.data.success) {
+      Modal.getInstance(document.getElementById('editComputerModal')).hide()
+      await refreshData()
+      alert('Computer updated successfully!')
+    }
+  } catch (error) {
+    console.error('Error updating computer:', error)
+    alert('Error updating computer: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 const deleteComputer = async (id) => {
   if (!confirm('Are you sure you want to delete this computer?')) return
   
   try {
-    const response = await axios.delete(`http://localhost:8000/api/computers/${id}`)
+    const response = await axios.delete(`http://localhost:8000/api/computers/${id}/delete`)
     
     if (response.data.success) {
       await refreshData()
@@ -871,8 +1006,15 @@ const clearFilters = () => {
 }
 
 const showCreateModal = () => {
-  const modal = new bootstrap.Modal(document.getElementById('createComputerModal'))
+  generateAssetTag()
+  const modal = new Modal(document.getElementById('createComputerModal'))
   modal.show()
+}
+
+const generateAssetTag = () => {
+  const year = new Date().getFullYear()
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
+  newComputer.value.asset_tag = `PNC-${year}-${random}`
 }
 
 const refreshData = async () => {

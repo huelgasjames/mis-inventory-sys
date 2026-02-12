@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ComponentController;
 use App\Http\Controllers\ComputerController;
+use App\Http\Controllers\LaboratoryController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\DeploymentController;
 use Illuminate\Support\Facades\Route;
@@ -53,12 +54,20 @@ Route::delete('/components/{type}/{id}', [ComponentController::class, 'deleteCom
 Route::get('/computers', [ComputerController::class, 'index']);
 Route::get('/computers/list', [ComputerController::class, 'index']);
 Route::post('/computers/create', [ComputerController::class, 'create']);
+Route::put('/computers/{id}', [ComputerController::class, 'update']);
 Route::delete('/computers/{id}/delete', [ComputerController::class, 'delete']);
 Route::post('/computers/{id}/deploy', [ComputerController::class, 'deploy']);
 Route::post('/computers/{id}/transfer', [ComputerController::class, 'transfer']);
 Route::post('/computers/{id}/repair', [ComputerController::class, 'logRepair']);
 Route::post('/computers/{id}/complete-repair', [ComputerController::class, 'completeRepair']);
 Route::get('/computers/stats', [ComputerController::class, 'stats']);
+
+// Laboratory management routes
+Route::get('/laboratories', [LaboratoryController::class, 'index']);
+Route::post('/laboratories', [LaboratoryController::class, 'create']);
+Route::put('/laboratories/{id}', [LaboratoryController::class, 'update']);
+Route::delete('/laboratories/{id}', [LaboratoryController::class, 'delete']);
+Route::get('/laboratories/stats', [LaboratoryController::class, 'stats']);
 
 // Reports and analytics routes
 Route::get('/reports/pcs-per-department', [ReportController::class, 'pcsPerDepartment']);

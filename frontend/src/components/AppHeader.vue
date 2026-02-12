@@ -12,6 +12,10 @@
           <small class="text-white-50">System Administrator</small>
         </div>
         
+        <button class="btn btn-outline-danger btn-sm" @click="logout" title="Logout">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
+        
         <div class="dropdown">
           <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
             <i class="bi bi-gear"></i>
@@ -25,6 +29,10 @@
             </a></li>
             <li><a class="dropdown-item" href="#" @click="setTheme('auto')">
               <i class="bi bi-circle-half me-2"></i>Auto
+            </a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><a class="dropdown-item text-danger" href="#" @click="logout">
+              <i class="bi bi-box-arrow-right me-2"></i>Logout
             </a></li>
           </ul>
         </div>
@@ -57,6 +65,20 @@ const openSettings = () => {
 
 const openProfile = () => {
   emit('profile-open')
+}
+
+const logout = () => {
+  // Clear authentication data
+  localStorage.removeItem('token')
+  localStorage.removeItem('user')
+  sessionStorage.removeItem('token')
+  sessionStorage.removeItem('user')
+  
+  // Show confirmation
+  if (confirm('Are you sure you want to logout?')) {
+    // Redirect to login page
+    window.location.href = '/login'
+  }
 }
 
 const setTheme = (theme) => {
