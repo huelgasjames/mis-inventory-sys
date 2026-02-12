@@ -116,9 +116,8 @@
                 <label class="form-label">Status</label>
                 <select class="form-select" v-model="statusFilter">
                   <option value="">All Status</option>
-                  <option value="Active">Active</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Closed">Closed</option>
+                  <option value="true">Active</option>
+                  <option value="false">Inactive</option>
                 </select>
               </div>
               <div class="col-md-2">
@@ -146,11 +145,10 @@
           </div>
           <div class="card-body">
             <div class="table-responsive">
-              <table class="table table-hover">
+              <table class="table table-hover" v-if="filteredLabs.length > 0">
                 <thead>
                   <tr>
                     <th>Laboratory Name</th>
-                    <th>Department</th>
                     <th>Location</th>
                     <th>Computers</th>
                     <th>Capacity</th>
@@ -164,14 +162,8 @@
                     <td>
                       <div class="d-flex align-items-center">
                         <i class="bi bi-flask me-2 text-primary"></i>
-                        <span class="fw-semibold">{{ lab.name }}</span>
+                        <span class="fw-semibold">{{ lab.lab_name }}</span>
                       </div>
-                    </td>
-                    <td>
-                      <span v-if="lab.department" class="badge bg-light text-dark">
-                        {{ lab.department.name }}
-                      </span>
-                      <span v-else class="text-muted">-</span>
                     </td>
                     <td>
                       <span class="badge bg-info">{{ lab.location }}</span>
@@ -183,13 +175,13 @@
                       <span class="badge bg-success">{{ lab.capacity || 0 }}</span>
                     </td>
                     <td>
-                      <span :class="getStatusBadgeClass(lab.status)">
-                        {{ lab.status }}
+                      <span :class="getStatusBadgeClass(lab.is_active)">
+                        {{ lab.is_active ? 'Active' : 'Inactive' }}
                       </span>
                     </td>
                     <td>
-                      <span v-if="lab.in_charge" class="badge bg-warning text-dark">
-                        {{ lab.in_charge }}
+                      <span v-if="lab.headOfLab" class="badge bg-warning text-dark">
+                        {{ lab.headOfLab.name }}
                       </span>
                       <span v-else class="text-muted">Unassigned</span>
                     </td>
@@ -209,6 +201,24 @@
                   </tr>
                 </tbody>
               </table>
+              <div v-else class="text-center py-5">
+                <div class="mb-4">
+                  <i class="bi bi-flask text-muted" style="font-size: 4rem;"></i>
+                </div>
+                <h5 class="text-muted">No laboratories found</h5>
+                <p class="text-muted">
+                  {{ searchQuery || statusFilter || departmentFilter 
+                    ? 'Try adjusting your search or filters' 
+                    : 'Get started by adding your first laboratory' }}
+                </p>
+                <button 
+                  v-if="!searchQuery && !statusFilter && !departmentFilter" 
+                  class="btn btn-primary"
+                  @click="showCreateLabModal"
+                >
+                  <i class="bi bi-plus-circle me-2"></i>Add Laboratory
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -337,41 +347,41 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label class="form-label">Laboratory Name *</label>
-                <input type="text" class="form-control" v-model="newLab.name" required>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Department *</label>
-                <select class="form-select" v-model="newLab.department_id" required>
-                  <option value="">Select Department</option>
-                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
-                </select>
+                <input type="text" class="form-control" v-model="newLab.lab_name" required>
               </div>
               <div class="col-md-6">
                 <label class="form-label">Location *</label>
-                <input type="text" class="form-control" v-model="newLab.location" required placeholder="Building, Room">
+                <select class="form-select" v-model="newLab.location" required>
+                  <option value="">Select Location</option>
+                  <option value="BCH">BCH</option>
+                  <option value="UC">UC</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Room ID/Number *</label>
+                <input type="text" class="form-control" v-model="newLab.building" placeholder="e.g., Room 101, Lab-A1" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Floor</label>
+                <input type="text" class="form-control" v-model="newLab.floor">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Capacity *</label>
                 <input type="number" class="form-control" v-model="newLab.capacity" required min="1">
               </div>
               <div class="col-md-6">
-                <label class="form-label">Status *</label>
-                <select class="form-select" v-model="newLab.status" required>
-                  <option value="Active">Active</option>
-                  <option value="Maintenance">Maintenance</option>
-                  <option value="Closed">Closed</option>
-                </select>
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">In Charge</label>
-                <select class="form-select" v-model="newLab.in_charge_user_id">
+                <label class="form-label">Head of Lab</label>
+                <select class="form-select" v-model="newLab.head_of_lab">
                   <option value="">Select User</option>
                   <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                 </select>
               </div>
               <div class="col-md-12">
-                <label class="form-label">Description</label>
-                <textarea class="form-control" v-model="newLab.description" rows="3"></textarea>
+                <label class="form-label">Status</label>
+                <select class="form-select" v-model="newLab.is_active">
+                  <option :value="true">Active</option>
+                  <option :value="false">Inactive</option>
+                </select>
               </div>
             </div>
           </form>
@@ -396,20 +406,19 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Laboratory Name</label>
-              <div class="form-control bg-light">{{ selectedLab.name }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Department</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedLab.department" class="badge bg-light text-dark">
-                  {{ selectedLab.department.name }}
-                </span>
-                <span v-else class="text-muted">No Department</span>
-              </div>
+              <div class="form-control bg-light">{{ selectedLab.lab_name }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Location</label>
               <div class="form-control bg-light">{{ selectedLab.location }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Room ID/Number</label>
+              <div class="form-control bg-light">{{ selectedLab.building }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Floor</label>
+              <div class="form-control bg-light">{{ selectedLab.floor || 'N/A' }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Capacity</label>
@@ -418,8 +427,8 @@
             <div class="col-md-6">
               <label class="form-label">Status</label>
               <div class="form-control bg-light">
-                <span :class="getStatusBadgeClass(selectedLab.status)">
-                  {{ selectedLab.status }}
+                <span :class="getStatusBadgeClass(selectedLab.is_active)">
+                  {{ selectedLab.is_active ? 'Active' : 'Inactive' }}
                 </span>
               </div>
             </div>
@@ -428,24 +437,90 @@
               <div class="form-control bg-light">{{ selectedLab.computer_count || 0 }}</div>
             </div>
             <div class="col-md-6">
-              <label class="form-label">In Charge</label>
+              <label class="form-label">Head of Lab</label>
               <div class="form-control bg-light">
-                <span v-if="selectedLab.in_charge" class="badge bg-warning text-dark">
-                  {{ selectedLab.in_charge }}
+                <span v-if="selectedLab.headOfLab" class="badge bg-warning text-dark">
+                  {{ selectedLab.headOfLab.name }}
                 </span>
                 <span v-else class="text-muted">Unassigned</span>
               </div>
             </div>
-            <div class="col-12">
-              <label class="form-label">Description</label>
-              <div class="form-control bg-light" style="min-height: 80px;">
-                {{ selectedLab.description || 'No description available' }}
-              </div>
+            <div class="col-md-6">
+              <label class="form-label">Contact Number</label>
+              <div class="form-control bg-light">{{ selectedLab.contact_number || 'N/A' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              <div class="form-control bg-light">{{ selectedLab.email || 'N/A' }}</div>
             </div>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Laboratory Modal -->
+  <div class="modal fade" id="editLabModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Laboratory</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateLab" v-if="selectedLab">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Laboratory Name *</label>
+                <input type="text" class="form-control" v-model="selectedLab.lab_name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location *</label>
+                <input type="text" class="form-control" v-model="selectedLab.location" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Room ID/Number *</label>
+                <input type="text" class="form-control" v-model="selectedLab.building" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Floor</label>
+                <input type="text" class="form-control" v-model="selectedLab.floor">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Capacity *</label>
+                <input type="number" class="form-control" v-model="selectedLab.capacity" required min="1">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Head of Lab</label>
+                <select class="form-select" v-model="selectedLab.head_of_lab">
+                  <option value="">Select User</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input type="text" class="form-control" v-model="selectedLab.contact_number">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" v-model="selectedLab.email">
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Status</label>
+                <select class="form-select" v-model="selectedLab.is_active">
+                  <option :value="true">Active</option>
+                  <option :value="false">Inactive</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="updateLab">Update Laboratory</button>
         </div>
       </div>
     </div>
@@ -457,6 +532,7 @@ import { ref, onMounted, computed } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import axios from 'axios'
+import { Modal } from 'bootstrap'
 
 const isNavCollapsed = ref(false)
 const laboratories = ref([])
@@ -470,19 +546,48 @@ const statusFilter = ref('')
 const selectedLab = ref(null)
 
 const newLab = ref({
-  name: '',
-  department_id: '',
+  lab_name: '',
   location: '',
+  building: '',
+  floor: '',
   capacity: '',
-  status: 'Active',
-  in_charge_user_id: '',
-  description: ''
+  head_of_lab: '',
+  is_active: true
+})
+
+const filteredLabs = computed(() => {
+  let result = laboratories.value
+
+  // Apply department filter
+  if (departmentFilter.value) {
+    result = result.filter(lab => lab.department_id == departmentFilter.value)
+  }
+
+  // Apply status filter
+  if (statusFilter.value !== '') {
+    result = result.filter(lab => lab.is_active === (statusFilter.value === 'true'))
+  }
+
+  // Apply search filter
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(lab => 
+      lab.lab_name.toLowerCase().includes(query) ||
+      lab.location.toLowerCase().includes(query) ||
+      lab.building?.toLowerCase().includes(query) ||
+      lab.floor?.toLowerCase().includes(query) ||
+      lab.contact_number?.toLowerCase().includes(query) ||
+      lab.email?.toLowerCase().includes(query)
+    )
+  }
+
+  return result
 })
 
 // Statistics computed properties
 const totalLabs = computed(() => filteredLabs.value.length)
-const activeLabs = computed(() => filteredLabs.value.filter(l => l.status === 'Active').length)
-const maintenanceLabs = computed(() => filteredLabs.value.filter(l => l.status === 'Maintenance').length)
+const activeLabs = computed(() => filteredLabs.value.filter(l => l.is_active === true).length)
+const maintenanceLabs = computed(() => filteredLabs.value.filter(l => l.is_active === false).length)
 const totalComputers = computed(() => filteredLabs.value.reduce((sum, l) => sum + (l.computer_count || 0), 0))
 
 // Department statistics
@@ -542,43 +647,11 @@ const capacityStats = computed(() => {
   return stats
 })
 
-const filteredLabs = computed(() => {
-  let result = laboratories.value
-
-  // Apply department filter
-  if (departmentFilter.value) {
-    result = result.filter(lab => lab.department_id == departmentFilter.value)
-  }
-
-  // Apply status filter
-  if (statusFilter.value) {
-    result = result.filter(lab => lab.status === statusFilter.value)
-  }
-
-  // Apply search filter
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase()
-    result = result.filter(lab => 
-      lab.name.toLowerCase().includes(query) ||
-      lab.location.toLowerCase().includes(query) ||
-      lab.description?.toLowerCase().includes(query) ||
-      lab.in_charge?.toLowerCase().includes(query)
-    )
-  }
-
-  return result
-})
-
-const getStatusBadgeClass = (status) => {
-  switch (status) {
-    case 'Active':
-      return 'badge bg-success'
-    case 'Maintenance':
-      return 'badge bg-warning text-dark'
-    case 'Closed':
-      return 'badge bg-danger'
-    default:
-      return 'badge bg-secondary'
+const getStatusBadgeClass = (isActive) => {
+  if (isActive === true) {
+    return 'badge bg-success'
+  } else {
+    return 'badge bg-danger'
   }
 }
 
@@ -596,55 +669,59 @@ const fetchLaboratories = async () => {
     laboratories.value = [
       {
         id: 1,
-        name: 'Computer Science Lab 1',
-        department_id: 1,
-        department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
+        lab_name: 'Computer Science Lab 1',
         location: 'Building A, Room 101',
+        building: 'Building A',
+        floor: '1',
         capacity: 30,
-        status: 'Active',
+        is_active: true,
         computer_count: 25,
-        in_charge_user_id: 1,
-        in_charge: 'Dr. Smith',
-        description: 'Main computer science laboratory for programming courses'
+        head_of_lab: 1,
+        headOfLab: { id: 1, name: 'Dr. Smith' },
+        contact_number: '123-456-7890',
+        email: 'lab1@university.edu'
       },
       {
         id: 2,
-        name: 'Computer Science Lab 2',
-        department_id: 1,
-        department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
+        lab_name: 'Computer Science Lab 2',
         location: 'Building A, Room 102',
+        building: 'Building A',
+        floor: '2',
         capacity: 25,
-        status: 'Active',
+        is_active: true,
         computer_count: 20,
-        in_charge_user_id: 2,
-        in_charge: 'Prof. Johnson',
-        description: 'Secondary computer science laboratory'
+        head_of_lab: 2,
+        headOfLab: { id: 2, name: 'Prof. Johnson' },
+        contact_number: '123-456-7891',
+        email: 'lab2@university.edu'
       },
       {
         id: 3,
-        name: 'Network Lab',
-        department_id: 1,
-        department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
+        lab_name: 'Network Lab',
         location: 'Building B, Room 201',
+        building: 'Building B',
+        floor: '2',
         capacity: 20,
-        status: 'Maintenance',
+        is_active: false,
         computer_count: 15,
-        in_charge_user_id: null,
-        in_charge: null,
-        description: 'Network configuration and testing laboratory'
+        head_of_lab: null,
+        headOfLab: null,
+        contact_number: '123-456-7892',
+        email: 'network@university.edu'
       },
       {
         id: 4,
-        name: 'Electronics Lab',
-        department_id: 2,
-        department: { id: 2, name: 'Electronics', category: { id: 2, name: 'Technical', color: '#FF6B35' } },
+        lab_name: 'Electronics Lab',
         location: 'Building C, Room 301',
+        building: 'Building C',
+        floor: '3',
         capacity: 35,
-        status: 'Active',
+        is_active: true,
         computer_count: 10,
-        in_charge_user_id: 3,
-        in_charge: 'Mr. Davis',
-        description: 'Electronics circuit design and testing laboratory'
+        head_of_lab: 3,
+        headOfLab: { id: 3, name: 'Mr. Davis' },
+        contact_number: '123-456-7893',
+        email: 'electronics@university.edu'
       }
     ]
     console.log('Using fallback data, laboratories loaded:', laboratories.value.length)
@@ -686,18 +763,18 @@ const createLab = async () => {
     const response = await axios.post('http://localhost:8000/api/laboratories', newLab.value)
     
     if (response.data.success) {
-      bootstrap.Modal.getInstance(document.getElementById('createLabModal')).hide()
+      Modal.getInstance(document.getElementById('createLabModal')).hide()
       await refreshData()
       
       // Reset form
       newLab.value = {
-        name: '',
-        department_id: '',
+        lab_name: '',
         location: '',
+        building: '',
+        floor: '',
         capacity: '',
-        status: 'Active',
-        in_charge_user_id: '',
-        description: ''
+        head_of_lab: '',
+        is_active: true
       }
       
       alert('Laboratory created successfully!')
@@ -710,13 +787,29 @@ const createLab = async () => {
 
 const viewLab = (lab) => {
   selectedLab.value = lab
-  const modal = new bootstrap.Modal(document.getElementById('viewLabModal'))
+  const modal = new Modal(document.getElementById('viewLabModal'))
   modal.show()
 }
 
 const editLab = (lab) => {
-  console.log('Edit laboratory:', lab)
-  // TODO: Implement edit functionality
+  selectedLab.value = { ...lab }
+  const modal = new Modal(document.getElementById('editLabModal'))
+  modal.show()
+}
+
+const updateLab = async () => {
+  try {
+    const response = await axios.put(`http://localhost:8000/api/laboratories/${selectedLab.value.id}`, selectedLab.value)
+    
+    if (response.data.success) {
+      Modal.getInstance(document.getElementById('editLabModal')).hide()
+      await refreshData()
+      alert('Laboratory updated successfully!')
+    }
+  } catch (error) {
+    console.error('Error updating laboratory:', error)
+    alert('Error updating laboratory: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 const deleteLab = async (id) => {
@@ -742,7 +835,7 @@ const clearFilters = () => {
 }
 
 const showCreateLabModal = () => {
-  const modal = new bootstrap.Modal(document.getElementById('createLabModal'))
+  const modal = new Modal(document.getElementById('createLabModal'))
   modal.show()
 }
 

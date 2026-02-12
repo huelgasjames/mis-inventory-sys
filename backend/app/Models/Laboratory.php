@@ -12,13 +12,15 @@ class Laboratory extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
         'department_id',
+        'lab_code',
+        'lab_name',
         'location',
+        'building',
+        'floor',
         'capacity',
-        'status',
-        'in_charge_user_id',
-        'description',
+        'head_of_lab',
+        'is_active',
     ];
 
     protected $casts = [
@@ -27,19 +29,19 @@ class Laboratory extends Model
     ];
 
     /**
-     * Get the department that owns the laboratory
+     * Get the user in charge of this laboratory
+     */
+    public function headOfLab(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'head_of_lab');
+    }
+
+    /**
+     * Get the department this laboratory belongs to
      */
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
-    }
-
-    /**
-     * Get the user in charge of this laboratory
-     */
-    public function inChargeUser(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'in_charge_user_id');
     }
 
     /**
@@ -51,34 +53,34 @@ class Laboratory extends Model
     }
 
     /**
+     * Get current computer count
+     */
+    public function getCurrentComputerCountAttribute(): int
+    {
+        return $this->computers()->count();
+    }
+
+    /**
+     * Get available capacity
+     */
+    public function getAvailableCapacityAttribute(): int
+    {
+        return $this->capacity - $this->getCurrentComputerCountAttribute();
+    }
+
+    /**
      * Get active laboratories only
      */
     public function scopeActive($query)
     {
-        return $query->where('status', 'Active');
+        return $query->where('is_active', true);
     }
 
     /**
-     * Get laboratories under maintenance only
+     * Get inactive laboratories only
      */
-    public function scopeMaintenance($query)
+    public function scopeInactive($query)
     {
-        return $query->where('status', 'Maintenance');
-    }
-
-    /**
-     * Get closed laboratories only
-     */
-    public function scopeClosed($query)
-    {
-        return $query->where('status', 'Closed');
-    }
-
-    /**
-     * Get laboratories by department
-     */
-    public function scopeByDepartment($query, $departmentId)
-    {
-        return $query->where('department_id', $departmentId);
+        return $query->where('is_active', false);
     }
 }

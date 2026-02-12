@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Authentication</title>
+</head>
+<body>
+    <h1>Clear Authentication Data</h1>
+    <button onclick="clearAuth()">Clear All Data</button>
+    <button onclick="goToApp()">Go to App</button>
+    
+    <script>
+        function clearAuth() {
+            localStorage.clear();
+            sessionStorage.clear();
+            alert('All authentication data cleared!');
+        }
+        
+        function goToApp() {
+            window.location.href = 'http://localhost:5176/';
+        }
+    </script>
+</body>
+</html>

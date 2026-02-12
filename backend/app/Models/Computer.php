@@ -17,6 +17,7 @@ class Computer extends Model
         'pc_number',
         'serial_number',
         'department_id',
+        'laboratory_id',
         'processor_id',
         'motherboard_id',
         'ram_id',
@@ -38,6 +39,14 @@ class Computer extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get laboratory this computer belongs to
+     */
+    public function laboratory(): BelongsTo
+    {
+        return $this->belongsTo(Laboratory::class);
+    }
 
     /**
      * Get the department that owns the computer

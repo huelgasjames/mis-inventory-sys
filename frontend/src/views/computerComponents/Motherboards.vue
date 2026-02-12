@@ -165,7 +165,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add Motherboard</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateMotherboardModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createMotherboard">
@@ -185,7 +185,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateMotherboardModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createMotherboard">Add Motherboard</button>
         </div>
       </div>
@@ -198,7 +198,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Motherboard Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewMotherboardModal"></button>
         </div>
         <div class="modal-body" v-if="selectedMotherboard">
           <div class="mb-3">
@@ -223,7 +223,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewMotherboardModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +249,7 @@ export default {
     const selectedMotherboard = ref(null)
     
     const newMotherboard = ref({
-      model: '',
+      model: 'ASUS Prime H410M',
       status: 'Available'
     })
 
@@ -308,8 +308,18 @@ export default {
     }
 
     const showCreateMotherboardModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createMotherboardModal'))
-      modal.show()
+      const modal = document.getElementById('createMotherboardModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'motherboard-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createMotherboard = async () => {
@@ -317,27 +327,67 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/motherboards', newMotherboard.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createMotherboardModal')).hide()
+          hideCreateMotherboardModal()
           await refreshData()
           
           // Reset form
           newMotherboard.value = {
-            model: '',
+            model: 'ASUS Prime H410M',
             status: 'Available'
           }
           
           alert('Motherboard added successfully!')
         }
       } catch (error) {
-        console.error('Error creating motherboard:', error)
-        alert('Error adding motherboard: ' + (error.response?.data?.message || error.message))
+        console.error('Error creating Motherboard:', error)
+        alert('Error adding Motherboard: ' + (error.response?.data?.message || error.message))
+      }
+    }
+
+    const hideCreateMotherboardModal = () => {
+      const modal = document.getElementById('createMotherboardModal')
+      const backdrop = document.getElementById('motherboard-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
       }
     }
 
     const viewMotherboard = (motherboard) => {
       selectedMotherboard.value = motherboard
-      const modal = new bootstrap.Modal(document.getElementById('viewMotherboardModal'))
-      modal.show()
+      const modal = document.getElementById('viewMotherboardModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-motherboard-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewMotherboardModal = () => {
+      const modal = document.getElementById('viewMotherboardModal')
+      const backdrop = document.getElementById('view-motherboard-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editMotherboard = (motherboard) => {
@@ -386,8 +436,10 @@ export default {
       formatDate,
       refreshData,
       showCreateMotherboardModal,
+      hideCreateMotherboardModal,
       createMotherboard,
       viewMotherboard,
+      hideViewMotherboardModal,
       editMotherboard,
       deleteMotherboard,
       filterMotherboards

@@ -38,7 +38,15 @@ class Department extends Model
     }
 
     /**
-     * Get the computers in this department
+     * Get laboratories in this department
+     */
+    public function laboratories(): HasMany
+    {
+        return $this->hasMany(Laboratory::class);
+    }
+
+    /**
+     * Get computers in this department
      */
     public function computers(): HasMany
     {
@@ -83,5 +91,13 @@ class Department extends Model
     public function getTotalComputersAttribute(): int
     {
         return $this->computers()->count();
+    }
+
+    /**
+     * Get total laboratories count
+     */
+    public function getTotalLaboratoriesAttribute(): int
+    {
+        return $this->laboratories()->count();
     }
 }

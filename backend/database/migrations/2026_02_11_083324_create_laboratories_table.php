@@ -15,12 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('lab_code')->unique();
             $table->string('lab_name');
-            $table->string('location');
+            $table->text('location');
             $table->string('building');
-            $table->string('floor');
-            $table->integer('capacity')->default(30);
-            $table->string('head_of_lab');
-            $table->string('contact_number');
+            $table->string('floor')->nullable();
+            $table->integer('capacity');
+            $table->foreignId('department_id')->nullable()->constrained()->onDelete('set null');
+            $table->foreignId('head_of_lab')->nullable()->constrained('users')->onDelete('set null');
+            $table->string('contact_number')->nullable();
             $table->string('email')->nullable();
             $table->boolean('is_active')->default(true);
             $table->timestamps();

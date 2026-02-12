@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Test</title>
+</head>
+<body>
+    <h1>Basic HTML Test</h1>
+    <p>If you can see this, HTML is working.</p>
+    
+    <div id="vue-test">
+        <h2>{{ message }}</h2>
+        <button @click="clickMe">Click me</button>
+        <p v-if="clicked">Vue is working!</p>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    message: 'Vue Test Page',
+                    clicked: false
+                }
+            },
+            methods: {
+                clickMe() {
+                    this.clicked = true;
+                    alert('Vue is working correctly!');
+                }
+            }
+        }).mount('#vue-test');
+    </script>
+</body>
+</html>

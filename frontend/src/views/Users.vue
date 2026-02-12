@@ -161,12 +161,6 @@
                         <button class="btn btn-outline-primary" @click="viewUser(user)">
                           <i class="bi bi-eye"></i>
                         </button>
-                        <button class="btn btn-outline-warning" @click="editUser(user)">
-                          <i class="bi bi-pencil"></i>
-                        </button>
-                        <button class="btn btn-outline-danger" @click="deleteUser(user)">
-                          <i class="bi bi-trash"></i>
-                        </button>
                       </div>
                     </td>
                   </tr>
@@ -185,7 +179,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add User</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateUserModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createUser">
@@ -207,9 +201,26 @@
                 <select class="form-select" v-model="newUser.role" required>
                   <option value="">Select Role</option>
                   <option value="admin">Admin</option>
+                  <option value="faculty">Faculty</option>
                   <option value="staff">Staff</option>
                   <option value="student">Student</option>
                 </select>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Address *</label>
+                <textarea class="form-control" v-model="newUser.address" rows="2" required placeholder="Enter complete address"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Birthdate *</label>
+                <input type="date" class="form-control" v-model="newUser.birthdate" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Person</label>
+                <input type="text" class="form-control" v-model="newUser.contact_person" placeholder="Name of contact person">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input type="text" class="form-control" v-model="newUser.contact_number" placeholder="Phone number">
               </div>
               <div class="col-md-6">
                 <label class="form-label">Department</label>
@@ -227,11 +238,15 @@
                   <option :value="false">Inactive</option>
                 </select>
               </div>
+              <div class="col-md-6">
+                <label class="form-label">Assigned Assets</label>
+                <input type="number" class="form-control" v-model="newUser.assigned_assets_count" min="0" placeholder="Number of assigned assets">
+              </div>
             </div>
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateUserModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createUser">Add User</button>
         </div>
       </div>
@@ -244,7 +259,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">User Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewUserModal"></button>
         </div>
         <div class="modal-body" v-if="selectedUser">
           <div class="row g-3">
@@ -263,6 +278,22 @@
                   {{ selectedUser.role }}
                 </span>
               </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Address</label>
+              <div class="form-control bg-light" style="white-space: pre-wrap;">{{ selectedUser.address || 'N/A' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Birthdate</label>
+              <div class="form-control bg-light">{{ formatDate(selectedUser.birthdate) }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Contact Person</label>
+              <div class="form-control bg-light">{{ selectedUser.contact_person || 'N/A' }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Contact Number</label>
+              <div class="form-control bg-light">{{ selectedUser.contact_number || 'N/A' }}</div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Department</label>
@@ -289,7 +320,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewUserModal">Close</button>
         </div>
       </div>
     </div>
@@ -309,6 +340,7 @@ export default {
     AppHeader
   },
   setup() {
+    console.log('Users component setup started')
     const isNavCollapsed = ref(false)
     const users = ref([])
     const departments = ref([])
@@ -320,8 +352,13 @@ export default {
       email: '',
       password: '',
       role: '',
+      address: '',
+      birthdate: '',
+      contact_person: '',
+      contact_number: '',
       department_id: '',
-      is_active: true
+      is_active: true,
+      assigned_assets_count: 0
     })
 
     const toggleNav = () => {
@@ -339,6 +376,7 @@ export default {
     const getRoleBadgeClass = (role) => {
       const classes = {
         admin: 'badge bg-danger',
+        faculty: 'badge bg-warning',
         staff: 'badge bg-primary',
         student: 'badge bg-success'
       }
@@ -376,11 +414,9 @@ export default {
             name: 'Admin User',
             email: 'admin@mis.com',
             role: 'admin',
-            department_id: 1,
-            department: { name: 'Administration' },
-            is_active: true,
+            department: null,
             assigned_assets_count: 0,
-            created_at: '2024-01-01'
+            is_active: true
           },
           {
             id: 2,
@@ -423,8 +459,33 @@ export default {
     }
 
     const showCreateUserModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createUserModal'))
-      modal.show()
+      const modal = document.getElementById('createUserModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideCreateUserModal = () => {
+      const modal = document.getElementById('createUserModal')
+      const backdrop = document.getElementById('modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const createUser = async () => {
@@ -432,7 +493,7 @@ export default {
         const response = await axios.post('http://localhost:8000/api/users', newUser.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide()
+          hideCreateUserModal()
           await refreshData()
           
           // Reset form
@@ -441,8 +502,13 @@ export default {
             email: '',
             password: '',
             role: '',
+            address: '',
+            birthdate: '',
+            contact_person: '',
+            contact_number: '',
             department_id: '',
-            is_active: true
+            is_active: true,
+            assigned_assets_count: 0
           }
           
           alert('User created successfully!')
@@ -455,28 +521,32 @@ export default {
 
     const viewUser = (user) => {
       selectedUser.value = user
-      const modal = new bootstrap.Modal(document.getElementById('viewUserModal'))
-      modal.show()
-    }
-
-    const editUser = (user) => {
-      // For now, just show the user details
-      viewUser(user)
-    }
-
-    const deleteUser = async (user) => {
-      if (!confirm('Are you sure you want to delete this user?')) return
-      
-      try {
-        const response = await axios.delete(`http://localhost:8000/api/users/${user.id}`)
+      const modal = document.getElementById('viewUserModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
         
-        if (response.data.success) {
-          await refreshData()
-          alert('User deleted successfully!')
-        }
-      } catch (error) {
-        console.error('Error deleting user:', error)
-        alert('Error deleting user: ' + (error.response?.data?.message || error.message))
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewUserModal = () => {
+      const modal = document.getElementById('viewUserModal')
+      const backdrop = document.getElementById('view-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
       }
     }
 
@@ -485,6 +555,7 @@ export default {
     }
 
     onMounted(() => {
+      console.log('Users component mounted')
       refreshData()
     })
 
@@ -507,10 +578,10 @@ export default {
       formatDate,
       refreshData,
       showCreateUserModal,
+      hideCreateUserModal,
       createUser,
       viewUser,
-      editUser,
-      deleteUser,
+      hideViewUserModal,
       filterUsers
     }
   }

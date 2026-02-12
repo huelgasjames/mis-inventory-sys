@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test RAM API</title>
+</head>
+<body>
+    <h1>Test RAM API</h1>
+    <button onclick="testRAMAPI()">Test RAM API</button>
+    <button onclick="addTestRAM()">Add Test RAM</button>
+    <div id="result"></div>
+
+    <script>
+        async function testRAMAPI() {
+            try {
+                const response = await fetch('http://localhost:8000/api/components')
+                const data = await response.json()
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>API Response:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                    <h4>RAM Data (${data.data?.rams?.length || 0} items):</h4>
+                    <ul>
+                        ${data.data?.rams?.map(ram => `<li>${ram.id}: ${ram.capacity} - ${ram.status}</li>`).join('') || '<li>No RAM found</li>'}
+                    </ul>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<h3>Error:</h3><p>${error.message}</p>`;
+            }
+        }
+
+        async function addTestRAM() {
+            try {
+                const response = await fetch('http://localhost:8000/api/components/rams', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        capacity: '16GB',
+                        type: 'DDR4',
+                        speed: '3200MHz',
+                        status: 'Available'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>RAM Added:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+                
+                // Refresh the list
+                testRAMAPI();
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<h3>Error:</h3><p>${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>

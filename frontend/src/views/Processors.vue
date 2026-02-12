@@ -165,7 +165,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add Processor</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateProcessorModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createProcessor">
@@ -185,7 +185,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateProcessorModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createProcessor">Add Processor</button>
         </div>
       </div>
@@ -198,7 +198,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Processor Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewProcessorModal"></button>
         </div>
         <div class="modal-body" v-if="selectedProcessor">
           <div class="mb-3">
@@ -223,7 +223,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewProcessorModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +249,7 @@ export default {
     const selectedProcessor = ref(null)
     
     const newProcessor = ref({
-      model: '',
+      model: 'Intel Core i5-12400',
       status: 'Available'
     })
 
@@ -302,8 +302,18 @@ export default {
     }
 
     const showCreateProcessorModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createProcessorModal'))
-      modal.show()
+      const modal = document.getElementById('createProcessorModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'processor-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createProcessor = async () => {
@@ -311,27 +321,67 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/processors', newProcessor.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createProcessorModal')).hide()
+          hideCreateProcessorModal()
           await refreshData()
           
           // Reset form
           newProcessor.value = {
-            model: '',
+            model: 'Intel Core i5-12400',
             status: 'Available'
           }
           
           alert('Processor added successfully!')
         }
       } catch (error) {
-        console.error('Error creating processor:', error)
-        alert('Error adding processor: ' + (error.response?.data?.message || error.message))
+        console.error('Error creating Processor:', error)
+        alert('Error adding Processor: ' + (error.response?.data?.message || error.message))
+      }
+    }
+
+    const hideCreateProcessorModal = () => {
+      const modal = document.getElementById('createProcessorModal')
+      const backdrop = document.getElementById('processor-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
       }
     }
 
     const viewProcessor = (processor) => {
       selectedProcessor.value = processor
-      const modal = new bootstrap.Modal(document.getElementById('viewProcessorModal'))
-      modal.show()
+      const modal = document.getElementById('viewProcessorModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-processor-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewProcessorModal = () => {
+      const modal = document.getElementById('viewProcessorModal')
+      const backdrop = document.getElementById('view-processor-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editProcessor = (processor) => {
@@ -380,8 +430,10 @@ export default {
       formatDate,
       refreshData,
       showCreateProcessorModal,
+      hideCreateProcessorModal,
       createProcessor,
       viewProcessor,
+      hideViewProcessorModal,
       editProcessor,
       deleteProcessor,
       filterProcessors

@@ -223,7 +223,9 @@ class ComponentController extends Controller
     public function addRam(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'capacity' => 'required|string',
+            'capacity' => 'required|in:4GB,8GB,16GB,32GB',
+            'type' => 'nullable|string|in:DDR3,DDR4,DDR5,LPDDR4,LPDDR5',
+            'speed' => 'nullable|string|max:50',
             'status' => 'required|in:Available,In Use,Defective',
         ]);
 
@@ -280,7 +282,7 @@ class ComponentController extends Controller
     public function addPsu(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'wattage' => 'required|integer',
+            'wattage' => 'required|in:350,450,550,650,750,850,1000',
             'status' => 'required|in:Available,In Use,Defective',
         ]);
 
@@ -299,7 +301,7 @@ class ComponentController extends Controller
     public function addDvdRom(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'type_field' => 'required|string',
+            'type_field' => 'required|in:CD-ROM,DVD-ROM,DVD-RW,Blu-ray,Blu-ray RW',
             'status' => 'required|in:Available,In Use,Defective',
         ]);
 

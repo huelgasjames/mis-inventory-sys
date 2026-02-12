@@ -116,6 +116,8 @@
                   <tr>
                     <th>ID</th>
                     <th>Capacity</th>
+                    <th>Type</th>
+                    <th>Speed</th>
                     <th>Status</th>
                     <th>Created Date</th>
                     <th>Actions</th>
@@ -130,6 +132,8 @@
                         <span class="fw-semibold">{{ ram.capacity }}</span>
                       </div>
                     </td>
+                    <td>{{ ram.type || 'DDR4' }}</td>
+                    <td>{{ ram.speed || '3200MHz' }}</td>
                     <td>
                       <span :class="getStatusBadgeClass(ram.status)">
                         {{ ram.status }}
@@ -165,13 +169,34 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add RAM</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateRAMModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createRAM">
             <div class="mb-3">
               <label class="form-label">Capacity *</label>
-              <input type="text" class="form-control" v-model="newRAM.capacity" placeholder="e.g., 16GB DDR4" required>
+              <select class="form-select" v-model="newRAM.capacity" required>
+                <option value="">Select Capacity</option>
+                <option value="4GB">4GB</option>
+                <option value="8GB">8GB</option>
+                <option value="16GB">16GB</option>
+                <option value="32GB">32GB</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Type</label>
+              <select class="form-select" v-model="newRAM.type">
+                <option value="">Select Type</option>
+                <option value="DDR3">DDR3</option>
+                <option value="DDR4">DDR4</option>
+                <option value="DDR5">DDR5</option>
+                <option value="LPDDR4">LPDDR4</option>
+                <option value="LPDDR5">LPDDR5</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Speed</label>
+              <input type="text" class="form-control" v-model="newRAM.speed" placeholder="e.g., 3200MHz">
             </div>
             <div class="mb-3">
               <label class="form-label">Status *</label>
@@ -185,7 +210,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateRAMModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createRAM">Add RAM</button>
         </div>
       </div>
@@ -198,7 +223,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">RAM Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewRAMModal"></button>
         </div>
         <div class="modal-body" v-if="selectedRAM">
           <div class="mb-3">
@@ -208,6 +233,14 @@
           <div class="mb-3">
             <label class="form-label">Capacity</label>
             <div class="form-control bg-light">{{ selectedRAM.capacity }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Type</label>
+            <div class="form-control bg-light">{{ selectedRAM.type || 'DDR4' }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Speed</label>
+            <div class="form-control bg-light">{{ selectedRAM.speed || '3200MHz' }}</div>
           </div>
           <div class="mb-3">
             <label class="form-label">Status</label>
@@ -223,7 +256,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewRAMModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +282,9 @@ export default {
     const selectedRAM = ref(null)
     
     const newRAM = ref({
-      capacity: '',
+      capacity: '16GB',
+      type: 'DDR4',
+      speed: '3200MHz',
       status: 'Available'
     })
 
@@ -308,8 +343,18 @@ export default {
     }
 
     const showCreateRAMModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createRAMModal'))
-      modal.show()
+      const modal = document.getElementById('createRAMModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'ram-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createRAM = async () => {
@@ -317,12 +362,14 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/rams', newRAM.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createRAMModal')).hide()
+          hideCreateRAMModal()
           await refreshData()
           
           // Reset form
           newRAM.value = {
-            capacity: '',
+            capacity: '16GB',
+            type: 'DDR4',
+            speed: '3200MHz',
             status: 'Available'
           }
           
@@ -334,10 +381,50 @@ export default {
       }
     }
 
+    const hideCreateRAMModal = () => {
+      const modal = document.getElementById('createRAMModal')
+      const backdrop = document.getElementById('ram-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
+    }
+
     const viewRAM = (ram) => {
       selectedRAM.value = ram
-      const modal = new bootstrap.Modal(document.getElementById('viewRAMModal'))
-      modal.show()
+      const modal = document.getElementById('viewRAMModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-ram-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewRAMModal = () => {
+      const modal = document.getElementById('viewRAMModal')
+      const backdrop = document.getElementById('view-ram-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editRAM = (ram) => {
@@ -386,8 +473,10 @@ export default {
       formatDate,
       refreshData,
       showCreateRAMModal,
+      hideCreateRAMModal,
       createRAM,
       viewRAM,
+      hideViewRAMModal,
       editRAM,
       deleteRAM,
       filterRAM

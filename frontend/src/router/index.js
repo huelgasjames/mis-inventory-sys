@@ -146,8 +146,11 @@ router.beforeEach((to, from, next) => {
   // Check if user is actually authenticated (has token and user data)
   const isFullyAuthenticated = isAuthenticated === 'true' && token && user
   
+  console.log('Router guard:', { path: to.path, requiresAuth: to.meta.requiresAuth, isFullyAuthenticated })
+  
   // If trying to access protected route without authentication
   if (to.meta.requiresAuth && !isFullyAuthenticated) {
+    console.log('Redirecting to login - not authenticated')
     // Clear any invalid authentication data
     localStorage.removeItem('isAuthenticated')
     localStorage.removeItem('token')
@@ -159,10 +162,12 @@ router.beforeEach((to, from, next) => {
   } 
   // If already authenticated and trying to access login page
   else if (to.path === '/' && isFullyAuthenticated) {
+    console.log('Redirecting to dashboard - already authenticated')
     next('/dashboard')
   }
   // Allow access to login page or other routes
   else {
+    console.log('Allowing access to:', to.path)
     next()
   }
 })

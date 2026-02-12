@@ -7,6 +7,7 @@ use App\Models\Computer;
 use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Validator;
 
 class InventoryController extends Controller
 {
@@ -85,12 +86,68 @@ class InventoryController extends Controller
      */
     public function getUsers(): JsonResponse
     {
-        $users = \App\Models\User::select('id', 'name', 'email', 'role', 'user_id')->get();
+        $users = \App\Models\User::with(['department', 'assets'])->get();
+        
+        // Add assigned assets count to each user
+        $users->each(function ($user) {
+            $user->assigned_assets_count = $user->assets->count();
+        });
         
         return response()->json([
             'success' => true,
             'data' => $users
         ]);
+    }
+
+    /**
+     * Create a new user
+     */
+    public function createUser(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6',
+            'role' => 'required|in:admin,faculty,staff,student',
+            'address' => 'required|string',
+            'birthdate' => 'nullable|date|before:today',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20',
+            'department_id' => 'nullable|exists:departments,id',
+            'is_active' => 'boolean',
+            'assigned_assets_count' => 'nullable|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        $validated['password'] = bcrypt($validated['password']);
+        $validated['user_id'] = 'USER' . str_pad((User::max('id') + 1), 6, '0', STR_PAD_LEFT);
+        
+        // Set default value for is_active if not provided
+        if (!isset($validated['is_active'])) {
+            $validated['is_active'] = true;
+        }
+
+        // Set default value for assigned_assets_count if not provided
+        if (!isset($validated['assigned_assets_count'])) {
+            $validated['assigned_assets_count'] = 0;
+        }
+
+        $user = User::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User created successfully',
+            'data' => $user
+        ], 201);
     }
 
     /**

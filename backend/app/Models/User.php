@@ -15,6 +15,11 @@ class User extends Authenticatable
     use HasFactory, Notifiable;
 
     /**
+     * The attributes that should be appended.
+     */
+    protected $appends = ['assigned_assets_count'];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>
@@ -25,6 +30,13 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
+        'address',
+        'birthdate',
+        'contact_person',
+        'contact_number',
+        'department_id',
+        'is_active',
+        'assigned_assets_count',
     ];
 
     /**
@@ -63,6 +75,7 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'birthdate' => 'date',
         ];
     }
 
@@ -91,12 +104,21 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if user is faculty
+     */
+    public function isFaculty(): bool
+    {
+        return $this->role === 'faculty';
+    }
+
+    /**
      * Get user role with proper formatting
      */
     public function getFormattedRole(): string
     {
         return match($this->role) {
             'admin' => 'Administrator',
+            'faculty' => 'Faculty',
             'student' => 'Student',
             'user' => 'User',
             default => 'Unknown',
@@ -104,7 +126,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the department the user belongs to
+     * Get laboratories managed by this user
+     */
+    public function managedLaboratories(): HasMany
+    {
+        return $this->hasMany(Laboratory::class, 'head_of_lab');
+    }
+
+    /**
+     * Get department user belongs to
      */
     public function department(): BelongsTo
     {
@@ -168,6 +198,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get faculty users only
+     */
+    public function scopeFaculty($query)
+    {
+        return $query->where('role', 'faculty');
+    }
+
+    /**
      * Get regular users only
      */
     public function scopeRegularUsers($query)
@@ -181,5 +219,13 @@ class User extends Authenticatable
     public function scopeByDepartment($query, $departmentId)
     {
         return $query->where('department_id', $departmentId);
+    }
+
+    /**
+     * Get assigned assets count attribute
+     */
+    protected function getAssignedAssetsCountAttribute(): int
+    {
+        return $this->assets()->count();
     }
 }

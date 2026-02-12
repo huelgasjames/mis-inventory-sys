@@ -11,18 +11,13 @@ class Ram extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'brand',
-        'model',
-        'quantity',
-        'unit',
-        'asset_tag',
+        'capacity',
+        'type',
+        'speed',
         'status',
-        'notes',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

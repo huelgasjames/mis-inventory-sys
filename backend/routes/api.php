@@ -30,6 +30,7 @@ Route::get('/assets', [InventoryController::class, 'getAssets']);
 Route::get('/computers', [InventoryController::class, 'getComputers']);
 Route::get('/departments', [InventoryController::class, 'getDepartments']);
 Route::get('/users', [InventoryController::class, 'getUsers']);
+Route::post('/users', [InventoryController::class, 'createUser']);
 Route::get('/stats', [InventoryController::class, 'getStats']);
 Route::post('/assets', [InventoryController::class, 'storeAsset']);
 Route::put('/assets/{id}', [InventoryController::class, 'updateAsset']);

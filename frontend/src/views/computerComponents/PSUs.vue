@@ -165,13 +165,22 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add PSU</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreatePSUModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createPSU">
             <div class="mb-3">
               <label class="form-label">Wattage *</label>
-              <input type="number" class="form-control" v-model="newPSU.wattage" placeholder="e.g., 450" required>
+              <select class="form-select" v-model="newPSU.wattage" required>
+                <option value="">Select Wattage</option>
+                <option value="350">350W</option>
+                <option value="450">450W</option>
+                <option value="550">550W</option>
+                <option value="650">650W</option>
+                <option value="750">750W</option>
+                <option value="850">850W</option>
+                <option value="1000">1000W</option>
+              </select>
             </div>
             <div class="mb-3">
               <label class="form-label">Status *</label>
@@ -185,7 +194,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreatePSUModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createPSU">Add PSU</button>
         </div>
       </div>
@@ -198,7 +207,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">PSU Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewPSUModal"></button>
         </div>
         <div class="modal-body" v-if="selectedPSU">
           <div class="mb-3">
@@ -223,7 +232,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewPSUModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +258,7 @@ export default {
     const selectedPSU = ref(null)
     
     const newPSU = ref({
-      wattage: '',
+      wattage: '550',
       status: 'Available'
     })
 
@@ -308,8 +317,18 @@ export default {
     }
 
     const showCreatePSUModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createPSUModal'))
-      modal.show()
+      const modal = document.getElementById('createPSUModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'psu-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createPSU = async () => {
@@ -317,12 +336,12 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/psus', newPSU.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createPSUModal')).hide()
+          hideCreatePSUModal()
           await refreshData()
           
           // Reset form
           newPSU.value = {
-            wattage: '',
+            wattage: '550',
             status: 'Available'
           }
           
@@ -334,10 +353,50 @@ export default {
       }
     }
 
+    const hideCreatePSUModal = () => {
+      const modal = document.getElementById('createPSUModal')
+      const backdrop = document.getElementById('psu-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
+    }
+
     const viewPSU = (psu) => {
       selectedPSU.value = psu
-      const modal = new bootstrap.Modal(document.getElementById('viewPSUModal'))
-      modal.show()
+      const modal = document.getElementById('viewPSUModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-psu-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewPSUModal = () => {
+      const modal = document.getElementById('viewPSUModal')
+      const backdrop = document.getElementById('view-psu-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editPSU = (psu) => {
@@ -386,8 +445,10 @@ export default {
       formatDate,
       refreshData,
       showCreatePSUModal,
+      hideCreatePSUModal,
       createPSU,
       viewPSU,
+      hideViewPSUModal,
       editPSU,
       deletePSU,
       filterPSUs

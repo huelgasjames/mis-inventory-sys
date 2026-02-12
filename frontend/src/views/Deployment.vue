@@ -198,10 +198,22 @@
               </div>
               <div class="col-md-6">
                 <label class="form-label">Department *</label>
-                <select class="form-select" v-model="newDeployment.department_id" required>
+                <select class="form-select" v-model="newDeployment.department_id" @change="onDepartmentChange" required>
                   <option value="">Select Department</option>
                   <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
                 </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Laboratory</label>
+                <select class="form-select" v-model="newDeployment.laboratory_id">
+                  <option value="">Select Laboratory (Optional)</option>
+                  <option v-for="lab in filteredLaboratories" :key="lab.id" :value="lab.id">
+                    {{ lab.lab_name }} ({{ lab.current_computer_count || 0 }}/{{ lab.capacity }})
+                  </option>
+                </select>
+                <small class="text-muted" v-if="newDeployment.laboratory_id && selectedLabCapacity">
+                  Available: {{ selectedLabCapacity.available }} slots
+                </small>
               </div>
               <div class="col-md-6">
                 <label class="form-label">User</label>
@@ -322,6 +334,7 @@ export default {
     const deployments = ref([])
     const deploymentStats = ref({})
     const departments = ref([])
+    const laboratories = ref([])
     const users = ref([])
     const computers = ref([])
     const statusFilter = ref('')
@@ -330,6 +343,7 @@ export default {
     const newDeployment = ref({
       computer_id: '',
       department_id: '',
+      laboratory_id: '',
       user_id: '',
       location: '',
       status: 'deployed',
@@ -373,6 +387,26 @@ export default {
 
     const availableComputers = computed(() => {
       return computers.value.filter(computer => !computer.is_deployed)
+    })
+
+    const filteredLaboratories = computed(() => {
+      if (!newDeployment.value.department_id) {
+        return laboratories.value.filter(lab => lab.is_active)
+      }
+      return laboratories.value.filter(lab => 
+        lab.is_active && lab.department_id === newDeployment.value.department_id
+      )
+    })
+
+    const selectedLabCapacity = computed(() => {
+      if (!newDeployment.value.laboratory_id) return null
+      const lab = laboratories.value.find(l => l.id === newDeployment.value.laboratory_id)
+      if (!lab) return null
+      return {
+        total: lab.capacity,
+        current: lab.current_computer_count || 0,
+        available: lab.capacity - (lab.current_computer_count || 0)
+      }
     })
 
     const fetchDeployments = async () => {
@@ -420,11 +454,21 @@ export default {
       }
     }
 
+    const fetchLaboratories = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/laboratories')
+        laboratories.value = response.data.data
+      } catch (error) {
+        console.error('Error fetching laboratories:', error)
+      }
+    }
+
     const refreshData = async () => {
       await Promise.all([
         fetchDeployments(),
         fetchDeploymentStats(),
         fetchDepartments(),
+        fetchLaboratories(),
         fetchUsers(),
         fetchComputers()
       ])
@@ -435,8 +479,21 @@ export default {
       modal.show()
     }
 
+    const onDepartmentChange = () => {
+      // Reset laboratory when department changes
+      newDeployment.value.laboratory_id = ''
+    }
+
     const createDeployment = async () => {
       try {
+        // Validate laboratory capacity if selected
+        if (newDeployment.value.laboratory_id && selectedLabCapacity.value) {
+          if (selectedLabCapacity.value.available <= 0) {
+            alert('Selected laboratory is at full capacity. Please choose a different laboratory or leave laboratory field empty.')
+            return
+          }
+        }
+
         const response = await axios.post('http://localhost:8000/api/deployments', newDeployment.value)
         
         if (response.data.success) {
@@ -447,6 +504,7 @@ export default {
           newDeployment.value = {
             computer_id: '',
             department_id: '',
+            laboratory_id: '',
             user_id: '',
             location: '',
             status: 'deployed',
@@ -520,6 +578,7 @@ export default {
       deployments,
       deploymentStats,
       departments,
+      laboratories,
       users,
       computers,
       statusFilter,
@@ -527,6 +586,8 @@ export default {
       newDeployment,
       filteredDeployments,
       availableComputers,
+      filteredLaboratories,
+      selectedLabCapacity,
       toggleNav,
       openProfile,
       openSettings,
@@ -538,7 +599,8 @@ export default {
       viewDeployment,
       returnComputer,
       deleteDeployment,
-      filterDeployments
+      filterDeployments,
+      onDepartmentChange
     }
   }
 }

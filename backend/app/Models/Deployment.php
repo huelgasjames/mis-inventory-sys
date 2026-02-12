@@ -15,6 +15,7 @@ class Deployment extends Model
     protected $fillable = [
         'computer_id',
         'department_id',
+        'laboratory_id',
         'user_id',
         'location',
         'status',
@@ -39,6 +40,11 @@ class Deployment extends Model
     public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
+    }
+
+    public function laboratory(): BelongsTo
+    {
+        return $this->belongsTo(Laboratory::class);
     }
 
     public function user(): BelongsTo

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Laboratory;
-use App\Models\Department;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +15,13 @@ class LaboratoryController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $laboratories = Laboratory::with(['department', 'inChargeUser'])->get();
+            $laboratories = Laboratory::with(['headOfLab', 'department', 'computers'])
+                ->get()
+                ->map(function ($lab) {
+                    $lab->current_computer_count = $lab->computers->count();
+                    $lab->available_capacity = $lab->capacity - $lab->current_computer_count;
+                    return $lab;
+                });
             
             return response()->json([
                 'success' => true,
@@ -36,13 +41,15 @@ class LaboratoryController extends Controller
     public function create(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'name' => 'required|string',
             'department_id' => 'nullable|exists:departments,id',
+            'lab_code' => 'required|string|unique:laboratories,lab_code',
+            'lab_name' => 'required|string',
             'location' => 'required|string',
+            'building' => 'required|string',
+            'floor' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
-            'status' => 'required|in:Active,Maintenance,Closed',
-            'in_charge_user_id' => 'nullable|exists:users,id',
-            'description' => 'nullable|string',
+            'head_of_lab' => 'nullable|exists:users,id',
+            'is_active' => 'boolean',
         ]);
 
         $laboratory = Laboratory::create($validated);
@@ -50,7 +57,7 @@ class LaboratoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Laboratory created successfully',
-            'data' => $laboratory->load(['department', 'inChargeUser'])
+            'data' => $laboratory->load(['headOfLab', 'department'])
         ]);
     }
 
@@ -62,13 +69,15 @@ class LaboratoryController extends Controller
         $laboratory = Laboratory::findOrFail($id);
         
         $validated = $request->validate([
-            'name' => 'required|string',
             'department_id' => 'nullable|exists:departments,id',
+            'lab_code' => 'required|string|unique:laboratories,lab_code,'.$id,
+            'lab_name' => 'required|string',
             'location' => 'required|string',
+            'building' => 'required|string',
+            'floor' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
-            'status' => 'required|in:Active,Maintenance,Closed',
-            'in_charge_user_id' => 'nullable|exists:users,id',
-            'description' => 'nullable|string',
+            'head_of_lab' => 'nullable|exists:users,id',
+            'is_active' => 'boolean',
         ]);
 
         $laboratory->update($validated);
@@ -76,7 +85,7 @@ class LaboratoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Laboratory updated successfully',
-            'data' => $laboratory->load(['department', 'inChargeUser'])
+            'data' => $laboratory->load(['headOfLab', 'department'])
         ]);
     }
 
@@ -86,8 +95,8 @@ class LaboratoryController extends Controller
     public function delete($id): JsonResponse
     {
         try {
-            $laboratory = Laboratory::findOrFail($id);
-            $laboratory->delete();
+            $Laboratory = Laboratory::findOrFail($id);
+            $Laboratory->delete();
 
             return response()->json([
                 'success' => true,
@@ -110,22 +119,11 @@ class LaboratoryController extends Controller
             'success' => true,
             'data' => [
                 'total_laboratories' => Laboratory::count(),
-                'active' => Laboratory::where('status', 'Active')->count(),
-                'maintenance' => Laboratory::where('status', 'Maintenance')->count(),
-                'closed' => Laboratory::where('status', 'Closed')->count(),
-                'by_department' => $this->getLaboratoriesByDepartment(),
+                'active' => Laboratory::where('is_active', true)->count(),
+                'inactive' => Laboratory::where('is_active', false)->count(),
                 'capacity_distribution' => $this->getCapacityDistribution(),
             ]
         ]);
-    }
-
-    private function getLaboratoriesByDepartment(): array
-    {
-        return Laboratory::join('departments', 'laboratories.department_id', '=', 'departments.id')
-            ->selectRaw('departments.name, COUNT(*) as count')
-            ->groupBy('departments.name')
-            ->pluck('count', 'departments.name')
-            ->toArray();
     }
 
     private function getCapacityDistribution(): array

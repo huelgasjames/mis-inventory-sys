@@ -11,18 +11,11 @@ class Psu extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'brand',
-        'model',
-        'quantity',
-        'unit',
-        'asset_tag',
+        'wattage',
         'status',
-        'notes',
     ];
 
     protected $casts = [
-        'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

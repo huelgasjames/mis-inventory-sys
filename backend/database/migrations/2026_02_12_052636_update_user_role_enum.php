@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('laboratories', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('users', function (Blueprint $table) {
+            $table->enum('role', ['admin', 'faculty', 'staff', 'student'])->default('student')->change();
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('laboratories');
+        Schema::table('users', function (Blueprint $table) {
+            $table->enum('role', ['admin', 'user', 'student'])->default('user')->change();
+        });
     }
 };

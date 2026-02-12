@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Deployment;
 use App\Models\Computer;
 use App\Models\Department;
+use App\Models\Laboratory;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,7 @@ class DeploymentController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $deployments = Deployment::with(['computer', 'department', 'user'])
+            $deployments = Deployment::with(['computer', 'department', 'laboratory', 'user'])
                 ->orderBy('deployment_date', 'desc')
                 ->get();
 
@@ -42,6 +43,7 @@ class DeploymentController extends Controller
             $validated = $request->validate([
                 'computer_id' => 'required|exists:computers,id',
                 'department_id' => 'required|exists:departments,id',
+                'laboratory_id' => 'nullable|exists:laboratories,id',
                 'user_id' => 'nullable|exists:users,id',
                 'location' => 'nullable|string|max:255',
                 'status' => 'required|in:deployed,returned,maintenance,retired',
@@ -63,8 +65,35 @@ class DeploymentController extends Controller
                 ], 422);
             }
 
+            // Validate laboratory capacity if laboratory_id is provided
+            if (!empty($validated['laboratory_id'])) {
+                $laboratory = Laboratory::findOrFail($validated['laboratory_id']);
+                
+                if (!$laboratory->is_active) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Cannot deploy to an inactive laboratory'
+                    ], 422);
+                }
+
+                $currentComputerCount = $laboratory->computers()->count();
+                $availableCapacity = $laboratory->capacity - $currentComputerCount;
+
+                if ($availableCapacity <= 0) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Laboratory '{$laboratory->lab_name}' is at full capacity ({$laboratory->capacity} computers). Cannot deploy more computers."
+                    ], 422);
+                }
+
+                // Update computer's laboratory assignment
+                Computer::find($validated['computer_id'])->update([
+                    'laboratory_id' => $validated['laboratory_id']
+                ]);
+            }
+
             $deployment = Deployment::create($validated);
-            $deployment->load(['computer', 'department', 'user']);
+            $deployment->load(['computer', 'department', 'laboratory', 'user']);
 
             return response()->json([
                 'success' => true,
@@ -85,7 +114,7 @@ class DeploymentController extends Controller
     public function show(string $id): JsonResponse
     {
         try {
-            $deployment = Deployment::with(['computer', 'department', 'user'])
+            $deployment = Deployment::with(['computer', 'department', 'laboratory', 'user'])
                 ->findOrFail($id);
 
             return response()->json([

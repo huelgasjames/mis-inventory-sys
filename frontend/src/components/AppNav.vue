@@ -69,7 +69,7 @@ function toggleAccordion(section) {
           <span>Components</span>
           <i :class="['bi', componentsOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
-        <div :class="{ 'collapse': !componentsOpen, 'show': componentsOpen }">
+        <div :class="{ 'collapse': !componentsOpen && !isCollapsed, 'show': componentsOpen || isCollapsed }">
           <router-link to="/processors" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-cpu"></i>
             <span :class="{ 'd-none': isCollapsed }">Processors</span>
@@ -111,8 +111,8 @@ function toggleAccordion(section) {
           <span>Management</span>
           <i :class="['bi', managementOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
-        <div :class="{ 'collapse': !managementOpen, 'show': managementOpen }">
-          <ul class="nav nav-pills flex-column ms-3" :class="{ 'd-none': !managementOpen && !isCollapsed }">
+        <div :class="{ 'collapse': !managementOpen && !isCollapsed, 'show': managementOpen || isCollapsed }">
+          <ul class="nav nav-pills flex-column" :class="{ 'ms-3': !isCollapsed, 'ms-0': isCollapsed }">
             <li class="nav-item">
               <router-link to="/deployment" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-box-arrow-right"></i>
@@ -126,23 +126,27 @@ function toggleAccordion(section) {
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/department-inventory" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-pc-display-horizontal me-2"></i>Department Inventory
+              <router-link to="/department-inventory" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-pc-display-horizontal"></i>
+                <span :class="{ 'd-none': isCollapsed }">Department Inventory</span>
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/laboratory-management" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-building me-2"></i>Laboratory Management
+              <router-link to="/laboratory-management" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-building"></i>
+                <span :class="{ 'd-none': isCollapsed }">Laboratory Management</span>
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/computers" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-pc-display-horizontal me-2"></i>Computers
+              <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-pc-display-horizontal"></i>
+                <span :class="{ 'd-none': isCollapsed }">Computers</span>
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/users" class="nav-link text-decoration-none text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-people me-2"></i>Users
+              <router-link to="/users" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+                <i class="bi bi-people"></i>
+                <span :class="{ 'd-none': isCollapsed }">Users</span>
               </router-link>
             </li>
           </ul>
@@ -159,7 +163,7 @@ function toggleAccordion(section) {
           <span>Other</span>
           <i :class="['bi', otherOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
-        <div :class="{ 'collapse': !otherOpen, 'show': otherOpen }">
+        <div :class="{ 'collapse': !otherOpen && !isCollapsed, 'show': otherOpen || isCollapsed }">
           <router-link to="/reports" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
             <i class="bi bi-file-earmark-bar-graph-fill"></i>
             <span :class="{ 'd-none': isCollapsed }">Reports</span>
@@ -260,6 +264,16 @@ aside.collapsed .nav-link:hover {
 .nav-pills .nav-link:hover {
   background-color: #e9ecef;
   color: #0F6F43;
+}
+
+/* Collapsed state adjustments */
+aside.collapsed .nav-pills {
+  margin-left: 0 !important;
+}
+
+aside.collapsed .nav-pills .nav-link {
+  padding-left: 0.75rem !important;
+  padding-right: 0.75rem !important;
 }
 
 /* Logo styling */

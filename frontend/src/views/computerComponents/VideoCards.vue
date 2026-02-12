@@ -165,7 +165,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add Video Card</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateVideoCardModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createVideoCard">
@@ -185,7 +185,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateVideoCardModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createVideoCard">Add Video Card</button>
         </div>
       </div>
@@ -198,7 +198,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Video Card Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewVideoCardModal"></button>
         </div>
         <div class="modal-body" v-if="selectedVideoCard">
           <div class="mb-3">
@@ -223,7 +223,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewVideoCardModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +249,7 @@ export default {
     const selectedVideoCard = ref(null)
     
     const newVideoCard = ref({
-      model: '',
+      model: 'NVIDIA GTX 1650',
       status: 'Available'
     })
 
@@ -308,8 +308,18 @@ export default {
     }
 
     const showCreateVideoCardModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createVideoCardModal'))
-      modal.show()
+      const modal = document.getElementById('createVideoCardModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'videocard-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createVideoCard = async () => {
@@ -317,27 +327,67 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/video-cards', newVideoCard.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createVideoCardModal')).hide()
+          hideCreateVideoCardModal()
           await refreshData()
           
           // Reset form
           newVideoCard.value = {
-            model: '',
+            model: 'NVIDIA GTX 1650',
             status: 'Available'
           }
           
-          alert('Video card added successfully!')
+          alert('Video Card added successfully!')
         }
       } catch (error) {
-        console.error('Error creating video card:', error)
-        alert('Error adding video card: ' + (error.response?.data?.message || error.message))
+        console.error('Error creating Video Card:', error)
+        alert('Error adding Video Card: ' + (error.response?.data?.message || error.message))
+      }
+    }
+
+    const hideCreateVideoCardModal = () => {
+      const modal = document.getElementById('createVideoCardModal')
+      const backdrop = document.getElementById('videocard-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
       }
     }
 
     const viewVideoCard = (videoCard) => {
       selectedVideoCard.value = videoCard
-      const modal = new bootstrap.Modal(document.getElementById('viewVideoCardModal'))
-      modal.show()
+      const modal = document.getElementById('viewVideoCardModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-videocard-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewVideoCardModal = () => {
+      const modal = document.getElementById('viewVideoCardModal')
+      const backdrop = document.getElementById('view-videocard-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editVideoCard = (videoCard) => {
@@ -386,8 +436,10 @@ export default {
       formatDate,
       refreshData,
       showCreateVideoCardModal,
+      hideCreateVideoCardModal,
       createVideoCard,
       viewVideoCard,
+      hideViewVideoCardModal,
       editVideoCard,
       deleteVideoCard,
       filterVideoCards

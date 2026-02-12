@@ -165,13 +165,20 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">Add DVD ROM</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideCreateDVDROMModal"></button>
         </div>
         <div class="modal-body">
           <form @submit.prevent="createDVDROM">
             <div class="mb-3">
               <label class="form-label">Type *</label>
-              <input type="text" class="form-control" v-model="newDVDROM.type_field" placeholder="e.g., DVD-RW" required>
+              <select class="form-select" v-model="newDVDROM.type_field" required>
+                <option value="">Select Type</option>
+                <option value="CD-ROM">CD-ROM</option>
+                <option value="DVD-ROM">DVD-ROM</option>
+                <option value="DVD-RW">DVD-RW</option>
+                <option value="Blu-ray">Blu-ray</option>
+                <option value="Blu-ray RW">Blu-ray RW</option>
+              </select>
             </div>
             <div class="mb-3">
               <label class="form-label">Status *</label>
@@ -185,7 +192,7 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-secondary" @click="hideCreateDVDROMModal">Cancel</button>
           <button type="button" class="btn btn-primary" @click="createDVDROM">Add DVD ROM</button>
         </div>
       </div>
@@ -198,7 +205,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title">DVD ROM Details</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+          <button type="button" class="btn-close" @click="hideViewDVDROMModal"></button>
         </div>
         <div class="modal-body" v-if="selectedDVDROM">
           <div class="mb-3">
@@ -223,7 +230,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-secondary" @click="hideViewDVDROMModal">Close</button>
         </div>
       </div>
     </div>
@@ -249,7 +256,7 @@ export default {
     const selectedDVDROM = ref(null)
     
     const newDVDROM = ref({
-      type_field: '',
+      type_field: 'DVD-RW',
       status: 'Available'
     })
 
@@ -308,8 +315,18 @@ export default {
     }
 
     const showCreateDVDROMModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createDVDROMModal'))
-      modal.show()
+      const modal = document.getElementById('createDVDROMModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'dvdrom-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
     }
 
     const createDVDROM = async () => {
@@ -317,12 +334,12 @@ export default {
         const response = await axios.post('http://localhost:8000/api/components/dvd-roms', newDVDROM.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createDVDROMModal')).hide()
+          hideCreateDVDROMModal()
           await refreshData()
           
           // Reset form
           newDVDROM.value = {
-            type_field: '',
+            type_field: 'DVD-RW',
             status: 'Available'
           }
           
@@ -334,10 +351,50 @@ export default {
       }
     }
 
+    const hideCreateDVDROMModal = () => {
+      const modal = document.getElementById('createDVDROMModal')
+      const backdrop = document.getElementById('dvdrom-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
+    }
+
     const viewDVDROM = (dvdRom) => {
       selectedDVDROM.value = dvdRom
-      const modal = new bootstrap.Modal(document.getElementById('viewDVDROMModal'))
-      modal.show()
+      const modal = document.getElementById('viewDVDROMModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'view-dvdrom-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideViewDVDROMModal = () => {
+      const modal = document.getElementById('viewDVDROMModal')
+      const backdrop = document.getElementById('view-dvdrom-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
     }
 
     const editDVDROM = (dvdRom) => {
@@ -386,8 +443,10 @@ export default {
       formatDate,
       refreshData,
       showCreateDVDROMModal,
+      hideCreateDVDROMModal,
       createDVDROM,
       viewDVDROM,
+      hideViewDVDROMModal,
       editDVDROM,
       deleteDVDROM,
       filterDVDROMs
