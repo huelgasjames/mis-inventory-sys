@@ -98,6 +98,10 @@ function toggleAccordion(section) {
             <i class="bi bi-hdd"></i>
             <span :class="{ 'd-none': isCollapsed }">Storage</span>
           </router-link>
+          <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+            <i class="bi bi-pc-display"></i>
+            <span :class="{ 'd-none': isCollapsed }">Computers</span>
+          </router-link>
         </div>
       </div>
       
@@ -126,21 +130,9 @@ function toggleAccordion(section) {
               </router-link>
             </li>
             <li class="nav-item">
-              <router-link to="/department-inventory" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-pc-display-horizontal"></i>
-                <span :class="{ 'd-none': isCollapsed }">Department Inventory</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
               <router-link to="/laboratory-management" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
                 <i class="bi bi-building"></i>
                 <span :class="{ 'd-none': isCollapsed }">Laboratory Management</span>
-              </router-link>
-            </li>
-            <li class="nav-item">
-              <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
-                <i class="bi bi-pc-display-horizontal"></i>
-                <span :class="{ 'd-none': isCollapsed }">Computers</span>
               </router-link>
             </li>
             <li class="nav-item">

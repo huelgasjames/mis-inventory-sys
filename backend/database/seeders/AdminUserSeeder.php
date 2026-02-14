@@ -44,7 +44,7 @@ class AdminUserSeeder extends Seeder
                 'name' => 'Regular User',
                 'email' => 'user@pnc.edu.ph',
                 'password' => Hash::make('user123'),
-                'role' => 'user',
+                'role' => 'staff',
                 'email_verified_at' => now(),
             ]
         );

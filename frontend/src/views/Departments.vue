@@ -314,6 +314,69 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit Department Modal -->
+  <div class="modal fade" id="editDepartmentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Department</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateDepartment">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Name *</label>
+                <input type="text" class="form-control" v-model="editingDepartment.name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Category</label>
+                <select class="form-select" v-model="editingDepartment.category_id">
+                  <option value="">Select Category</option>
+                  <option v-for="category in categories" :key="category.id" :value="category.id">
+                    {{ category.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea class="form-control" v-model="editingDepartment.description" rows="3"></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Head of Department</label>
+                <input type="text" class="form-control" v-model="editingDepartment.head_of_department">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" v-model="editingDepartment.location">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input type="tel" class="form-control" v-model="editingDepartment.contact_number">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-control" v-model="editingDepartment.email">
+              </div>
+              <div class="col-12">
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" v-model="editingDepartment.is_active" id="editIsActive">
+                  <label class="form-check-label" for="editIsActive">
+                    Active
+                  </label>
+                </div>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="updateDepartment">Update Department</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -321,7 +384,7 @@ import { ref, onMounted, computed } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
-
+import { Modal } from 'bootstrap'
 export default {
   name: 'Departments',
   components: {
@@ -335,6 +398,7 @@ export default {
     const categoryFilter = ref('')
     const searchQuery = ref('')
     const selectedDepartment = ref(null)
+    const editingDepartment = ref({})
     
     const newDepartment = ref({
       name: '',
@@ -399,72 +463,17 @@ export default {
       } catch (error) {
         console.error('Error fetching departments:', error)
         console.log('Error details:', error.response?.data || error.message)
-        // Fallback data for demo
-        departments.value = [
-          {
-            id: 1,
-            name: 'Computer Science',
-            description: 'Computer Science Department',
-            category_id: 1,
-            category: { name: 'Academic', color: '#0F6F43' },
-            head_of_department: 'Dr. Smith',
-            location: 'Building A, Room 101',
-            contact_number: '123-456-7890',
-            email: 'cs@university.edu',
-            is_active: true,
-            total_assets: 25,
-            total_users: 150
-          },
-          {
-            id: 2,
-            name: 'Administration',
-            description: 'Administration Office',
-            category_id: 2,
-            category: { name: 'Administrative', color: '#004D7A' },
-            head_of_department: 'John Admin',
-            location: 'Main Building, Room 201',
-            contact_number: '123-456-7891',
-            email: 'admin@university.edu',
-            is_active: true,
-            total_assets: 15,
-            total_users: 25
-          },
-          {
-            id: 3,
-            name: 'Library',
-            description: 'Library Services',
-            category_id: 1,
-            category: { name: 'Academic', color: '#0F6F43' },
-            head_of_department: 'Ms. Johnson',
-            location: 'Library Building, Room 101',
-            contact_number: '123-456-7892',
-            email: 'library@university.edu',
-            is_active: true,
-            total_assets: 10,
-            total_users: 8
-          },
-          {
-            id: 4,
-            name: 'Student Services',
-            description: 'Student Support Services',
-            category_id: 3,
-            category: { name: 'Student Services', color: '#FF6B35' },
-            head_of_department: 'Ms. Davis',
-            location: 'Student Center, Room 301',
-            contact_number: '123-456-7893',
-            email: 'students@university.edu',
-            is_active: true,
-            total_assets: 8,
-            total_users: 12
-          }
-        ]
-        console.log('Using fallback data, departments loaded:', departments.value.length)
+        departments.value = []
       }
     }
 
     const fetchCategories = async () => {
       try {
-        // This would be a real API call in production
+        const response = await axios.get('http://localhost:8000/api/department-categories')
+        categories.value = response.data.data || []
+      } catch (error) {
+        console.error('Error fetching categories:', error)
+        // Fallback data
         categories.value = [
           { id: 1, name: 'Academic', color: '#0F6F43' },
           { id: 2, name: 'Administrative', color: '#004D7A' },
@@ -472,8 +481,6 @@ export default {
           { id: 4, name: 'Student Services', color: '#8B5CF6' },
           { id: 5, name: 'Facilities', color: '#10B981' }
         ]
-      } catch (error) {
-        console.error('Error fetching categories:', error)
       }
     }
 
@@ -482,7 +489,7 @@ export default {
     }
 
     const showCreateDepartmentModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createDepartmentModal'))
+      const modal = new Modal(document.getElementById('createDepartmentModal'))
       modal.show()
     }
 
@@ -491,7 +498,7 @@ export default {
         const response = await axios.post('http://localhost:8000/api/departments', newDepartment.value)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createDepartmentModal')).hide()
+          Modal.getInstance(document.getElementById('createDepartmentModal')).hide()
           await refreshData()
           
           // Reset form
@@ -516,13 +523,29 @@ export default {
 
     const viewDepartment = (department) => {
       selectedDepartment.value = department
-      const modal = new bootstrap.Modal(document.getElementById('viewDepartmentModal'))
+      const modal = new Modal(document.getElementById('viewDepartmentModal'))
       modal.show()
     }
 
     const editDepartment = (department) => {
-      // For now, just show the department details
-      viewDepartment(department)
+      editingDepartment.value = { ...department }
+      const modal = new Modal(document.getElementById('editDepartmentModal'))
+      modal.show()
+    }
+
+    const updateDepartment = async () => {
+      try {
+        const response = await axios.put(`http://localhost:8000/api/departments/${editingDepartment.value.id}`, editingDepartment.value)
+        
+        if (response.data.success) {
+          Modal.getInstance(document.getElementById('editDepartmentModal')).hide()
+          await refreshData()
+          alert('Department updated successfully!')
+        }
+      } catch (error) {
+        console.error('Error updating department:', error)
+        alert('Error updating department: ' + (error.response?.data?.message || error.message))
+      }
     }
 
     const deleteDepartment = async (department) => {
@@ -560,6 +583,7 @@ export default {
       categoryFilter,
       searchQuery,
       selectedDepartment,
+      editingDepartment,
       newDepartment,
       filteredDepartments,
       activeCount,
@@ -574,6 +598,7 @@ export default {
       createDepartment,
       viewDepartment,
       editDepartment,
+      updateDepartment,
       deleteDepartment,
       filterDepartments,
       exportDepartments

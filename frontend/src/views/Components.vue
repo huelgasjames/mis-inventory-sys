@@ -27,43 +27,47 @@
         </div>
 
         <!-- Component Types Tabs -->
-        <ul class="nav nav-tabs mb-4">
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'processors' }" href="#" @click="setActiveTab('processors')">
-              <i class="bi bi-cpu me-2"></i>Processors
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'motherboards' }" href="#" @click="setActiveTab('motherboards')">
-              <i class="bi bi-motherboard me-2"></i>Motherboards
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'rams' }" href="#" @click="setActiveTab('rams')">
-              <i class="bi bi-memory me-2"></i>RAM
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'storage' }" href="#" @click="setActiveTab('storage')">
-              <i class="bi bi-hdd me-2"></i>Storage
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'video-cards' }" href="#" @click="setActiveTab('video-cards')">
-              <i class="bi bi-gpu-card me-2"></i>Video Cards
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'dvd-roms' }" href="#" @click="setActiveTab('dvd-roms')">
-              <i class="bi bi-disc me-2"></i>DVD ROMs
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" :class="{ active: activeTab === 'psus' }" href="#" @click="setActiveTab('psus')">
-              <i class="bi bi-lightning-charge me-2"></i>PSUs
-            </a>
-          </li>
-        </ul>
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-body p-0">
+            <ul class="nav nav-tabs">
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'processors' }" href="#" @click="setActiveTab('processors')">
+                  <i class="bi bi-cpu me-2"></i>Processors
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'motherboards' }" href="#" @click="setActiveTab('motherboards')">
+                  <i class="bi bi-motherboard me-2"></i>Motherboards
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'rams' }" href="#" @click="setActiveTab('rams')">
+                  <i class="bi bi-memory me-2"></i>RAM
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'storage' }" href="#" @click="setActiveTab('storage')">
+                  <i class="bi bi-hdd me-2"></i>Storage
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'video-cards' }" href="#" @click="setActiveTab('video-cards')">
+                  <i class="bi bi-gpu-card me-2"></i>Video Cards
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'dvd-roms' }" href="#" @click="setActiveTab('dvd-roms')">
+                  <i class="bi bi-disc me-2"></i>DVD ROMs
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" :class="{ active: activeTab === 'psus' }" href="#" @click="setActiveTab('psus')">
+                  <i class="bi bi-lightning-charge me-2"></i>PSUs
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
 
         <!-- Components Table -->
         <div class="card border-0 shadow-sm">
@@ -200,6 +204,7 @@
 import { ref, onMounted, computed } from 'vue'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
+import { Modal } from 'bootstrap'
 
 const isNavCollapsed = ref(false)
 const activeTab = ref('processors')
@@ -261,7 +266,7 @@ const createComponent = async () => {
     const data = await response.json()
     if (data.success) {
       alert('Component added successfully!')
-      bootstrap.Modal.getInstance(document.getElementById('createComponentModal')).hide()
+      Modal.getInstance(document.getElementById('createComponentModal')).hide()
       resetComponentForm()
       fetchComponents()
     } else {
@@ -310,7 +315,7 @@ const resetComponentForm = () => {
 }
 
 const showCreateModal = () => {
-  const modal = new bootstrap.Modal(document.getElementById('createComponentModal'))
+  const modal = new Modal(document.getElementById('createComponentModal'))
   modal.show()
 }
 

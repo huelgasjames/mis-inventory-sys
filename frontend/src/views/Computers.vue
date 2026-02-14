@@ -24,6 +24,9 @@
             <button class="btn btn-success" @click="showCreateModal">
               <i class="bi bi-plus-circle me-2"></i>Add Computer
             </button>
+            <button class="btn btn-warning" @click="showDeploymentModal">
+              <i class="bi bi-box-arrow-right me-2"></i>Deploy Computer
+            </button>
             <button class="btn btn-info" @click="exportComputers">
               <i class="bi bi-download me-2"></i>Export
             </button>
@@ -193,6 +196,14 @@
                             title="Edit"
                           >
                             <i class="bi bi-pencil"></i>
+                          </button>
+                          <button 
+                            class="btn btn-outline-success" 
+                            @click="deployComputer(computer)"
+                            title="Deploy"
+                            :disabled="computer.status !== 'Working'"
+                          >
+                            <i class="bi bi-box-arrow-right"></i>
                           </button>
                           <button 
                             class="btn btn-outline-danger" 
@@ -424,6 +435,13 @@
                 </select>
               </div>
               <div class="col-md-6">
+                <label class="form-label">DVD ROM</label>
+                <select class="form-select" v-model="newComputer.dvd_rom_id">
+                  <option value="">Select DVD ROM</option>
+                  <option v-for="dvd in components.dvd_roms" :key="dvd.id" :value="dvd.id">{{ dvd.model }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Status *</label>
                 <select class="form-select" v-model="newComputer.status" required>
                   <option value="Working">Working</option>
@@ -488,6 +506,7 @@
                 <span v-else class="text-muted">No Department</span>
               </div>
             </div>
+            
             <div class="col-md-6">
               <label class="form-label">Processor</label>
               <div class="form-control bg-light">
@@ -531,6 +550,24 @@
                   {{ selectedComputer.video_card.model }}
                 </span>
                 <span v-else class="text-muted">No Video Card</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">PSU</label>
+              <div class="form-control bg-light">
+                <span v-if="selectedComputer.psu" class="badge bg-info">
+                  {{ selectedComputer.psu.wattage }}W
+                </span>
+                <span v-else class="text-muted">No PSU</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">DVD ROM</label>
+              <div class="form-control bg-light">
+                <span v-if="selectedComputer.dvd_rom" class="badge bg-info">
+                  {{ selectedComputer.dvd_rom.model }}
+                </span>
+                <span v-else class="text-muted">No DVD ROM</span>
               </div>
             </div>
             <div class="col-md-6">
@@ -593,7 +630,7 @@
                 <input type="text" class="form-control" v-model="editingComputer.pc_number" placeholder="e.g., PC-001" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Product Number</label>
+                <label class="form-label">Serial Number</label>
                 <input type="text" class="form-control" v-model="editingComputer.serial_number">
               </div>
               <div class="col-md-6">
@@ -601,6 +638,55 @@
                 <select class="form-select" v-model="editingComputer.department_id" required>
                   <option value="">Select Department</option>
                   <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Processor</label>
+                <select class="form-select" v-model="editingComputer.processor_id">
+                  <option value="">Select Processor</option>
+                  <option v-for="cpu in components.processors" :key="cpu.id" :value="cpu.id">{{ cpu.model }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Motherboard</label>
+                <select class="form-select" v-model="editingComputer.motherboard_id">
+                  <option value="">Select Motherboard</option>
+                  <option v-for="mb in components.motherboards" :key="mb.id" :value="mb.id">{{ mb.model }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">RAM</label>
+                <select class="form-select" v-model="editingComputer.ram_id">
+                  <option value="">Select RAM</option>
+                  <option v-for="ram in components.rams" :key="ram.id" :value="ram.id">{{ ram.capacity }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Storage</label>
+                <select class="form-select" v-model="editingComputer.storage_id">
+                  <option value="">Select Storage</option>
+                  <option v-for="storage in components.storages" :key="storage.id" :value="storage.id">{{ storage.capacity }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Video Card</label>
+                <select class="form-select" v-model="editingComputer.video_card_id">
+                  <option value="">Select Video Card</option>
+                  <option v-for="gpu in components.video_cards" :key="gpu.id" :value="gpu.id">{{ gpu.model }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PSU</label>
+                <select class="form-select" v-model="editingComputer.psu_id">
+                  <option value="">Select PSU</option>
+                  <option v-for="psu in components.psus" :key="psu.id" :value="psu.id">{{ psu.wattage }}W</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">DVD ROM</label>
+                <select class="form-select" v-model="editingComputer.dvd_rom_id">
+                  <option value="">Select DVD ROM</option>
+                  <option v-for="dvd in components.dvd_roms" :key="dvd.id" :value="dvd.id">{{ dvd.model }}</option>
                 </select>
               </div>
               <div class="col-md-6">
@@ -618,11 +704,11 @@
                   <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                 </select>
               </div>
-              <div class="col-md-6">
+              <div class="col-md-12">
                 <label class="form-label">Location</label>
                 <input type="text" class="form-control" v-model="editingComputer.location" placeholder="Room/Office">
               </div>
-              <div class="col-12">
+              <div class="col-md-12">
                 <label class="form-label">Description</label>
                 <textarea class="form-control" v-model="editingComputer.description" rows="3"></textarea>
               </div>
@@ -672,6 +758,7 @@ const newComputer = ref({
   storage_id: '',
   video_card_id: '',
   psu_id: '',
+  dvd_rom_id: '',
   status: 'Working',
   assigned_to: '',
   location: '',
@@ -903,6 +990,11 @@ const fetchComponents = async () => {
         { id: 1, wattage: 450, model: 'Corsair CV450' },
         { id: 2, wattage: 550, model: 'Cooler Master MWE 550' },
         { id: 3, wattage: 650, model: 'EVGA 650 WQ' }
+      ],
+      dvd_roms: [
+        { id: 1, model: 'DVD-RW Samsung' },
+        { id: 2, model: 'DVD-RW LG' },
+        { id: 3, model: 'No DVD ROM' }
       ]
     }
   }
@@ -935,6 +1027,7 @@ const createComputer = async () => {
       newComputer.value = {
         computer_name: '',
         asset_tag: '',
+        pc_number: '',
         serial_number: '',
         department_id: '',
         processor_id: '',
@@ -942,6 +1035,8 @@ const createComputer = async () => {
         ram_id: '',
         storage_id: '',
         video_card_id: '',
+        psu_id: '',
+        dvd_rom_id: '',
         status: 'Working',
         assigned_to: '',
         location: '',
