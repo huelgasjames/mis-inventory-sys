@@ -156,7 +156,7 @@
                       <th>Computer Name</th>
                       <th>Department</th>
                       <th>Status</th>
-                      <th>Assigned To</th>
+                      <th>Deployed to</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
@@ -722,6 +722,86 @@
       </div>
     </div>
   </div>
+
+  <!-- Deployment Modal -->
+  <div class="modal fade" id="deploymentModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Deploy Computer to Laboratory</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-info">
+            <i class="bi bi-info-circle me-2"></i>
+            Deploy this computer to a specific laboratory room. Only working computers can be deployed.
+          </div>
+          
+          <div class="row g-3 mb-4">
+            <div class="col-md-12">
+              <label class="form-label">Selected Computer</label>
+              <div class="card bg-light">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-md-4">
+                      <strong>Computer Name:</strong> {{ deployingComputer?.computer_name || 'N/A' }}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Asset Tag:</strong> {{ deployingComputer?.asset_tag || 'N/A' }}
+                    </div>
+                    <div class="col-md-4">
+                      <strong>Status:</strong> 
+                      <span :class="getStatusBadgeClass(deployingComputer?.status)">
+                        {{ deployingComputer?.status || 'N/A' }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <form @submit.prevent="confirmDeployment">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Laboratory *</label>
+                <select class="form-select" v-model="deployment.laboratory_id" required>
+                  <option value="">Select Laboratory</option>
+                  <option v-for="lab in laboratories" :key="lab.id" :value="lab.id">
+                    {{ lab.name }} - {{ lab.room_number }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">PC Number Position *</label>
+                <input type="text" class="form-control" v-model="deployment.pc_position" 
+                       placeholder="e.g., PC-01, PC-15" required>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Deployment Notes</label>
+                <textarea class="form-control" v-model="deployment.notes" rows="3" 
+                          placeholder="Any special notes about this deployment..."></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Deployed By</label>
+                <input type="text" class="form-control" :value="currentUser?.name || 'Current User'" readonly>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Deployment Date</label>
+                <input type="date" class="form-control" v-model="deployment.deployment_date" required>
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-warning" @click="confirmDeployment">
+            <i class="bi bi-box-arrow-right me-2"></i>Deploy Computer
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -744,7 +824,17 @@ const departmentFilter = ref('')
 
 const selectedComputer = ref(null)
 const editingComputer = ref({})
+const deployingComputer = ref(null)
 const loading = ref(false)
+const laboratories = ref([])
+const currentUser = ref({ name: 'Current User' })
+
+const deployment = ref({
+  laboratory_id: '',
+  pc_position: '',
+  notes: '',
+  deployment_date: new Date().toISOString().split('T')[0]
+})
 
 const newComputer = ref({
   computer_name: '',
@@ -1106,14 +1196,8 @@ const showCreateModal = () => {
   modal.show()
 }
 
-const generateAssetTag = () => {
-  const year = new Date().getFullYear()
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0')
-  newComputer.value.asset_tag = `PNC-${year}-${random}`
-}
-
 const refreshData = async () => {
-  await Promise.all([fetchComputers(), fetchDepartments(), fetchComponents(), fetchUsers()])
+  await Promise.all([fetchComputers(), fetchDepartments(), fetchComponents(), fetchUsers(), fetchLaboratories()])
 }
 
 const exportComputers = () => {
@@ -1130,6 +1214,82 @@ const openProfile = () => {
 
 const openSettings = () => {
   console.log('Opening settings')
+}
+
+// Deployment Management Functions
+const fetchLaboratories = async () => {
+  try {
+    const response = await axios.get('http://localhost:8000/api/laboratories')
+    laboratories.value = response.data.data || []
+  } catch (error) {
+    console.error('Error fetching laboratories:', error)
+    // Fallback data
+    laboratories.value = [
+      { id: 1, name: 'Computer Laboratory 1', room_number: 'Room 101', capacity: 30 },
+      { id: 2, name: 'Computer Laboratory 2', room_number: 'Room 102', capacity: 25 },
+      { id: 3, name: 'Computer Laboratory 3', room_number: 'Room 201', capacity: 30 },
+      { id: 4, name: 'Computer Laboratory 4', room_number: 'Room 202', capacity: 20 }
+    ]
+  }
+}
+
+const showDeploymentModal = () => {
+  if (!deployingComputer.value) {
+    alert('Please select a computer to deploy first')
+    return
+  }
+  const modal = new Modal(document.getElementById('deploymentModal'))
+  modal.show()
+}
+
+const deployComputer = (computer) => {
+  if (computer.status !== 'Working') {
+    alert('Only working computers can be deployed!')
+    return
+  }
+  deployingComputer.value = computer
+  const modal = new Modal(document.getElementById('deploymentModal'))
+  modal.show()
+}
+
+const confirmDeployment = async () => {
+  if (!deployment.value.laboratory_id || !deployment.value.pc_position) {
+    alert('Please fill in all required fields')
+    return
+  }
+
+  try {
+    const deploymentData = {
+      computer_id: deployingComputer.value.id,
+      laboratory_id: deployment.value.laboratory_id,
+      pc_position: deployment.value.pc_position,
+      notes: deployment.value.notes,
+      deployment_date: deployment.value.deployment_date,
+      deployed_by: currentUser.value.name
+    }
+
+    const response = await axios.post('http://localhost:8000/api/deployments', deploymentData)
+    
+    if (response.data.success) {
+      alert('Computer deployed successfully!')
+      Modal.getInstance(document.getElementById('deploymentModal')).hide()
+      
+      // Reset deployment form
+      deployment.value = {
+        laboratory_id: '',
+        pc_position: '',
+        notes: '',
+        deployment_date: new Date().toISOString().split('T')[0]
+      }
+      deployingComputer.value = null
+      
+      // Update computer status to show it's deployed
+      await refreshData()
+    }
+  } catch (error) {
+    console.error('Error deploying computer:', error)
+    alert('Error deploying computer: ' + (error.response?.data?.message || error.message))
+  }
 }
 
 onMounted(() => {

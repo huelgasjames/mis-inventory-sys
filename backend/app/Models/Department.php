@@ -13,18 +13,11 @@ class Department extends Model
 
     protected $fillable = [
         'name',
-        'code',
         'description',
-        'head_of_department',
-        'location',
-        'contact_number',
-        'email',
-        'is_active',
         'category_id',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -67,14 +60,6 @@ class Department extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
-    }
-
-    /**
-     * Get active departments only
-     */
-    public function scopeActive($query)
-    {
-        return $query->where('is_active', true);
     }
 
     /**

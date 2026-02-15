@@ -158,8 +158,14 @@
                     </td>
                     <td>
                       <div class="btn-group btn-group-sm">
-                        <button class="btn btn-outline-primary" @click="viewUser(user)">
+                        <button class="btn btn-outline-primary" @click="viewUser(user)" title="View">
                           <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-outline-warning" @click="editUser(user)" title="Edit">
+                          <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-outline-danger" @click="deleteUser(user)" title="Delete">
+                          <i class="bi bi-trash"></i>
                         </button>
                       </div>
                     </td>
@@ -325,6 +331,82 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit User Modal -->
+  <div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit User</h5>
+          <button type="button" class="btn-close" @click="hideEditUserModal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateUser">
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label class="form-label">Name *</label>
+                <input type="text" class="form-control" v-model="editingUser.name" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" v-model="editingUser.email" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Role *</label>
+                <select class="form-select" v-model="editingUser.role" required>
+                  <option value="">Select Role</option>
+                  <option value="admin">Admin</option>
+                  <option value="faculty">Faculty</option>
+                  <option value="staff">Staff</option>
+                  <option value="student">Student</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Department</label>
+                <select class="form-select" v-model="editingUser.department_id">
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">
+                    {{ dept.name }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-12">
+                <label class="form-label">Address *</label>
+                <textarea class="form-control" v-model="editingUser.address" rows="2" required></textarea>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Birthdate</label>
+                <input type="date" class="form-control" v-model="editingUser.birthdate">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Person</label>
+                <input type="text" class="form-control" v-model="editingUser.contact_person">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Number</label>
+                <input type="text" class="form-control" v-model="editingUser.contact_number">
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Status</label>
+                <select class="form-select" v-model="editingUser.is_active">
+                  <option :value="true">Active</option>
+                  <option :value="false">Inactive</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">New Password (leave blank to keep current)</label>
+                <input type="password" class="form-control" v-model="editingUser.password" placeholder="Enter new password">
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" @click="hideEditUserModal">Cancel</button>
+          <button type="button" class="btn btn-warning" @click="updateUser">Update User</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -348,6 +430,21 @@ export default {
     const selectedUser = ref(null)
     
     const newUser = ref({
+      name: '',
+      email: '',
+      password: '',
+      role: '',
+      address: '',
+      birthdate: '',
+      contact_person: '',
+      contact_number: '',
+      department_id: '',
+      is_active: true,
+      assigned_assets_count: 0
+    })
+
+    const editingUser = ref({
+      id: null,
       name: '',
       email: '',
       password: '',
@@ -490,7 +587,44 @@ export default {
 
     const createUser = async () => {
       try {
-        const response = await axios.post('http://localhost:8000/api/users', newUser.value)
+        // Validate required fields before sending
+        if (!newUser.value.name || !newUser.value.name.trim()) {
+          alert('Name is required')
+          return
+        }
+        if (!newUser.value.email || !newUser.value.email.trim()) {
+          alert('Email is required')
+          return
+        }
+        if (!newUser.value.password || !newUser.value.password.trim()) {
+          alert('Password is required')
+          return
+        }
+        if (!newUser.value.role || !newUser.value.role.trim()) {
+          alert('Role is required')
+          return
+        }
+        if (!newUser.value.address || !newUser.value.address.trim()) {
+          alert('Address is required')
+          return
+        }
+        
+        // Clean the data before sending
+        const createData = {
+          name: newUser.value.name.trim(),
+          email: newUser.value.email.trim(),
+          password: newUser.value.password,
+          role: newUser.value.role.trim(),
+          address: newUser.value.address.trim(),
+          birthdate: newUser.value.birthdate || null,
+          contact_person: newUser.value.contact_person?.trim() || null,
+          contact_number: newUser.value.contact_number?.trim() || null,
+          department_id: newUser.value.department_id || null,
+          is_active: newUser.value.is_active,
+          assigned_assets_count: newUser.value.assigned_assets_count || 0
+        }
+        
+        const response = await axios.post('http://localhost:8000/api/users', createData)
         
         if (response.data.success) {
           hideCreateUserModal()
@@ -515,7 +649,15 @@ export default {
         }
       } catch (error) {
         console.error('Error creating user:', error)
-        alert('Error creating user: ' + (error.response?.data?.message || error.message))
+        const errorMessage = error.response?.data?.message || error.message
+        const validationErrors = error.response?.data?.errors
+        
+        if (validationErrors) {
+          const errorDetails = Object.values(validationErrors).flat().join(', ')
+          alert('Error creating user: ' + errorMessage + '\nDetails: ' + errorDetails)
+        } else {
+          alert('Error creating user: ' + errorMessage)
+        }
       }
     }
 
@@ -550,6 +692,124 @@ export default {
       }
     }
 
+    const editUser = (user) => {
+      editingUser.value = { 
+        ...user,
+        address: user.address || '',
+        birthdate: user.birthdate || '',
+        contact_person: user.contact_person || '',
+        contact_number: user.contact_number || '',
+        department_id: user.department_id || '',
+        password: '' // Clear password field for security
+      }
+      const modal = document.getElementById('editUserModal')
+      if (modal) {
+        modal.classList.add('show')
+        modal.style.display = 'block'
+        document.body.classList.add('modal-open')
+        
+        // Create backdrop
+        const backdrop = document.createElement('div')
+        backdrop.className = 'modal-backdrop fade show'
+        backdrop.id = 'edit-modal-backdrop'
+        document.body.appendChild(backdrop)
+      }
+    }
+
+    const hideEditUserModal = () => {
+      const modal = document.getElementById('editUserModal')
+      const backdrop = document.getElementById('edit-modal-backdrop')
+      
+      if (modal) {
+        modal.classList.remove('show')
+        modal.style.display = 'none'
+        document.body.classList.remove('modal-open')
+      }
+      
+      if (backdrop) {
+        backdrop.remove()
+      }
+    }
+
+    const updateUser = async () => {
+      try {
+        const userId = editingUser.value.id
+        
+        // Validate required fields before sending
+        if (!editingUser.value.name || !editingUser.value.name.trim()) {
+          alert('Name is required')
+          return
+        }
+        if (!editingUser.value.email || !editingUser.value.email.trim()) {
+          alert('Email is required')
+          return
+        }
+        if (!editingUser.value.role || !editingUser.value.role.trim()) {
+          alert('Role is required')
+          return
+        }
+        if (!editingUser.value.address || !editingUser.value.address.trim()) {
+          alert('Address is required')
+          return
+        }
+        
+        // Clean the data before sending
+        const updateData = {
+          name: editingUser.value.name.trim(),
+          email: editingUser.value.email.trim(),
+          role: editingUser.value.role.trim(),
+          address: editingUser.value.address.trim(),
+          birthdate: editingUser.value.birthdate || null,
+          contact_person: editingUser.value.contact_person?.trim() || null,
+          contact_number: editingUser.value.contact_number?.trim() || null,
+          department_id: editingUser.value.department_id || null,
+          is_active: editingUser.value.is_active
+        }
+        
+        // Only include password if it's provided
+        if (editingUser.value.password && editingUser.value.password.trim() !== '') {
+          updateData.password = editingUser.value.password
+        }
+        
+        const response = await axios.put(`http://localhost:8000/api/users/${userId}`, updateData)
+        
+        if (response.data.success) {
+          hideEditUserModal()
+          await refreshData()
+          alert('User updated successfully!')
+        }
+      } catch (error) {
+        console.error('Error updating user:', error)
+        const errorMessage = error.response?.data?.message || error.message
+        const validationErrors = error.response?.data?.errors
+        
+        if (validationErrors) {
+          const errorDetails = Object.values(validationErrors).flat().join(', ')
+          alert('Error updating user: ' + errorMessage + '\nDetails: ' + errorDetails)
+        } else {
+          alert('Error updating user: ' + errorMessage)
+        }
+      }
+    }
+
+    const deleteUser = async (user) => {
+      if (!confirm(`Are you sure you want to delete ${user.name}? This action cannot be undone.`)) {
+        return
+      }
+      
+      try {
+        const response = await axios.delete(`http://localhost:8000/api/users/${user.id}`)
+        
+        if (response.data.success) {
+          await refreshData()
+          alert('User deleted successfully!')
+        }
+      } catch (error) {
+        console.error('Error deleting user:', error)
+        alert('Error deleting user: ' + (error.response?.data?.message || error.message))
+      }
+    }
+
     const filterUsers = () => {
       // This is handled by the computed property
     }
@@ -566,6 +826,7 @@ export default {
       roleFilter,
       selectedUser,
       newUser,
+      editingUser,
       filteredUsers,
       adminCount,
       usersWithAssetsCount,
@@ -582,6 +843,10 @@ export default {
       createUser,
       viewUser,
       hideViewUserModal,
+      editUser,
+      hideEditUserModal,
+      updateUser,
+      deleteUser,
       filterUsers
     }
   }

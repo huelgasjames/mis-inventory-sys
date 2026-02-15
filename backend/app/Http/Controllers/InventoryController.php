@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Asset;
 use App\Models\Computer;
 use App\Models\Department;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Validator;
@@ -59,6 +60,19 @@ class InventoryController extends Controller
     }
 
     /**
+     * Get all department categories for API
+     */
+    public function getDepartmentCategories(): JsonResponse
+    {
+        $categories = \App\Models\DepartmentCategory::all();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
+
+    /**
      * Get inventory statistics
      */
     public function getStats(): JsonResponse
@@ -86,7 +100,7 @@ class InventoryController extends Controller
      */
     public function getUsers(): JsonResponse
     {
-        $users = \App\Models\User::with(['department', 'assets'])->get();
+        $users = User::with(['department', 'assets'])->get();
         
         // Add assigned assets count to each user
         $users->each(function ($user) {
@@ -151,6 +165,76 @@ class InventoryController extends Controller
     }
 
     /**
+     * Update a user
+     */
+    public function updateUser(Request $request, $id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:6',
+            'role' => 'required|in:admin,faculty,staff,student',
+            'address' => 'required|string',
+            'birthdate' => 'nullable|date|before:today',
+            'contact_person' => 'nullable|string|max:255',
+            'contact_number' => 'nullable|string|max:20',
+            'department_id' => 'nullable|exists:departments,id',
+            'is_active' => 'boolean',
+            'assigned_assets_count' => 'nullable|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+
+        // Only hash password if it's provided
+        if (!empty($validated['password'])) {
+            $validated['password'] = bcrypt($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User updated successfully',
+            'data' => $user
+        ]);
+    }
+
+    /**
+     * Delete a user
+     */
+    public function deleteUser($id): JsonResponse
+    {
+        $user = User::findOrFail($id);
+        
+        // Check if user has assigned assets
+        if ($user->assets()->count() > 0) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Cannot delete user with assigned assets. Please reassign assets first.'
+            ], 422);
+        }
+
+        $user->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User deleted successfully'
+        ]);
+    }
+
+    /**
      * Store a new asset
      */
     public function storeAsset(Request $request): JsonResponse
@@ -209,6 +293,80 @@ class InventoryController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Asset deleted successfully'
+        ]);
+    }
+
+    /**
+     * Create a new department
+     */
+    public function createDepartment(Request $request): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:departments,name',
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:department_categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $validated = $validator->validated();
+        
+        $department = Department::create($validated);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Department created successfully',
+            'data' => $department
+        ], 201);
+    }
+
+    /**
+     * Update a department
+     */
+    public function updateDepartment(Request $request, $id): JsonResponse
+    {
+        $department = Department::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255|unique:departments,name,' . $id,
+            'description' => 'nullable|string',
+            'category_id' => 'nullable|exists:department_categories,id',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $department->update($validator->validated());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Department updated successfully',
+            'data' => $department
+        ]);
+    }
+
+    /**
+     * Delete a department
+     */
+    public function deleteDepartment($id): JsonResponse
+    {
+        $department = Department::findOrFail($id);
+        $department->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Department deleted successfully'
         ]);
     }
 }

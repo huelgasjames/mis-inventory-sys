@@ -52,22 +52,6 @@
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex align-items-center">
-                  <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-check-circle text-success fs-4"></i>
-                  </div>
-                  <div>
-                    <h6 class="text-muted mb-1">Active</h6>
-                    <h3 class="mb-0">{{ activeCount }}</h3>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body">
-                <div class="d-flex align-items-center">
                   <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
                     <i class="bi bi-pc-display text-info fs-4"></i>
                   </div>
@@ -85,7 +69,23 @@
               <div class="card-body">
                 <div class="d-flex align-items-center">
                   <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-people text-warning fs-4"></i>
+                    <i class="bi bi-laptop text-warning fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 class="text-muted mb-1">Total Computers</h6>
+                    <h3 class="mb-0">{{ totalComputers }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
+                  <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-people text-success fs-4"></i>
                   </div>
                   <div>
                     <h6 class="text-muted mb-1">Total Users</h6>
@@ -119,8 +119,8 @@
                     <th>Category</th>
                     <th>Description</th>
                     <th>Assets</th>
+                    <th>Computers</th>
                     <th>Users</th>
-                    <th>Status</th>
                     <th>Actions</th>
                   </tr>
                 </thead>
@@ -152,12 +152,10 @@
                       <span class="badge bg-info">{{ department.total_assets || 0 }}</span>
                     </td>
                     <td>
-                      <span class="badge bg-primary">{{ department.total_users || 0 }}</span>
+                      <span class="badge bg-warning">{{ department.total_computers || 0 }}</span>
                     </td>
                     <td>
-                      <span :class="getStatusBadgeClass(department.is_active)">
-                        {{ department.is_active ? 'Active' : 'Inactive' }}
-                      </span>
+                      <span class="badge bg-primary">{{ department.total_users || 0 }}</span>
                     </td>
                     <td>
                       <div class="btn-group btn-group-sm">
@@ -210,30 +208,6 @@
                 <label class="form-label">Description</label>
                 <textarea class="form-control" v-model="newDepartment.description" rows="3"></textarea>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">Head of Department</label>
-                <input type="text" class="form-control" v-model="newDepartment.head_of_department">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Location</label>
-                <input type="text" class="form-control" v-model="newDepartment.location">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Contact Number</label>
-                <input type="tel" class="form-control" v-model="newDepartment.contact_number">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" v-model="newDepartment.email">
-              </div>
-              <div class="col-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" v-model="newDepartment.is_active" id="isActive">
-                  <label class="form-check-label" for="isActive">
-                    Active
-                  </label>
-                </div>
-              </div>
             </div>
           </form>
         </div>
@@ -274,33 +248,13 @@
                 {{ selectedDepartment.description || 'No description' }}
               </div>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Head of Department</label>
-              <div class="form-control bg-light">{{ selectedDepartment.head_of_department || '-' }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Location</label>
-              <div class="form-control bg-light">{{ selectedDepartment.location || '-' }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Contact Number</label>
-              <div class="form-control bg-light">{{ selectedDepartment.contact_number || '-' }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <div class="form-control bg-light">{{ selectedDepartment.email || '-' }}</div>
-            </div>
-            <div class="col-md-4">
-              <label class="form-label">Status</label>
-              <div class="form-control bg-light">
-                <span :class="getStatusBadgeClass(selectedDepartment.is_active)">
-                  {{ selectedDepartment.is_active ? 'Active' : 'Inactive' }}
-                </span>
-              </div>
-            </div>
             <div class="col-md-4">
               <label class="form-label">Total Assets</label>
               <div class="form-control bg-light">{{ selectedDepartment.total_assets || 0 }}</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Total Computers</label>
+              <div class="form-control bg-light">{{ selectedDepartment.total_computers || 0 }}</div>
             </div>
             <div class="col-md-4">
               <label class="form-label">Total Users</label>
@@ -343,30 +297,6 @@
                 <label class="form-label">Description</label>
                 <textarea class="form-control" v-model="editingDepartment.description" rows="3"></textarea>
               </div>
-              <div class="col-md-6">
-                <label class="form-label">Head of Department</label>
-                <input type="text" class="form-control" v-model="editingDepartment.head_of_department">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Location</label>
-                <input type="text" class="form-control" v-model="editingDepartment.location">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Contact Number</label>
-                <input type="tel" class="form-control" v-model="editingDepartment.contact_number">
-              </div>
-              <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" v-model="editingDepartment.email">
-              </div>
-              <div class="col-12">
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" v-model="editingDepartment.is_active" id="editIsActive">
-                  <label class="form-check-label" for="editIsActive">
-                    Active
-                  </label>
-                </div>
-              </div>
             </div>
           </form>
         </div>
@@ -403,12 +333,7 @@ export default {
     const newDepartment = ref({
       name: '',
       description: '',
-      category_id: '',
-      head_of_department: '',
-      location: '',
-      contact_number: '',
-      email: '',
-      is_active: true
+      category_id: ''
     })
 
     const toggleNav = () => {
@@ -421,10 +346,6 @@ export default {
 
     const openSettings = () => {
       console.log('Settings clicked')
-    }
-
-    const getStatusBadgeClass = (isActive) => {
-      return isActive ? 'badge bg-success' : 'badge bg-secondary'
     }
 
     const filteredDepartments = computed(() => {
@@ -440,17 +361,16 @@ export default {
         const query = searchQuery.value.toLowerCase()
         result = result.filter(dept => 
           dept.name.toLowerCase().includes(query) ||
-          dept.description?.toLowerCase().includes(query) ||
-          dept.head_of_department?.toLowerCase().includes(query) ||
-          dept.location?.toLowerCase().includes(query)
+          dept.description?.toLowerCase().includes(query)
         )
       }
 
       return result
     })
 
-    const activeCount = computed(() => departments.value.filter(d => d.is_active).length)
+    const activeCount = computed(() => departments.value.length)
     const totalAssets = computed(() => departments.value.reduce((sum, d) => sum + (d.total_assets || 0), 0))
+    const totalComputers = computed(() => departments.value.reduce((sum, d) => sum + (d.total_computers || 0), 0))
     const totalUsers = computed(() => departments.value.reduce((sum, d) => sum + (d.total_users || 0), 0))
 
     const fetchDepartments = async () => {
@@ -505,12 +425,7 @@ export default {
           newDepartment.value = {
             name: '',
             description: '',
-            category_id: '',
-            head_of_department: '',
-            location: '',
-            contact_number: '',
-            email: '',
-            is_active: true
+            category_id: ''
           }
           
           alert('Department created successfully!')
@@ -588,11 +503,11 @@ export default {
       filteredDepartments,
       activeCount,
       totalAssets,
+      totalComputers,
       totalUsers,
       toggleNav,
       openProfile,
       openSettings,
-      getStatusBadgeClass,
       refreshData,
       showCreateDepartmentModal,
       createDepartment,
