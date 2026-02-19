@@ -20,6 +20,8 @@ class Laboratory extends Model
         'floor',
         'capacity',
         'head_of_lab',
+        'contact_number',
+        'email',
         'is_active',
     ];
 

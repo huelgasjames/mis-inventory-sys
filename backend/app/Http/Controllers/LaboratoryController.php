@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Laboratory;
 use App\Models\User;
+use App\Models\Department;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -41,16 +42,36 @@ class LaboratoryController extends Controller
     public function create(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'department_id' => 'nullable|exists:departments,id',
+            'department_id' => 'nullable|integer|min:1|exists:departments,id',
             'lab_code' => 'required|string|unique:laboratories,lab_code',
             'lab_name' => 'required|string',
             'location' => 'required|string',
             'building' => 'required|string',
             'floor' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
-            'head_of_lab' => 'nullable|exists:users,id',
+            'head_of_lab' => 'nullable|integer|min:1|exists:users,id',
+            'contact_number' => 'required|string',
+            'email' => 'required|email',
             'is_active' => 'boolean',
         ]);
+
+        // Auto-populate contact info from department if not provided
+        if (empty($validated['contact_number']) || empty($validated['email'])) {
+            if (!empty($validated['department_id'])) {
+                $department = Department::find($validated['department_id']);
+                if ($department) {
+                    // Get department head (assuming there's a head_of_department field or similar)
+                    $deptHead = User::where('department_id', $department->id)
+                        ->where('role', 'department_head')
+                        ->first();
+                    
+                    if ($deptHead) {
+                        $validated['contact_number'] = $validated['contact_number'] ?? $deptHead->phone_number ?? null;
+                        $validated['email'] = $validated['email'] ?? $deptHead->email ?? null;
+                    }
+                }
+            }
+        }
 
         $laboratory = Laboratory::create($validated);
 
@@ -69,14 +90,16 @@ class LaboratoryController extends Controller
         $laboratory = Laboratory::findOrFail($id);
         
         $validated = $request->validate([
-            'department_id' => 'nullable|exists:departments,id',
+            'department_id' => 'nullable|integer|min:1|exists:departments,id',
             'lab_code' => 'required|string|unique:laboratories,lab_code,'.$id,
             'lab_name' => 'required|string',
             'location' => 'required|string',
             'building' => 'required|string',
             'floor' => 'nullable|string',
             'capacity' => 'required|integer|min:1',
-            'head_of_lab' => 'nullable|exists:users,id',
+            'head_of_lab' => 'nullable|integer|min:1|exists:users,id',
+            'contact_number' => 'required|string',
+            'email' => 'required|email',
             'is_active' => 'boolean',
         ]);
 

@@ -169,7 +169,7 @@
                       <span class="badge bg-info">{{ lab.location }}</span>
                     </td>
                     <td>
-                      <span class="badge bg-primary">{{ lab.computer_count || 0 }}</span>
+                      <span class="badge bg-primary">{{ lab.current_computer_count || 0 }}</span>
                     </td>
                     <td>
                       <span class="badge bg-success">{{ lab.capacity || 0 }}</span>
@@ -350,6 +350,10 @@
                 <input type="text" class="form-control" v-model="newLab.lab_name" required>
               </div>
               <div class="col-md-6">
+                <label class="form-label">Lab Code *</label>
+                <input type="text" class="form-control" v-model="newLab.lab_code" placeholder="e.g., LAB-001" required>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Location *</label>
                 <select class="form-select" v-model="newLab.location" required>
                   <option value="">Select Location</option>
@@ -370,11 +374,26 @@
                 <input type="number" class="form-control" v-model="newLab.capacity" required min="1">
               </div>
               <div class="col-md-6">
+                <label class="form-label">Department</label>
+                <select class="form-select" v-model="newLab.department_id">
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Head of Lab</label>
                 <select class="form-select" v-model="newLab.head_of_lab">
                   <option value="">Select User</option>
                   <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
                 </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Contact Number *</label>
+                <input type="text" class="form-control" v-model="newLab.contact_number" placeholder="Enter contact number" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" v-model="newLab.email" placeholder="Enter email address" required>
               </div>
               <div class="col-md-12">
                 <label class="form-label">Status</label>
@@ -434,7 +453,16 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Computers</label>
-              <div class="form-control bg-light">{{ selectedLab.computer_count || 0 }}</div>
+              <div class="form-control bg-light">{{ selectedLab.current_computer_count || 0 }}</div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Department</label>
+              <div class="form-control bg-light">
+                <span v-if="selectedLab.department" class="badge bg-info">
+                  {{ selectedLab.department.name }}
+                </span>
+                <span v-else class="text-muted">Unassigned</span>
+              </div>
             </div>
             <div class="col-md-6">
               <label class="form-label">Head of Lab</label>
@@ -494,6 +522,13 @@
                 <input type="number" class="form-control" v-model="selectedLab.capacity" required min="1">
               </div>
               <div class="col-md-6">
+                <label class="form-label">Department</label>
+                <select class="form-select" v-model="selectedLab.department_id">
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
                 <label class="form-label">Head of Lab</label>
                 <select class="form-select" v-model="selectedLab.head_of_lab">
                   <option value="">Select User</option>
@@ -501,12 +536,12 @@
                 </select>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Contact Number</label>
-                <input type="text" class="form-control" v-model="selectedLab.contact_number">
+                <label class="form-label">Contact Number *</label>
+                <input type="text" class="form-control" v-model="selectedLab.contact_number" required>
               </div>
               <div class="col-md-6">
-                <label class="form-label">Email</label>
-                <input type="email" class="form-control" v-model="selectedLab.email">
+                <label class="form-label">Email *</label>
+                <input type="email" class="form-control" v-model="selectedLab.email" required>
               </div>
               <div class="col-md-12">
                 <label class="form-label">Status</label>
@@ -547,11 +582,15 @@ const selectedLab = ref(null)
 
 const newLab = ref({
   lab_name: '',
+  lab_code: '',
   location: '',
   building: '',
   floor: '',
   capacity: '',
+  department_id: '',
   head_of_lab: '',
+  contact_number: '',
+  email: '',
   is_active: true
 })
 
@@ -588,7 +627,7 @@ const filteredLabs = computed(() => {
 const totalLabs = computed(() => filteredLabs.value.length)
 const activeLabs = computed(() => filteredLabs.value.filter(l => l.is_active === true).length)
 const maintenanceLabs = computed(() => filteredLabs.value.filter(l => l.is_active === false).length)
-const totalComputers = computed(() => filteredLabs.value.reduce((sum, l) => sum + (l.computer_count || 0), 0))
+const totalComputers = computed(() => filteredLabs.value.reduce((sum, l) => sum + (l.current_computer_count || 0), 0))
 
 // Department statistics
 const departmentStats = computed(() => {
@@ -618,9 +657,9 @@ const departmentStats = computed(() => {
       }
       
       stats[lab.department_id].total_labs++
-      if (lab.status === 'Active') stats[lab.department_id].active++
-      if (lab.status === 'Maintenance') stats[lab.department_id].maintenance++
-      stats[lab.department_id].total_computers += lab.computer_count || 0
+      if (lab.is_active === true) stats[lab.department_id].active++
+      if (lab.is_active === false) stats[lab.department_id].maintenance++
+      stats[lab.department_id].total_computers += lab.current_computer_count || 0
     }
   })
   
@@ -664,67 +703,6 @@ const fetchLaboratories = async () => {
     console.log('Laboratories loaded:', laboratories.value.length)
   } catch (error) {
     console.error('Error fetching laboratories:', error)
-    console.log('Error details:', error.response?.data || error.message)
-    // Fallback data for demo
-    laboratories.value = [
-      {
-        id: 1,
-        lab_name: 'Computer Science Lab 1',
-        location: 'Building A, Room 101',
-        building: 'Building A',
-        floor: '1',
-        capacity: 30,
-        is_active: true,
-        computer_count: 25,
-        head_of_lab: 1,
-        headOfLab: { id: 1, name: 'Dr. Smith' },
-        contact_number: '123-456-7890',
-        email: 'lab1@university.edu'
-      },
-      {
-        id: 2,
-        lab_name: 'Computer Science Lab 2',
-        location: 'Building A, Room 102',
-        building: 'Building A',
-        floor: '2',
-        capacity: 25,
-        is_active: true,
-        computer_count: 20,
-        head_of_lab: 2,
-        headOfLab: { id: 2, name: 'Prof. Johnson' },
-        contact_number: '123-456-7891',
-        email: 'lab2@university.edu'
-      },
-      {
-        id: 3,
-        lab_name: 'Network Lab',
-        location: 'Building B, Room 201',
-        building: 'Building B',
-        floor: '2',
-        capacity: 20,
-        is_active: false,
-        computer_count: 15,
-        head_of_lab: null,
-        headOfLab: null,
-        contact_number: '123-456-7892',
-        email: 'network@university.edu'
-      },
-      {
-        id: 4,
-        lab_name: 'Electronics Lab',
-        location: 'Building C, Room 301',
-        building: 'Building C',
-        floor: '3',
-        capacity: 35,
-        is_active: true,
-        computer_count: 10,
-        head_of_lab: 3,
-        headOfLab: { id: 3, name: 'Mr. Davis' },
-        contact_number: '123-456-7893',
-        email: 'electronics@university.edu'
-      }
-    ]
-    console.log('Using fallback data, laboratories loaded:', laboratories.value.length)
   }
 }
 
@@ -734,12 +712,6 @@ const fetchDepartments = async () => {
     departments.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching departments:', error)
-    // Fallback data
-    departments.value = [
-      { id: 1, name: 'Computer Science', category_id: 1, category: { id: 1, name: 'Academic', color: '#0F6F43' } },
-      { id: 2, name: 'Electronics', category_id: 2, category: { id: 2, name: 'Technical', color: '#FF6B35' } },
-      { id: 3, name: 'Physics', category_id: 1, category: { id: 1, name: 'Academic', color: '#0F6F43' } }
-    ]
   }
 }
 
@@ -749,18 +721,19 @@ const fetchUsers = async () => {
     users.value = response.data.data || []
   } catch (error) {
     console.error('Error fetching users:', error)
-    // Fallback data
-    users.value = [
-      { id: 1, name: 'Dr. Smith', email: 'smith@university.edu' },
-      { id: 2, name: 'Prof. Johnson', email: 'johnson@university.edu' },
-      { id: 3, name: 'Mr. Davis', email: 'davis@university.edu' }
-    ]
   }
 }
 
 const createLab = async () => {
   try {
-    const response = await axios.post('http://localhost:8000/api/laboratories', newLab.value)
+    // Prepare data with proper null handling
+    const labData = {
+      ...newLab.value,
+      department_id: newLab.value.department_id || null,
+      head_of_lab: newLab.value.head_of_lab || null
+    }
+    
+    const response = await axios.post('http://localhost:8000/api/laboratories', labData)
     
     if (response.data.success) {
       Modal.getInstance(document.getElementById('createLabModal')).hide()
@@ -769,11 +742,15 @@ const createLab = async () => {
       // Reset form
       newLab.value = {
         lab_name: '',
+        lab_code: '',
         location: '',
         building: '',
         floor: '',
         capacity: '',
+        department_id: '',
         head_of_lab: '',
+        contact_number: '',
+        email: '',
         is_active: true
       }
       
@@ -792,14 +769,25 @@ const viewLab = (lab) => {
 }
 
 const editLab = (lab) => {
-  selectedLab.value = { ...lab }
+  selectedLab.value = { 
+    ...lab,
+    department_id: lab.department_id === 0 ? null : lab.department_id,
+    head_of_lab: lab.head_of_lab?.id || null
+  }
   const modal = new Modal(document.getElementById('editLabModal'))
   modal.show()
 }
 
 const updateLab = async () => {
   try {
-    const response = await axios.put(`http://localhost:8000/api/laboratories/${selectedLab.value.id}`, selectedLab.value)
+    // Prepare data with proper null handling
+    const labData = {
+      ...selectedLab.value,
+      department_id: selectedLab.value.department_id || null,
+      head_of_lab: selectedLab.value.head_of_lab || null
+    }
+    
+    const response = await axios.put(`http://localhost:8000/api/laboratories/${selectedLab.value.id}`, labData)
     
     if (response.data.success) {
       Modal.getInstance(document.getElementById('editLabModal')).hide()

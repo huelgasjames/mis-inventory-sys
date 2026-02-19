@@ -57,6 +57,10 @@ function toggleAccordion(section) {
         <i class="bi bi-house-door-fill"></i>
         <span :class="{ 'd-none': isCollapsed }">Dashboard</span>
       </router-link>
+       <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
+            <i class="bi bi-pc-display"></i>
+            <span :class="{ 'd-none': isCollapsed }">Computers</span>
+          </router-link>
 
       
       <!-- Components Accordion -->
@@ -66,7 +70,7 @@ function toggleAccordion(section) {
           :class="{ 'd-none': isCollapsed }"
           @click="toggleAccordion('components')"
         >
-          <span>Components</span>
+          <span>Computer Component Assets</span>
           <i :class="['bi', componentsOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !componentsOpen && !isCollapsed, 'show': componentsOpen || isCollapsed }">
@@ -98,10 +102,7 @@ function toggleAccordion(section) {
             <i class="bi bi-hdd"></i>
             <span :class="{ 'd-none': isCollapsed }">Storage</span>
           </router-link>
-          <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active">
-            <i class="bi bi-pc-display"></i>
-            <span :class="{ 'd-none': isCollapsed }">Computers</span>
-          </router-link>
+         
         </div>
       </div>
       

@@ -51,7 +51,8 @@ class InventoryController extends Controller
      */
     public function getDepartments(): JsonResponse
     {
-        $departments = Department::withCount(['assets', 'computers'])->get();
+        $departments = Department::with(['category'])
+            ->get();
         
         return response()->json([
             'success' => true,
