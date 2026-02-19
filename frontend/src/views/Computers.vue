@@ -764,18 +764,39 @@
           <form @submit.prevent="confirmDeployment">
             <div class="row g-3">
               <div class="col-md-6">
-                <label class="form-label">Laboratory *</label>
-                <select class="form-select" v-model="deployment.laboratory_id" required>
-                  <option value="">Select Laboratory</option>
-                  <option v-for="lab in laboratories" :key="lab.id" :value="lab.id">
-                    {{ lab.name }} - {{ lab.room_number }}
+                <label class="form-label">Department *</label>
+                <select class="form-select" v-model="deployment.department_id" @change="onDepartmentChange" required>
+                  <option value="">Select Department</option>
+                  <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">Laboratory</label>
+                <select class="form-select" v-model="deployment.laboratory_id">
+                  <option value="">Select Laboratory (Optional)</option>
+                  <option v-for="lab in filteredLaboratories" :key="lab.id" :value="lab.id">
+                    {{ lab.lab_name }} ({{ lab.current_computer_count || 0 }}/{{ lab.capacity }})
                   </option>
                 </select>
+                <small class="text-muted" v-if="deployment.laboratory_id && selectedLabCapacity">
+                  Available: {{ selectedLabCapacity.available }} slots
+                </small>
               </div>
               <div class="col-md-6">
                 <label class="form-label">PC Number Position *</label>
                 <input type="text" class="form-control" v-model="deployment.pc_position" 
                        placeholder="e.g., PC-01, PC-15" required>
+              </div>
+              <div class="col-md-6">
+                <label class="form-label">User</label>
+                <select class="form-select" v-model="deployment.user_id">
+                  <option value="">Select User (Optional)</option>
+                  <option v-for="user in users" :key="user.id" :value="user.id">{{ user.name }}</option>
+                </select>
+              </div>
+              <div class="col-md-12">
+                <label class="form-label">Location</label>
+                <input type="text" class="form-control" v-model="deployment.location" placeholder="Room/Office">
               </div>
               <div class="col-md-12">
                 <label class="form-label">Deployment Notes</label>
@@ -830,8 +851,11 @@ const laboratories = ref([])
 const currentUser = ref({ name: 'Current User' })
 
 const deployment = ref({
+  department_id: '',
   laboratory_id: '',
+  user_id: '',
   pc_position: '',
+  location: '',
   notes: '',
   deployment_date: new Date().toISOString().split('T')[0]
 })
@@ -905,6 +929,27 @@ const componentStats = computed(() => {
     ram: computers.value.filter(c => c.ram_id).length,
     storage: computers.value.filter(c => c.storage_id).length,
     video_cards: computers.value.filter(c => c.video_card_id).length
+  }
+})
+
+// Laboratory filtering and capacity
+const filteredLaboratories = computed(() => {
+  if (!deployment.value.department_id) {
+    return laboratories.value.filter(lab => lab.is_active)
+  }
+  return laboratories.value.filter(lab => 
+    lab.is_active && lab.department_id === deployment.value.department_id
+  )
+})
+
+const selectedLabCapacity = computed(() => {
+  if (!deployment.value.laboratory_id) return null
+  const lab = laboratories.value.find(l => l.id === deployment.value.laboratory_id)
+  if (!lab) return null
+  return {
+    total: lab.capacity,
+    current: lab.current_computer_count || 0,
+    available: lab.capacity - (lab.current_computer_count || 0)
   }
 })
 
@@ -1221,14 +1266,15 @@ const fetchLaboratories = async () => {
   try {
     const response = await axios.get('http://localhost:8000/api/laboratories')
     laboratories.value = response.data.data || []
+    console.log('Laboratories loaded:', laboratories.value.length)
   } catch (error) {
     console.error('Error fetching laboratories:', error)
-    // Fallback data
+    // Fallback data with proper structure
     laboratories.value = [
-      { id: 1, name: 'Computer Laboratory 1', room_number: 'Room 101', capacity: 30 },
-      { id: 2, name: 'Computer Laboratory 2', room_number: 'Room 102', capacity: 25 },
-      { id: 3, name: 'Computer Laboratory 3', room_number: 'Room 201', capacity: 30 },
-      { id: 4, name: 'Computer Laboratory 4', room_number: 'Room 202', capacity: 20 }
+      { id: 1, lab_name: 'Computer Laboratory 1', room_number: 'Room 101', capacity: 30, department_id: 1, is_active: true, current_computer_count: 0 },
+      { id: 2, lab_name: 'Computer Laboratory 2', room_number: 'Room 102', capacity: 25, department_id: 1, is_active: true, current_computer_count: 0 },
+      { id: 3, lab_name: 'Computer Laboratory 3', room_number: 'Room 201', capacity: 30, department_id: 2, is_active: true, current_computer_count: 0 },
+      { id: 4, lab_name: 'Computer Laboratory 4', room_number: 'Room 202', capacity: 20, department_id: 2, is_active: true, current_computer_count: 0 }
     ]
   }
 }
@@ -1242,6 +1288,11 @@ const showDeploymentModal = () => {
   modal.show()
 }
 
+const onDepartmentChange = () => {
+  // Reset laboratory when department changes
+  deployment.value.laboratory_id = ''
+}
+
 const deployComputer = (computer) => {
   if (computer.status !== 'Working') {
     alert('Only working computers can be deployed!')
@@ -1253,19 +1304,31 @@ const deployComputer = (computer) => {
 }
 
 const confirmDeployment = async () => {
-  if (!deployment.value.laboratory_id || !deployment.value.pc_position) {
+  if (!deployment.value.department_id || !deployment.value.pc_position) {
     alert('Please fill in all required fields')
     return
   }
 
   try {
+    // Validate laboratory capacity if selected
+    if (deployment.value.laboratory_id && selectedLabCapacity.value) {
+      if (selectedLabCapacity.value.available <= 0) {
+        alert('Selected laboratory is at full capacity. Please choose a different laboratory or leave laboratory field empty.')
+        return
+      }
+    }
+
     const deploymentData = {
       computer_id: deployingComputer.value.id,
-      laboratory_id: deployment.value.laboratory_id,
+      department_id: deployment.value.department_id,
+      laboratory_id: deployment.value.laboratory_id || null,
+      user_id: deployment.value.user_id || null,
+      location: deployment.value.location || '',
       pc_position: deployment.value.pc_position,
       notes: deployment.value.notes,
       deployment_date: deployment.value.deployment_date,
-      deployed_by: currentUser.value.name
+      deployed_by: currentUser.value.name,
+      status: 'deployed'
     }
 
     const response = await axios.post('http://localhost:8000/api/deployments', deploymentData)
@@ -1276,8 +1339,11 @@ const confirmDeployment = async () => {
       
       // Reset deployment form
       deployment.value = {
+        department_id: '',
         laboratory_id: '',
+        user_id: '',
         pc_position: '',
+        location: '',
         notes: '',
         deployment_date: new Date().toISOString().split('T')[0]
       }

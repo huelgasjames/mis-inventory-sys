@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Deployment API Test</h2>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5>Test Deployment Creation</h5>
+            </div>
+            <div class="card-body">
+                <form id="deploymentForm">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Computer ID</label>
+                            <input type="number" class="form-control" id="computer_id" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Department ID</label>
+                            <input type="number" class="form-control" id="department_id" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Laboratory ID (Optional)</label>
+                            <input type="number" class="form-control" id="laboratory_id">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">PC Position</label>
+                            <input type="text" class="form-control" id="pc_position" placeholder="PC-01" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Location</label>
+                            <input type="text" class="form-control" id="location" placeholder="Room 101">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Deployment Date</label>
+                            <input type="date" class="form-control" id="deployment_date" required>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" id="notes" rows="3"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <button type="submit" class="btn btn-primary">Create Deployment</button>
+                            <button type="button" class="btn btn-secondary" onclick="testGetDeployments()">Get Deployments</button>
+                            <button type="button" class="btn btn-info" onclick="testGetLaboratories()">Get Laboratories</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>API Response</h5>
+            </div>
+            <div class="card-body">
+                <pre id="response" class="bg-light p-3 rounded"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        
+        // Set today's date as default
+        document.getElementById('deployment_date').value = new Date().toISOString().split('T')[0];
+
+        document.getElementById('deploymentForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deploymentData = {
+                computer_id: parseInt(document.getElementById('computer_id').value),
+                department_id: parseInt(document.getElementById('department_id').value),
+                laboratory_id: document.getElementById('laboratory_id').value ? parseInt(document.getElementById('laboratory_id').value) : null,
+                pc_position: document.getElementById('pc_position').value,
+                location: document.getElementById('location').value,
+                deployment_date: document.getElementById('deployment_date').value,
+                notes: document.getElementById('notes').value,
+                deployed_by: 'Test User',
+                status: 'deployed'
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/deployments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(deploymentData)
+                });
+
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    alert('Deployment created successfully!');
+                } else {
+                    alert('Error: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+                alert('Network error: ' + error.message);
+            }
+        });
+
+        async function testGetDeployments() {
+            try {
+                const response = await fetch(`${API_BASE}/deployments`);
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testGetLaboratories() {
+            try {
+                const response = await fetch(`${API_BASE}/laboratories`);
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+    </script>
+</body>
+</html>
