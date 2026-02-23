@@ -62,11 +62,22 @@ const openSettings = () => {
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 70px;
+    margin-left: 0;
   }
   
   .main-content.collapsed {
-    margin-left: 70px;
+    margin-left: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+  
+  .main-content {
+    margin-left: 0;
+    width: 100%;
   }
 }
 </style>

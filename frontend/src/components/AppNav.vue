@@ -321,6 +321,26 @@ aside.collapsed .nav-link {
   }
 }
 
+@media (max-width: 480px) {
+  aside {
+    width: 60px !important;
+    position: fixed;
+    z-index: 1000;
+  }
+  
+  aside:not(.collapsed) {
+    width: 280px !important;
+  }
+  
+  .nav-link {
+    padding: 0.75rem !important;
+  }
+  
+  .nav-link i {
+    font-size: 1.1rem !important;
+  }
+}
+
 /* Tooltip for collapsed state */
 .nav-link[title]:hover::after {
   content: attr(title);
