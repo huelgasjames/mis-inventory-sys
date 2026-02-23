@@ -5,9 +5,61 @@
     <link rel="icon" href="/pnc-logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MiSD Inventory Management System</title>
+    <script type="module" src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/vue-router@4/dist/vue-router.global.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.13.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.js"></script>
   </head>
   <body>
     <div id="app"></div>
-    <script type="module" src="/src/main.js"></script>
+    <script type="module">
+      // Your Vue app will be loaded here
+      const { createApp, ref, computed, onMounted } = Vue;
+      const { createRouter, createWebHistory } = VueRouter;
+      
+      // API Configuration
+      const API_URL = 'http://localhost:8000/api';
+      
+      // Simple router setup
+      const routes = [
+        { path: '/', component: { template: '<div>Home Page</div>' } },
+        { path: '/computers', component: { template: '<div>Computers Page</div>' } },
+        { path: '/deployment', component: { template: '<div>Deployment Page</div>' } }
+      ];
+      
+      const router = createRouter({
+        history: createWebHistory(),
+        routes
+      });
+      
+      // Main App
+      const App = {
+        template: `
+          <div>
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+              <div class="container">
+                <a class="navbar-brand" href="#">MiSD Inventory</a>
+                <div class="navbar-nav">
+                  <router-link class="nav-link" to="/">Home</router-link>
+                  <router-link class="nav-link" to="/computers">Computers</router-link>
+                  <router-link class="nav-link" to="/deployment">Deployment</router-link>
+                </div>
+              </div>
+            </nav>
+            <div class="container mt-4">
+              <router-view></router-view>
+            </div>
+          </div>
+        `
+      };
+      
+      const app = createApp(App);
+      app.use(router);
+      app.config.globalProperties.$Chart = Chart;
+      app.mount('#app');
+    </script>
   </body>
 </html>
