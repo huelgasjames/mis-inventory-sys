@@ -101,7 +101,22 @@ const logout = () => {
 }
 
 /* Responsive header */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .navbar {
+    padding: 0.875rem 1.25rem;
+    min-height: 65px;
+  }
+  
+  .fs-4 {
+    font-size: 1.125rem;
+  }
+  
+  .small {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 992px) {
   .navbar {
     padding: 0.75rem 1rem;
     min-height: 60px;
@@ -116,15 +131,15 @@ const logout = () => {
   }
   
   .fs-4 {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
   
   .small {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
   
   .fs-5 {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   
   .me-3 {
@@ -136,22 +151,31 @@ const logout = () => {
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .navbar {
     padding: 0.5rem 0.75rem;
     min-height: 55px;
   }
   
+  .container-fluid {
+    padding: 0;
+  }
+  
+  .d-flex.align-items-center {
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+  
   .fs-4 {
-    font-size: 1.1rem;
+    font-size: 0.9rem;
   }
   
   .small {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
   
   .fs-5 {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
   
   .me-3 {
@@ -163,18 +187,49 @@ const logout = () => {
   }
   
   span.text-white {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 576px) {
   .navbar {
     padding: 0.4rem 0.5rem;
     min-height: 50px;
   }
   
   .fs-4 {
-    font-size: 1rem;
+    font-size: 0.85rem;
+  }
+  
+  .small {
+    font-size: 0.65rem;
+  }
+  
+  .fs-5 {
+    font-size: 0.8rem;
+  }
+  
+  .me-3 {
+    margin-right: 0.125rem !important;
+  }
+  
+  .gap-3 {
+    gap: 0.25rem !important;
+  }
+  
+  span.text-white {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.3rem 0.4rem;
+    min-height: 45px;
+  }
+  
+  .fs-4 {
+    font-size: 0.8rem;
   }
   
   .small {
@@ -182,7 +237,7 @@ const logout = () => {
   }
   
   .fs-5 {
-    font-size: 0.85rem;
+    font-size: 0.75rem;
   }
   
   .me-3 {

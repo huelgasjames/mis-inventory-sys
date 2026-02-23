@@ -656,9 +656,19 @@ onMounted(async () => {
 }
 
 /* Responsive adjustments */
+@media (max-width: 1400px) {
+  .col-lg-4 {
+    margin-bottom: 1.5rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .col-lg-4 {
     margin-bottom: 1.5rem;
+  }
+  
+  .row.g-4 {
+    gap: 1rem;
   }
 }
 
@@ -677,6 +687,10 @@ onMounted(async () => {
   
   .col-lg-6 {
     margin-bottom: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1.25rem !important;
   }
 }
 
@@ -731,6 +745,14 @@ onMounted(async () => {
   .h3.mb-0 {
     font-size: 1.75rem;
   }
+  
+  .row.g-3 {
+    gap: 1rem;
+  }
+  
+  .row.g-4 {
+    gap: 1rem;
+  }
 }
 
 @media (max-width: 576px) {
@@ -769,6 +791,14 @@ onMounted(async () => {
   .list-group-item {
     padding: 0.75rem 0;
   }
+  
+  .row.g-3 {
+    gap: 0.75rem;
+  }
+  
+  .row.g-4 {
+    gap: 0.75rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -805,6 +835,39 @@ onMounted(async () => {
   
   .chart-container {
     height: 150px !important;
+  }
+  
+  .row.g-3 {
+    gap: 0.5rem;
+  }
+  
+  .row.g-4 {
+    gap: 0.5rem;
+  }
+  
+  .d-grid {
+    gap: 0.5rem;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .card-body {
+    padding: 0.75rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 0.75rem !important;
+  margin-right: 0.5rem !important;
+  }
+  
+  .row.g-3 {
+    gap: 0.5rem;
   }
 }
 

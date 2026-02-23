@@ -311,17 +311,36 @@ aside.collapsed .nav-link {
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  aside {
+    width: 220px !important;
+  }
+  
+  aside:not(.collapsed) {
+    width: 220px !important;
+  }
+}
+
+@media (max-width: 992px) {
   aside {
     width: 70px !important;
   }
   
   aside:not(.collapsed) {
-    width: 250px !important;
+    width: 220px !important;
+  }
+  
+  .nav-link {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .nav-link i {
+    font-size: 1rem;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   aside {
     width: 60px !important;
     position: fixed;
@@ -329,15 +348,106 @@ aside.collapsed .nav-link {
   }
   
   aside:not(.collapsed) {
-    width: 280px !important;
+    width: 260px !important;
   }
   
   .nav-link {
-    padding: 0.75rem !important;
+    padding: 0.75rem;
+    font-size: 0.85rem;
   }
   
   .nav-link i {
-    font-size: 1.1rem !important;
+    font-size: 1rem;
+    min-width: 60px;
+  }
+  
+  .nav-link span {
+    font-size: 0.85rem;
+  }
+  
+  .text-muted.small {
+    font-size: 0.7rem;
+  }
+  
+  .img-fluid {
+    width: 40px;
+    height: auto;
+  }
+  
+  .fw-bold {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 576px) {
+  aside {
+    width: 50px !important;
+  }
+  
+  aside:not(.collapsed) {
+    width: 240px !important;
+  }
+  
+  .nav-link {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+  
+  .nav-link i {
+    font-size: 0.9rem;
+    min-width: 50px;
+  }
+  
+  .nav-link span {
+    font-size: 0.8rem;
+  }
+  
+  .text-muted.small {
+    font-size: 0.65rem;
+  }
+  
+  .img-fluid {
+    width: 35px;
+  }
+  
+  .fw-bold {
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 480px) {
+  aside {
+    width: 45px !important;
+  }
+  
+  aside:not(.collapsed) {
+    width: 220px !important;
+  }
+  
+  .nav-link {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .nav-link i {
+    font-size: 0.85rem;
+    min-width: 45px;
+  }
+  
+  .nav-link span {
+    font-size: 0.75rem;
+  }
+  
+  .text-muted.small {
+    font-size: 0.6rem;
+  }
+  
+  .img-fluid {
+    width: 30px;
+  }
+  
+  .fw-bold {
+    font-size: 0.7rem;
   }
 }
 
