@@ -656,13 +656,155 @@ onMounted(async () => {
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .col-lg-4 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
   .main-content {
     margin-left: 70px;
   }
   
   .main-content.collapsed {
     margin-left: 70px;
+  }
+  
+  .col-lg-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .col-lg-6 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.collapsed {
+    margin-left: 0;
+  }
+  
+  .container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch !important;
+  }
+  
+  .d-flex.gap-2 {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .h3 {
+    font-size: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 1.5rem !important;
+  }
+  
+  .fs-4 {
+    font-size: 1.25rem !important;
+  }
+  
+  .h3.mb-0 {
+    font-size: 1.75rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .col-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .small {
+    font-size: 0.75rem;
+  }
+  
+  .card-body {
+    padding: 0.75rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 1rem !important;
+    margin-right: 0.75rem !important;
+  }
+  
+  .chart-container {
+    height: 200px !important;
+  }
+  
+  .list-group-item {
+    padding: 0.75rem 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .h3 {
+    font-size: 1.25rem;
+  }
+  
+  .h3.mb-0 {
+    font-size: 1.5rem;
+  }
+  
+  .btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .card-body {
+    padding: 0.5rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 0.75rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  .fs-4 {
+    font-size: 1rem !important;
+  }
+  
+  .chart-container {
+    height: 150px !important;
   }
 }
 

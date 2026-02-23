@@ -78,13 +78,13 @@ const logout = () => {
 .navbar {
   background: #0F6F43;
   color: white;
-  padding: 1.5rem 2rem;
+  padding: 1rem 1.5rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: auto;
-  min-height: 80px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -98,6 +98,104 @@ const logout = () => {
 
 .cursor-pointer:hover {
   opacity: 0.8;
+}
+
+/* Responsive header */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+    min-height: 60px;
+  }
+  
+  .container-fluid {
+    padding: 0;
+  }
+  
+  .d-flex.align-items-center {
+    gap: 0.5rem;
+  }
+  
+  .fs-4 {
+    font-size: 1.25rem;
+  }
+  
+  .small {
+    font-size: 0.7rem;
+  }
+  
+  .fs-5 {
+    font-size: 1rem;
+  }
+  
+  .me-3 {
+    margin-right: 0.5rem !important;
+  }
+  
+  .gap-3 {
+    gap: 0.75rem !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .navbar {
+    padding: 0.5rem 0.75rem;
+    min-height: 55px;
+  }
+  
+  .fs-4 {
+    font-size: 1.1rem;
+  }
+  
+  .small {
+    font-size: 0.65rem;
+  }
+  
+  .fs-5 {
+    font-size: 0.9rem;
+  }
+  
+  .me-3 {
+    margin-right: 0.25rem !important;
+  }
+  
+  .gap-3 {
+    gap: 0.5rem !important;
+  }
+  
+  span.text-white {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.4rem 0.5rem;
+    min-height: 50px;
+  }
+  
+  .fs-4 {
+    font-size: 1rem;
+  }
+  
+  .small {
+    font-size: 0.6rem;
+  }
+  
+  .fs-5 {
+    font-size: 0.85rem;
+  }
+  
+  .me-3 {
+    margin-right: 0.125rem !important;
+  }
+  
+  .gap-3 {
+    gap: 0.25rem !important;
+  }
+  
+  span.text-white {
+    display: none;
+  }
 }
 
 /* Custom toggle switch styles */
@@ -117,7 +215,6 @@ const logout = () => {
   outline: 0;
   box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
 }
-
 
 /* Light mode styles */
 :global(.light-mode) .navbar {
