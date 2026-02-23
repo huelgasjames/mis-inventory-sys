@@ -1,4 +1,4 @@
-/* Login Page Specific Styles - Modern Design */
+/* Mobile-First Login Design */
 .login-container {
   display: flex;
   min-height: 100vh;
@@ -44,10 +44,22 @@
 .login-form-overlay {
   position: absolute;
   top: 50%;
-  right: 2rem;
-  transform: translateY(-50%);
-  transform-origin: center;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 10;
+  width: 90%;
+  max-width: 400px;
+}
+
+.login-form-container {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  width: 100%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
 }
 
 .university-logo {
@@ -78,7 +90,7 @@
   color: white;
   border: none;
   padding: 0.75rem 2rem;
-  border-radius: 50px;
+  border-radius: 25px;
   font-weight: 600;
   font-size: 0.9rem;
   letter-spacing: 1px;
@@ -112,28 +124,16 @@
   margin-bottom: 1.5rem;
 }
 
-.login-form-container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-  padding: 2rem;
-  width: 100%;
-  max-width: 380px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
-}
-
 .input-group-lg {
-  border-radius: 6px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border: 1px solid rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
 }
 
 .input-group-lg:focus-within {
-  box-shadow: 0 2px 12px rgba(15, 111, 67, 0.2);
+  box-shadow: 0 4px 20px rgba(15, 111, 67, 0.2);
   border-color: #0F6F43;
 }
 
@@ -186,7 +186,7 @@
   padding: 1rem;
   font-size: 1rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 12px;
   border: none;
   background: linear-gradient(135deg, #0F6F43 0%, #0a5234 100%);
   color: white;
@@ -198,8 +198,8 @@
 }
 
 .login-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 10px rgba(15, 111, 67, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(15, 111, 67, 0.4);
   background: linear-gradient(135deg, #0a5234 0%, #0F6F43 100%);
 }
 
@@ -225,74 +225,32 @@
   box-shadow: 0 2px 10px rgba(220, 53, 69, 0.1);
 }
 
-/* Responsive Design - No Scrolling */
-@media (max-width: 1200px) {
-  .login-form-overlay {
-    right: 1rem;
-    max-width: 320px;
-  }
-  
-  .login-form-container {
-    max-width: 320px;
-    padding: 1.5rem;
-  }
-  
-  .university-logo {
-    width: 160px;
-    height: 160px;
-  }
-  
-  .university-title {
-    font-size: 2rem;
-  }
-  
-  .system-title {
-    font-size: 1.2rem;
-  }
-}
-
+/* Responsive Design - Mobile First */
 @media (max-width: 768px) {
-  .login-container {
-    flex-direction: column;
-  }
-  
   .login-form-overlay {
     position: relative;
     top: auto;
-    right: auto;
+    left: auto;
     transform: none;
     width: 100%;
-    padding: 1rem;
+    height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    flex: 1;
+    padding: 1rem;
   }
   
   .login-form-container {
     max-width: 100%;
     width: 100%;
-    max-width: 400px;
-    padding: 2rem;
+    max-width: 380px;
+    padding: 1.5rem;
     margin: 1rem;
   }
   
   .login-full {
     flex: 0 0 40vh;
     height: 40vh;
-  }
-  
-  .university-logo {
-    width: 120px;
-    height: 120px;
-  }
-  
-  .university-title {
-    font-size: 1.8rem;
-  }
-  
-  .system-title {
-    font-size: 1rem;
   }
   
   .university-logo-small {
@@ -307,35 +265,23 @@
   .system-title-small {
     font-size: 0.9rem;
   }
+  
+  .student-login-header-btn {
+    padding: 0.6rem 1.5rem;
+    font-size: 0.8rem;
+  }
 }
 
 @media (max-width: 480px) {
   .login-form-container {
-    padding: 1.5rem;
+    padding: 1rem;
     margin: 0.5rem;
+    border-radius: 10px;
   }
   
   .login-full {
     flex: 0 0 35vh;
     height: 35vh;
-  }
-  
-  .university-logo {
-    width: 100px;
-    height: 100px;
-  }
-  
-  .university-title {
-    font-size: 1.5rem;
-  }
-  
-  .system-title {
-    font-size: 0.9rem;
-  }
-  
-  .student-login-header-btn {
-    padding: 0.6rem 1.5rem;
-    font-size: 0.8rem;
   }
   
   .university-logo-small {
@@ -349,6 +295,12 @@
   
   .system-title-small {
     font-size: 0.85rem;
+  }
+  
+  .student-login-header-btn {
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
   }
   
   .form-group {
@@ -369,6 +321,45 @@
   .login-btn {
     padding: 0.8rem;
     font-size: 0.95rem;
+  }
+  
+  .forgot-password {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-form-container {
+    padding: 0.75rem;
+    margin: 0.25rem;
+  }
+  
+  .university-logo-small {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .university-title-small {
+    font-size: 1.1rem;
+  }
+  
+  .system-title-small {
+    font-size: 0.8rem;
+  }
+  
+  .student-login-header-btn {
+    padding: 0.4rem 1rem;
+    font-size: 0.7rem;
+  }
+  
+  .form-control {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .login-btn {
+    padding: 0.7rem;
+    font-size: 0.9rem;
   }
 }
 

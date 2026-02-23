@@ -12,7 +12,7 @@
     <!-- Login Form Overlay -->
     <div class="login-form-overlay">
       <div class="login-form-container">
-        <!-- Admin Login Header -->
+        <!-- Student Login Header -->
         <div class="text-center mb-4">
           <button class="student-login-header-btn" disabled>
             ADMIN LOGIN
@@ -23,12 +23,12 @@
         <div class="text-center mb-4">
           <img src="/pnc-logo.png" alt="University of Cabuyao" class="university-logo-small">
           <h1 class="university-title-small">University of Cabuyao</h1>
-          <p class="system-title-small">MiSD Inventory System</p>
+          <p class="system-title-small">Pinnacle Learning Management System</p>
         </div>
         
         <!-- Login Form -->
         <form @submit.prevent="handleLogin">
-          <!-- Username Field -->
+          <!-- Student ID Field -->
           <div class="form-group">
             <div class="input-group input-group-lg">
               <span class="input-group-text">
@@ -37,7 +37,7 @@
               <input 
                 type="text" 
                 class="form-control" 
-                placeholder="Username"
+                placeholder="Pinnacle Account"
                 v-model="username"
                 required
               >
@@ -53,7 +53,7 @@
               <input 
                 :type="showPassword ? 'text' : 'password'" 
                 class="form-control" 
-                placeholder="Password"
+                placeholder="Pinnacle Password"
                 v-model="password"
                 required
               >
