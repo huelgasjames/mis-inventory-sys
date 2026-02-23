@@ -330,7 +330,7 @@ import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import axios from 'axios'
+import api from '@/utils/api'
 
 export default {
   name: 'Deployment',
@@ -443,7 +443,7 @@ export default {
         loadingStartTime.value = Date.now()
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/deployments')
+        const response = await api.get('/deployments')
         deployments.value = response.data.data
       } catch (error) {
         console.error('Error fetching deployments:', error)
@@ -461,7 +461,7 @@ export default {
       }
       try {
         console.log('Fetching deployment stats...')
-        const response = await axios.get('http://localhost:8000/api/deployments/stats')
+        const response = await api.get('/deployments/stats')
         deploymentStats.value = response.data.data
       } catch (error) {
         console.error('Error fetching deployment stats:', error)
@@ -478,7 +478,7 @@ export default {
         loadingStartTime.value = Date.now()
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/departments')
+        const response = await api.get('/departments')
         departments.value = response.data.data
       } catch (error) {
         console.error('Error fetching departments:', error)
@@ -495,7 +495,7 @@ export default {
         loadingStartTime.value = Date.now()
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/users')
+        const response = await api.get('/users')
         users.value = response.data.data
       } catch (error) {
         console.error('Error fetching users:', error)
@@ -512,7 +512,7 @@ export default {
         loadingStartTime.value = Date.now()
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/computers')
+        const response = await api.get('/computers')
         computers.value = response.data.data
       } catch (error) {
         console.error('Error fetching computers:', error)
@@ -529,7 +529,7 @@ export default {
         loadingStartTime.value = Date.now()
       }
       try {
-        const response = await axios.get('http://localhost:8000/api/laboratories')
+        const response = await api.get('/laboratories')
         laboratories.value = response.data.data
       } catch (error) {
         console.error('Error fetching laboratories:', error)
@@ -580,7 +580,7 @@ export default {
           }
         }
 
-        const response = await axios.post('http://localhost:8000/api/deployments', newDeployment.value)
+        const response = await api.post('/deployments', newDeployment.value)
         
         if (response.data.success) {
           bootstrap.Modal.getInstance(document.getElementById('createDeploymentModal')).hide()
@@ -620,7 +620,7 @@ export default {
       
       try {
         const returnDate = new Date().toISOString().split('T')[0]
-        const response = await axios.post(`http://localhost:8000/api/deployments/${deployment.id}/return`, {
+        const response = await api.post(`/deployments/${deployment.id}/return`, {
           return_date: returnDate,
           notes: 'Computer returned from deployment'
         })
@@ -639,7 +639,7 @@ export default {
       if (!confirm('Are you sure you want to delete this deployment record?')) return
       
       try {
-        const response = await axios.delete(`http://localhost:8000/api/deployments/${deployment.id}`)
+        const response = await api.delete(`/deployments/${deployment.id}`)
         
         if (response.data.success) {
           await refreshData()
