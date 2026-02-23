@@ -491,116 +491,153 @@
         </div>
         <div class="modal-body" v-if="selectedComputer">
           <div class="row g-3">
-            <div class="col-md-6">
-              <label class="form-label">Computer Name</label>
-              <div class="form-control bg-light">{{ selectedComputer.computer_name }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Asset Tag</label>
-              <div class="form-control bg-light">{{ selectedComputer.asset_tag }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Product Number</label>
-              <div class="form-control bg-light">{{ selectedComputer.serial_number || 'N/A' }}</div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Department</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.department" class="badge bg-light text-dark">
-                  {{ selectedComputer.department.name }}
-                </span>
-                <span v-else class="text-muted">No Department</span>
+            <!-- Left Column - Computer Details -->
+            <div class="col-md-8">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label class="form-label">Computer Name</label>
+                  <div class="form-control bg-light">{{ selectedComputer.computer_name }}</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Asset Tag</label>
+                  <div class="form-control bg-light">{{ selectedComputer.asset_tag }}</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Product Number</label>
+                  <div class="form-control bg-light">{{ selectedComputer.serial_number || 'N/A' }}</div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Department</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.department" class="badge bg-light text-dark">
+                      {{ selectedComputer.department.name }}
+                    </span>
+                    <span v-else class="text-muted">No Department</span>
+                  </div>
+                </div>
+                
+                <div class="col-md-6">
+                  <label class="form-label">Processor</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.processor" class="badge bg-info">
+                      {{ selectedComputer.processor.model }}
+                    </span>
+                    <span v-else class="text-muted">No Processor</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Motherboard</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.motherboard" class="badge bg-info">
+                      {{ selectedComputer.motherboard.model }}
+                    </span>
+                    <span v-else class="text-muted">No Motherboard</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">RAM</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.ram" class="badge bg-info">
+                      {{ selectedComputer.ram.capacity }}
+                    </span>
+                    <span v-else class="text-muted">No RAM</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Storage</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.storage" class="badge bg-info">
+                      {{ selectedComputer.storage.capacity }}
+                    </span>
+                    <span v-else class="text-muted">No Storage</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Video Card</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.video_card" class="badge bg-info">
+                      {{ selectedComputer.video_card.model }}
+                    </span>
+                    <span v-else class="text-muted">No Video Card</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">PSU</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.psu" class="badge bg-info">
+                      {{ selectedComputer.psu.wattage }}W
+                    </span>
+                    <span v-else class="text-muted">No PSU</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">DVD ROM</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.dvd_rom" class="badge bg-info">
+                      {{ selectedComputer.dvd_rom.model }}
+                    </span>
+                    <span v-else class="text-muted">No DVD ROM</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Status</label>
+                  <div class="form-control bg-light">
+                    <span :class="getStatusBadgeClass(selectedComputer.status)">
+                      {{ selectedComputer.status }}
+                    </span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Assigned To</label>
+                  <div class="form-control bg-light">
+                    <span v-if="selectedComputer.assigned_user" class="badge bg-success">
+                      {{ selectedComputer.assigned_user.name }}
+                    </span>
+                    <span v-else class="text-muted">Unassigned</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Location</label>
+                  <div class="form-control bg-light">{{ selectedComputer.location || 'Not specified' }}</div>
+                </div>
+                <div class="col-12">
+                  <label class="form-label">Description</label>
+                  <div class="form-control bg-light" style="min-height: 80px;">
+                    {{ selectedComputer.description || 'No description available' }}
+                  </div>
+                </div>
               </div>
             </div>
             
-            <div class="col-md-6">
-              <label class="form-label">Processor</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.processor" class="badge bg-info">
-                  {{ selectedComputer.processor.model }}
-                </span>
-                <span v-else class="text-muted">No Processor</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Motherboard</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.motherboard" class="badge bg-info">
-                  {{ selectedComputer.motherboard.model }}
-                </span>
-                <span v-else class="text-muted">No Motherboard</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">RAM</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.ram" class="badge bg-info">
-                  {{ selectedComputer.ram.capacity }}
-                </span>
-                <span v-else class="text-muted">No RAM</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Storage</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.storage" class="badge bg-info">
-                  {{ selectedComputer.storage.capacity }}
-                </span>
-                <span v-else class="text-muted">No Storage</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Video Card</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.video_card" class="badge bg-info">
-                  {{ selectedComputer.video_card.model }}
-                </span>
-                <span v-else class="text-muted">No Video Card</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">PSU</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.psu" class="badge bg-info">
-                  {{ selectedComputer.psu.wattage }}W
-                </span>
-                <span v-else class="text-muted">No PSU</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">DVD ROM</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.dvd_rom" class="badge bg-info">
-                  {{ selectedComputer.dvd_rom.model }}
-                </span>
-                <span v-else class="text-muted">No DVD ROM</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Status</label>
-              <div class="form-control bg-light">
-                <span :class="getStatusBadgeClass(selectedComputer.status)">
-                  {{ selectedComputer.status }}
-                </span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Assigned To</label>
-              <div class="form-control bg-light">
-                <span v-if="selectedComputer.assigned_user" class="badge bg-success">
-                  {{ selectedComputer.assigned_user.name }}
-                </span>
-                <span v-else class="text-muted">Unassigned</span>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <label class="form-label">Location</label>
-              <div class="form-control bg-light">{{ selectedComputer.location || 'Not specified' }}</div>
-            </div>
-            <div class="col-12">
-              <label class="form-label">Description</label>
-              <div class="form-control bg-light" style="min-height: 80px;">
-                {{ selectedComputer.description || 'No description available' }}
+            <!-- Right Column - QR Code -->
+            <div class="col-md-4">
+              <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                  <h6 class="mb-0">
+                    <i class="bi bi-qr-code me-2"></i>QR Code
+                  </h6>
+                </div>
+                <div class="card-body text-center">
+                  <div class="qr-code-container mb-3">
+                    <canvas ref="qrCanvas" width="200" height="200"></canvas>
+                  </div>
+                  <div class="computer-info-qr">
+                    <h6 class="text-primary mb-2">{{ selectedComputer.asset_tag || selectedComputer.pc_number }}</h6>
+                    <p class="text-muted mb-1 small">{{ selectedComputer.computer_name }}</p>
+                    <p class="text-muted mb-1 small">{{ selectedComputer.department?.name || 'No Department' }}</p>
+                    <span :class="getStatusBadgeClass(selectedComputer.status)" class="small">
+                      {{ selectedComputer.status }}
+                    </span>
+                  </div>
+                  <div class="mt-3 d-flex gap-2 justify-content-center">
+                    <button type="button" class="btn btn-sm btn-primary" @click="downloadQRCode">
+                      <i class="bi bi-download me-1"></i>Download
+                    </button>
+                    <button type="button" class="btn btn-sm btn-success" @click="printQRCode">
+                      <i class="bi bi-printer me-1"></i>Print
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -829,6 +866,13 @@
       </div>
     </div>
   </div>
+
+  <!-- QR Code Modal -->
+  <QRCodeModal 
+    v-if="selectedComputerForQR" 
+    :computer="selectedComputerForQR" 
+    @close="selectedComputerForQR = null"
+  />
 </template>
 
 <script setup>
@@ -836,6 +880,7 @@
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import QRCodeModal from '@/components/QRCodeModal.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
@@ -872,6 +917,7 @@ const departmentFilter = ref('')
 const selectedComputer = ref(null)
 const editingComputer = ref({})
 const deployingComputer = ref(null)
+const selectedComputerForQR = ref(null)
 const laboratories = ref([])
 const currentUser = ref({ name: 'Current User' })
 
@@ -1263,6 +1309,11 @@ const viewComputer = (computer) => {
   selectedComputer.value = computer
   const modal = new Modal(document.getElementById('viewComputerModal'))
   modal.show()
+  
+  // Generate QR code after modal is shown
+  setTimeout(() => {
+    generateQRCode()
+  }, 500)
 }
 
 const editComputer = (computer) => {
@@ -1306,6 +1357,285 @@ const deleteComputer = async (id) => {
   } finally {
     isLoading.value = false
   }
+}
+
+const generateQRCode = () => {
+  const qrCanvas = document.querySelector('#viewComputerModal canvas')
+  if (!qrCanvas || !selectedComputer.value) return
+
+  try {
+    // Create QR code data with complete computer details
+    const qrData = {
+      // Basic Information
+      computer_name: selectedComputer.value.computer_name,
+      asset_tag: selectedComputer.value.asset_tag,
+      pc_number: selectedComputer.value.pc_number,
+      serial_number: selectedComputer.value.serial_number || 'N/A',
+      
+      // Department Information
+      department: selectedComputer.value.department?.name || selectedComputer.value.department?.department_name || 'No Department',
+      
+      // Component Details
+      processor: selectedComputer.value.processor?.model || 'No Processor',
+      motherboard: selectedComputer.value.motherboard?.model || 'No Motherboard',
+      ram: selectedComputer.value.ram?.capacity || 'No RAM',
+      storage: selectedComputer.value.storage?.capacity || 'No Storage',
+      video_card: selectedComputer.value.video_card?.model || 'No Video Card',
+      psu: selectedComputer.value.psu?.wattage ? `${selectedComputer.value.psu.wattage}W` : 'No PSU',
+      dvd_rom: selectedComputer.value.dvd_rom?.model || 'No DVD ROM',
+      
+      // Status and Assignment
+      status: selectedComputer.value.status,
+      assigned_to: selectedComputer.value.assigned_user?.name || 'Unassigned',
+      location: selectedComputer.value.location || 'Not specified',
+      description: selectedComputer.value.description || 'No description available',
+      
+      // Metadata
+      generated_at: new Date().toISOString(),
+      generated_by: 'MIS Inventory System',
+      
+      // Direct PDF Download URL - This will directly download PDF when QR is scanned
+      pdf_download_url: `http://localhost:8000/api/computers/${selectedComputer.value.id}/pdf/download`
+    }
+
+    // Generate QR code using online API
+    const qrText = JSON.stringify(qrData)
+    const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrText)}`
+    
+    // Create image element and draw on canvas
+    const img = new Image()
+    img.crossOrigin = 'anonymous'
+    img.onload = () => {
+      const ctx = qrCanvas.getContext('2d')
+      qrCanvas.width = 200
+      qrCanvas.height = 200
+      ctx.clearRect(0, 0, 200, 200)
+      ctx.drawImage(img, 0, 0, 200, 200)
+    }
+    img.onerror = () => {
+      // Fallback: draw a placeholder with computer info
+      const ctx = qrCanvas.getContext('2d')
+      qrCanvas.width = 200
+      qrCanvas.height = 200
+      ctx.clearRect(0, 0, 200, 200)
+      
+      // Background
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, 200, 200)
+      
+      // Border
+      ctx.strokeStyle = '#000000'
+      ctx.lineWidth = 2
+      ctx.strokeRect(10, 10, 180, 180)
+      
+      // Text placeholder
+      ctx.fillStyle = '#000000'
+      ctx.font = 'bold 12px Arial'
+      ctx.textAlign = 'center'
+      ctx.fillText('QR CODE', 100, 40)
+      ctx.font = '10px Arial'
+      ctx.fillText(selectedComputer.value.asset_tag || selectedComputer.value.pc_number, 100, 60)
+      ctx.font = '9px Arial'
+      ctx.fillText(selectedComputer.value.computer_name?.substring(0, 20) || '', 100, 80)
+      ctx.fillText(selectedComputer.value.department?.name || selectedComputer.value.department?.department_name || 'No Dept', 100, 100)
+      ctx.fillText(selectedComputer.value.status, 100, 120)
+    }
+    img.src = qrUrl
+  } catch (error) {
+    console.error('Error generating QR code:', error)
+    // Draw fallback
+    const ctx = qrCanvas.getContext('2d')
+    qrCanvas.width = 200
+    qrCanvas.height = 200
+    ctx.clearRect(0, 0, 200, 200)
+    ctx.fillStyle = '#f0f0f0'
+    ctx.fillRect(0, 0, 200, 200)
+    ctx.fillStyle = '#666'
+    ctx.font = '14px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('QR Code', 100, 90)
+    ctx.fillText('Generation Failed', 100, 110)
+    ctx.font = '10px Arial'
+    ctx.fillText(selectedComputer.value.asset_tag || selectedComputer.value.pc_number, 100, 130)
+  }
+}
+
+const downloadQRCode = () => {
+  const qrCanvas = document.querySelector('#viewComputerModal canvas')
+  if (!qrCanvas) return
+
+  const link = document.createElement('a')
+  link.download = `QR_${selectedComputer.value.asset_tag || selectedComputer.value.pc_number}.png`
+  link.href = qrCanvas.toDataURL()
+  link.click()
+}
+
+const printQRCode = () => {
+  const qrCanvas = document.querySelector('#viewComputerModal canvas')
+  if (!qrCanvas) return
+
+  const printWindow = window.open('', '_blank')
+  printWindow.document.write(`
+    <html>
+      <head>
+        <title>QR Code - ${selectedComputer.value.asset_tag || selectedComputer.value.pc_number}</title>
+        <style>
+          body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: flex-start; 
+            min-height: 100vh; 
+            margin: 20px 0; 
+            font-family: Arial, sans-serif;
+          }
+          .qr-container { 
+            text-align: center; 
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            max-width: 400px;
+          }
+          .qr-title { 
+            font-size: 18px; 
+            font-weight: bold; 
+            margin-bottom: 15px; 
+            color: #0F6F43;
+          }
+          .qr-details { 
+            margin-top: 15px; 
+            font-size: 12px;
+            text-align: left;
+          }
+          .qr-details .section {
+            margin-bottom: 15px;
+          }
+          .qr-details .section-title {
+            font-weight: bold;
+            color: #0F6F43;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 3px;
+          }
+          .qr-details .detail-row {
+            margin: 3px 0;
+            display: flex;
+            justify-content: space-between;
+          }
+          .qr-details .detail-label {
+            font-weight: 600;
+            color: #333;
+            flex: 1;
+          }
+          .qr-details .detail-value {
+            color: #666;
+            flex: 2;
+            text-align: right;
+          }
+          @media print {
+            body { margin: 0; }
+            .no-print { display: none; }
+            .qr-container {
+              border: none;
+              box-shadow: none;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="qr-container">
+          <img src="${qrCanvas.toDataURL()}" alt="QR Code" style="max-width: 150px; height: auto;" />
+          <div class="qr-title">${selectedComputer.value.asset_tag || selectedComputer.value.pc_number}</div>
+          
+          <div class="qr-details">
+            <div class="section">
+              <div class="section-title">Basic Information</div>
+              <div class="detail-row">
+                <span class="detail-label">Computer Name:</span>
+                <span class="detail-value">${selectedComputer.value.computer_name || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Asset Tag:</span>
+                <span class="detail-value">${selectedComputer.value.asset_tag || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">PC Number:</span>
+                <span class="detail-value">${selectedComputer.value.pc_number || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Serial Number:</span>
+                <span class="detail-value">${selectedComputer.value.serial_number || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Department:</span>
+                <span class="detail-value">${selectedComputer.value.department?.name || selectedComputer.value.department?.department_name || 'No Department'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Components</div>
+              <div class="detail-row">
+                <span class="detail-label">Processor:</span>
+                <span class="detail-value">${selectedComputer.value.processor?.model || 'No Processor'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Motherboard:</span>
+                <span class="detail-value">${selectedComputer.value.motherboard?.model || 'No Motherboard'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">RAM:</span>
+                <span class="detail-value">${selectedComputer.value.ram?.capacity || 'No RAM'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Storage:</span>
+                <span class="detail-value">${selectedComputer.value.storage?.capacity || 'No Storage'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Video Card:</span>
+                <span class="detail-value">${selectedComputer.value.video_card?.model || 'No Video Card'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">PSU:</span>
+                <span class="detail-value">${selectedComputer.value.psu?.wattage ? `${selectedComputer.value.psu.wattage}W` : 'No PSU'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">DVD ROM:</span>
+                <span class="detail-value">${selectedComputer.value.dvd_rom?.model || 'No DVD ROM'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Status & Assignment</div>
+              <div class="detail-row">
+                <span class="detail-label">Status:</span>
+                <span class="detail-value">${selectedComputer.value.status || 'N/A'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Assigned To:</span>
+                <span class="detail-value">${selectedComputer.value.assigned_user?.name || 'Unassigned'}</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Location:</span>
+                <span class="detail-value">${selectedComputer.value.location || 'Not specified'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <div class="section-title">Description</div>
+              <div style="font-size: 11px; color: #666; line-height: 1.3;">
+                ${selectedComputer.value.description || 'No description available'}
+              </div>
+            </div>
+            
+            <div style="margin-top: 15px; font-size: 10px; color: #999;">
+              Generated: ${new Date().toLocaleString()} | MIS Inventory System
+            </div>
+          </div>
+        </div>
+      </body>
+    </html>
+  `)
+  printWindow.document.close()
+  printWindow.print()
 }
 
 const clearFilters = () => {
@@ -1685,5 +2015,45 @@ onMounted(async () => {
 :global(.dark-mode) .pagination .page-item.active .page-link {
   background-color: #0F6F43;
   border-color: #0F6F43;
+}
+
+/* QR Code Styles */
+.qr-code-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 15px;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+}
+
+.computer-info-qr {
+  text-align: center;
+}
+
+.computer-info-qr h6 {
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.computer-info-qr p {
+  margin-bottom: 4px;
+  font-size: 0.875rem;
+}
+
+/* Dark mode QR code styles */
+:global(.dark-mode) .qr-code-container {
+  background: #2d2d2d;
+  border-color: #444;
+}
+
+:global(.dark-mode) .computer-info-qr h6 {
+  color: #fff;
+}
+
+:global(.dark-mode) .computer-info-qr p {
+  color: #b3b3b3;
 }
 </style>
