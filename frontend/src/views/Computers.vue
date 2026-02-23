@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard-layout">
+    <!-- Loading Spinner -->
+    <LoadingSpinner :is-visible="isLoading" message="Loading computers..." />
+
     <!-- Navigation Sidebar -->
     <AppNav :is-collapsed="isNavCollapsed" />
     
@@ -7,7 +10,11 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Computers received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -16,16 +23,13 @@
       <div class="container-fluid p-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">Computer Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">Computer Management</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
             </button>
             <button class="btn btn-success" @click="showCreateModal">
               <i class="bi bi-plus-circle me-2"></i>Add Computer
-            </button>
-            <button class="btn btn-warning" @click="showDeploymentModal">
-              <i class="bi bi-box-arrow-right me-2"></i>Deploy Computer
             </button>
             <button class="btn btn-info" @click="exportComputers">
               <i class="bi bi-download me-2"></i>Export
@@ -137,16 +141,8 @@
         <!-- Computer Table -->
         <div class="card border-0 shadow-sm">
           <div class="card-body p-0">
-            <!-- Loading State -->
-            <div v-if="loading" class="text-center py-5">
-              <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-              </div>
-              <p class="mt-2 text-muted">Loading computers...</p>
-            </div>
-
             <!-- Computer Table -->
-            <div v-else-if="filteredComputers.length > 0">
+            <div v-if="filteredComputers.length > 0">
               <div class="table-responsive">
                 <table class="table table-hover mb-0">
                   <thead class="table-light">
@@ -174,12 +170,22 @@
                         <span :class="getStatusBadgeClass(computer.status)">
                           {{ computer.status }}
                         </span>
+                        <span v-if="computer.is_deployed || computer.laboratory_id" class="badge bg-info ms-2">
+                          <i class="bi bi-box-arrow-right me-1"></i>Deployed
+                        </span>
                       </td>
                       <td>
-                        <span v-if="computer.assigned_user" class="badge bg-success">
+                        <span v-if="computer.laboratory" class="badge bg-primary">
+                          <i class="bi bi-house-door me-1"></i>
+                          {{ computer.laboratory.lab_name }}
+                        </span>
+                        <span v-else-if="computer.assigned_user" class="badge bg-success">
+                          <i class="bi bi-person me-1"></i>
                           {{ computer.assigned_user.name }}
                         </span>
-                        <span v-else class="text-muted">Unassigned</span>
+                        <span v-else class="text-muted">
+                          <i class="bi bi-dash-circle me-1"></i>Not Deployed
+                        </span>
                       </td>
                       <td>
                         <div class="btn-group btn-group-sm">
@@ -201,7 +207,7 @@
                             class="btn btn-outline-success" 
                             @click="deployComputer(computer)"
                             title="Deploy"
-                            :disabled="computer.status !== 'Working'"
+                            :disabled="computer.status !== 'Working' || computer.is_deployed || computer.laboratory_id"
                           >
                             <i class="bi bi-box-arrow-right"></i>
                           </button>
@@ -829,11 +835,31 @@
 
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
-import { ref, computed, onMounted } from 'vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
+import { useDarkMode } from '@/composables/useDarkMode.js'
+
+const { initDarkMode } = useDarkMode()
 
 const isNavCollapsed = ref(false)
+const isLoading = ref(false)
+const loadingStartTime = ref(null)
+
+// Helper function to ensure minimum loading duration
+const ensureMinimumLoading = async (minDuration = 5000) => {
+  if (loadingStartTime.value) {
+    const elapsed = Date.now() - loadingStartTime.value
+    if (elapsed < minDuration) {
+      await new Promise(resolve => setTimeout(resolve, minDuration - elapsed))
+    }
+  }
+}
+// Watch for changes in navigation state
+watch(isNavCollapsed, (newValue, oldValue) => {
+  console.log('Computers isNavCollapsed changed from', oldValue, 'to', newValue)
+})
 const computers = ref([])
 const departments = ref([])
 const components = ref({})
@@ -846,7 +872,6 @@ const departmentFilter = ref('')
 const selectedComputer = ref(null)
 const editingComputer = ref({})
 const deployingComputer = ref(null)
-const loading = ref(false)
 const laboratories = ref([])
 const currentUser = ref({ name: 'Current User' })
 
@@ -988,10 +1013,13 @@ const getStatusBadgeClass = (status) => {
 }
 
 const fetchComputers = async () => {
-  loading.value = true
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     console.log('Fetching computers from API...')
-    const response = await axios.get('http://localhost:8000/api/computers')
+    const response = await axios.get('http://localhost:8000/api/computers?include=laboratory,department,assigned_user')
     console.log('Computers API Response:', response.data)
     computers.value = response.data.data || []
     console.log('Computers loaded:', computers.value.length)
@@ -1009,8 +1037,12 @@ const fetchComputers = async () => {
         department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
         status: 'Working',
         location: 'Lab Room 101',
-        assigned_to: 1,
-        assigned_user: { id: 1, name: 'John Doe' },
+        laboratory_id: 1,
+        laboratory: { id: 1, lab_name: 'Computer Laboratory 1', room_number: 'Room 101' },
+        is_deployed: true,
+        deployment_status: 'deployed',
+        assigned_to: null,
+        assigned_user: null,
         description: 'Desktop computer for Computer Science Lab',
         processor: { id: 1, model: 'Intel Core i5-10400' },
         motherboard: { id: 1, model: 'ASUS Prime H410M' },
@@ -1027,6 +1059,10 @@ const fetchComputers = async () => {
         department: { id: 2, name: 'Administration', category: { id: 2, name: 'Administrative', color: '#004D7A' } },
         status: 'Working',
         location: 'Admin Office',
+        laboratory_id: null,
+        laboratory: null,
+        is_deployed: false,
+        deployment_status: 'available',
         assigned_to: 1,
         assigned_user: { id: 1, name: 'Admin User' },
         description: 'Desktop computer for Administration',
@@ -1045,40 +1081,54 @@ const fetchComputers = async () => {
         department: { id: 3, name: 'Library', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
         status: 'Defective',
         location: 'Library Room 201',
+        laboratory_id: null,
+        laboratory: null,
+        is_deployed: false,
+        deployment_status: 'available',
         assigned_to: null,
         assigned_user: null,
-        description: 'Desktop computer for Library - needs repair',
-        processor: null,
-        motherboard: null,
-        ram: null,
-        storage: null,
-        video_card: null
+        description: 'Desktop computer for Library',
+        processor: { id: 3, model: 'Intel Core i3-9100' },
+        motherboard: { id: 3, model: 'MSI H410M' },
+        ram: { id: 3, capacity: '8GB DDR4' },
+        storage: { id: 3, capacity: '1TB HDD' },
+        video_card: { id: 3, model: 'Integrated' }
       },
       {
         id: 4,
-        computer_name: 'Old Server PC',
+        computer_name: 'CS Lab Computer 2',
         asset_tag: 'PC004',
         pc_number: 'PC-004',
         department_id: 1,
         department: { id: 1, name: 'Computer Science', category: { id: 1, name: 'Academic', color: '#0F6F43' } },
-        status: 'For Disposal',
-        location: 'Storage Room',
+        status: 'Working',
+        location: 'Lab Room 102',
+        laboratory_id: 2,
+        laboratory: { id: 2, lab_name: 'Computer Laboratory 2', room_number: 'Room 102' },
+        is_deployed: true,
+        deployment_status: 'deployed',
         assigned_to: null,
         assigned_user: null,
-        description: 'Old computer ready for disposal',
-        processor: null,
-        motherboard: null,
-        ram: null,
-        storage: null,
-        video_card: null
+        description: 'Desktop computer for Computer Science Lab',
+        processor: { id: 4, model: 'Intel Core i5-11400' },
+        motherboard: { id: 4, model: 'ASUS Prime H510M' },
+        ram: { id: 4, capacity: '16GB DDR4' },
+        storage: { id: 4, capacity: '1TB SSD' },
+        video_card: { id: 4, model: 'NVIDIA GTX 1660' }
       }
     ]
   } finally {
-    loading.value = false
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 const fetchDepartments = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await axios.get('http://localhost:8000/api/departments')
     departments.value = response.data.data || []
@@ -1090,10 +1140,18 @@ const fetchDepartments = async () => {
       { id: 2, name: 'Administration', category_id: 2, category: { id: 2, name: 'Administrative', color: '#004D7A' } },
       { id: 3, name: 'Library', category_id: 1, category: { id: 1, name: 'Academic', color: '#0F6F43' } }
     ]
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 const fetchComponents = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await axios.get('http://localhost:8000/api/components')
     components.value = response.data.data || {}
@@ -1132,10 +1190,18 @@ const fetchComponents = async () => {
         { id: 3, model: 'No DVD ROM' }
       ]
     }
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 const fetchUsers = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await axios.get('http://localhost:8000/api/users')
     users.value = response.data.data || []
@@ -1147,10 +1213,15 @@ const fetchUsers = async () => {
       { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
       { id: 3, name: 'Bob Wilson', email: 'bob@example.com' }
     ]
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 const createComputer = async () => {
+  isLoading.value = true
   try {
     const response = await axios.post('http://localhost:8000/api/computers/create', newComputer.value)
     
@@ -1183,6 +1254,8 @@ const createComputer = async () => {
   } catch (error) {
     console.error('Error creating computer:', error)
     alert('Error creating computer: ' + (error.response?.data?.message || error.message))
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -1199,6 +1272,7 @@ const editComputer = (computer) => {
 }
 
 const updateComputer = async () => {
+  isLoading.value = true
   try {
     const response = await axios.put(`http://localhost:8000/api/computers/${editingComputer.value.id}`, editingComputer.value)
     
@@ -1210,12 +1284,15 @@ const updateComputer = async () => {
   } catch (error) {
     console.error('Error updating computer:', error)
     alert('Error updating computer: ' + (error.response?.data?.message || error.message))
+  } finally {
+    isLoading.value = false
   }
 }
 
 const deleteComputer = async (id) => {
   if (!confirm('Are you sure you want to delete this computer?')) return
   
+  isLoading.value = true
   try {
     const response = await axios.delete(`http://localhost:8000/api/computers/${id}/delete`)
     
@@ -1226,6 +1303,8 @@ const deleteComputer = async (id) => {
   } catch (error) {
     console.error('Error deleting computer:', error)
     alert('Error deleting computer: ' + (error.response?.data?.message || error.message))
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -1242,7 +1321,16 @@ const showCreateModal = () => {
 }
 
 const refreshData = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
   await Promise.all([fetchComputers(), fetchDepartments(), fetchComponents(), fetchUsers(), fetchLaboratories()])
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 }
 
 const exportComputers = () => {
@@ -1263,6 +1351,7 @@ const openSettings = () => {
 
 // Deployment Management Functions
 const fetchLaboratories = async () => {
+  isLoading.value = true
   try {
     const response = await axios.get('http://localhost:8000/api/laboratories')
     laboratories.value = response.data.data || []
@@ -1276,6 +1365,8 @@ const fetchLaboratories = async () => {
       { id: 3, lab_name: 'Computer Laboratory 3', room_number: 'Room 201', capacity: 30, department_id: 2, is_active: true, current_computer_count: 0 },
       { id: 4, lab_name: 'Computer Laboratory 4', room_number: 'Room 202', capacity: 20, department_id: 2, is_active: true, current_computer_count: 0 }
     ]
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -1298,6 +1389,12 @@ const deployComputer = (computer) => {
     alert('Only working computers can be deployed!')
     return
   }
+  
+  if (computer.is_deployed || computer.laboratory_id) {
+    alert('This computer is already deployed! Please return it before redeploying.')
+    return
+  }
+  
   deployingComputer.value = computer
   const modal = new Modal(document.getElementById('deploymentModal'))
   modal.show()
@@ -1309,6 +1406,7 @@ const confirmDeployment = async () => {
     return
   }
 
+  isLoading.value = true
   try {
     // Validate laboratory capacity if selected
     if (deployment.value.laboratory_id && selectedLabCapacity.value) {
@@ -1355,11 +1453,24 @@ const confirmDeployment = async () => {
   } catch (error) {
     console.error('Error deploying computer:', error)
     alert('Error deploying computer: ' + (error.response?.data?.message || error.message))
+  } finally {
+    isLoading.value = false
   }
 }
 
-onMounted(() => {
-  refreshData()
+onMounted(async () => {
+  initDarkMode()
+  
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
+  await refreshData()
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 })
 </script>
 
@@ -1379,17 +1490,17 @@ onMounted(() => {
 }
 
 .main-content.collapsed {
-  margin-left: 70px;
+  margin-left: 60px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 70px;
+    margin-left: 60px;
   }
   
   .main-content.collapsed {
-    margin-left: 70px;
+    margin-left: 60px;
   }
 }
 
@@ -1401,5 +1512,178 @@ onMounted(() => {
 .progress-bar {
   background-color: #198754;
   border-radius: 0.25rem;
+}
+
+/* Dark mode styles */
+:global(.dark-mode) .dashboard-layout {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .main-content {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .card-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .card-body {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .h1,
+:global(.dark-mode) .h2,
+:global(.dark-mode) .h3,
+:global(.dark-mode) .h4,
+:global(.dark-mode) .h5,
+:global(.dark-mode) .h6 {
+  color: #fff !important;
+}
+
+:global(.dark-mode) .text-muted {
+  color: #b3b3b3 !important;
+}
+
+:global(.dark-mode) .btn-outline-primary {
+  border-color: #0F6F43;
+  color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-outline-primary:hover {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+  color: #fff;
+}
+
+:global(.dark-mode) .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+:global(.dark-mode) .btn-success:hover {
+  background-color: #157347;
+  border-color: #157347;
+}
+
+:global(.dark-mode) .btn-info {
+  background-color: #0c8599;
+  border-color: #0c8599;
+}
+
+:global(.dark-mode) .btn-info:hover {
+  background-color: #0a6b7c;
+  border-color: #0a6b7c;
+}
+
+:global(.dark-mode) .table {
+  color: #fff;
+}
+
+:global(.dark-mode) .table thead th {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody td {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody tr:hover td {
+  background-color: #2d2d2d;
+}
+
+:global(.dark-mode) .form-control {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-control:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .form-select {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-select:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .modal-content {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .modal-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .modal-body {
+  background-color: #1e1e1e;
+}
+
+:global(.dark-mode) .modal-footer {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .badge {
+  background-color: #0F6F43;
+}
+
+:global(.dark-mode) .progress {
+  background-color: #2d2d2d;
+}
+
+:global(.dark-mode) .dropdown-menu {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .dropdown-item {
+  color: #fff;
+}
+
+:global(.dark-mode) .dropdown-item:hover {
+  background-color: #2d2d2d;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link:hover {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-item.active .page-link {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
 }
 </style>

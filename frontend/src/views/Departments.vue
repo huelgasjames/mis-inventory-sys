@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard-layout">
+    <!-- Loading Spinner -->
+    <LoadingSpinner :is-visible="isLoading" message="Loading departments..." />
+
     <!-- Navigation Sidebar -->
     <AppNav :is-collapsed="isNavCollapsed" />
     
@@ -7,7 +10,11 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Departments received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -16,7 +23,7 @@
       <div class="container-fluid p-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">Department Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">Department Management</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -310,19 +317,43 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
-import AppNav from '@/components/AppNav.vue'
+import { ref, onMounted, watch, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
+import AppNav from '@/components/AppNav.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { useDarkMode } from '@/composables/useDarkMode.js'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 export default {
   name: 'Departments',
   components: {
     AppNav,
-    AppHeader
+    AppHeader,
+    LoadingSpinner
   },
   setup() {
+    const router = useRouter()
+    const { initDarkMode } = useDarkMode()
+    
     const isNavCollapsed = ref(false)
+    const isLoading = ref(false)
+    const loadingStartTime = ref(null)
+    
+    // Helper function to ensure minimum loading duration
+    const ensureMinimumLoading = async (minDuration = 5000) => {
+      if (loadingStartTime.value) {
+        const elapsed = Date.now() - loadingStartTime.value
+        if (elapsed < minDuration) {
+          await new Promise(resolve => setTimeout(resolve, minDuration - elapsed))
+        }
+      }
+    }
+    
+    // Watch for changes in navigation state
+    watch(isNavCollapsed, (newValue, oldValue) => {
+      console.log('Departments isNavCollapsed changed from', oldValue, 'to', newValue)
+    })
     const departments = ref([])
     const categories = ref([])
     const categoryFilter = ref('')
@@ -374,38 +405,64 @@ export default {
     const totalUsers = computed(() => departments.value.reduce((sum, d) => sum + (d.total_users || 0), 0))
 
     const fetchDepartments = async () => {
+      if (!isLoading.value) {
+        isLoading.value = true
+        loadingStartTime.value = Date.now()
+      }
       try {
         console.log('Fetching departments from API...')
         const response = await axios.get('http://localhost:8000/api/departments')
-        console.log('Departments API Response:', response.data)
-        departments.value = response.data.data || []
-        console.log('Departments loaded:', departments.value.length)
+        console.log('Departments API response:', response.data)
+        
+        if (response.data.success) {
+          departments.value = response.data.data || []
+          console.log('Departments loaded:', departments.value.length)
+        } else {
+          console.warn('Departments API returned unsuccessful response')
+          departments.value = []
+        }
       } catch (error) {
         console.error('Error fetching departments:', error)
-        console.log('Error details:', error.response?.data || error.message)
         departments.value = []
+      } finally {
+        await ensureMinimumLoading(5000)
+        isLoading.value = false
+        loadingStartTime.value = null
       }
     }
 
     const fetchCategories = async () => {
+      if (!isLoading.value) {
+        isLoading.value = true
+        loadingStartTime.value = Date.now()
+      }
       try {
         const response = await axios.get('http://localhost:8000/api/department-categories')
-        categories.value = response.data.data || []
+        if (response.data.success) {
+          categories.value = response.data.data || []
+        } else {
+          categories.value = []
+        }
       } catch (error) {
         console.error('Error fetching categories:', error)
-        // Fallback data
-        categories.value = [
-          { id: 1, name: 'Academic', color: '#0F6F43' },
-          { id: 2, name: 'Administrative', color: '#004D7A' },
-          { id: 3, name: 'Technical', color: '#FF6B35' },
-          { id: 4, name: 'Student Services', color: '#8B5CF6' },
-          { id: 5, name: 'Facilities', color: '#10B981' }
-        ]
+        categories.value = []
+      } finally {
+        await ensureMinimumLoading(5000)
+        isLoading.value = false
       }
     }
 
     const refreshData = async () => {
+      if (!isLoading.value) {
+        isLoading.value = true
+        loadingStartTime.value = Date.now()
+      }
+      
       await Promise.all([fetchDepartments(), fetchCategories()])
+      
+      await ensureMinimumLoading()
+      isLoading.value = false
+      loadingStartTime.value = null
     }
 
     const showCreateDepartmentModal = () => {
@@ -414,6 +471,7 @@ export default {
     }
 
     const createDepartment = async () => {
+      isLoading.value = true
       try {
         const response = await axios.post('http://localhost:8000/api/departments', newDepartment.value)
         
@@ -433,6 +491,8 @@ export default {
       } catch (error) {
         console.error('Error creating department:', error)
         alert('Error creating department: ' + (error.response?.data?.message || error.message))
+      } finally {
+        isLoading.value = false
       }
     }
 
@@ -449,6 +509,7 @@ export default {
     }
 
     const updateDepartment = async () => {
+      isLoading.value = true
       try {
         const response = await axios.put(`http://localhost:8000/api/departments/${editingDepartment.value.id}`, editingDepartment.value)
         
@@ -460,12 +521,15 @@ export default {
       } catch (error) {
         console.error('Error updating department:', error)
         alert('Error updating department: ' + (error.response?.data?.message || error.message))
+      } finally {
+        isLoading.value = false
       }
     }
 
     const deleteDepartment = async (department) => {
       if (!confirm('Are you sure you want to delete this department?')) return
       
+      isLoading.value = true
       try {
         const response = await axios.delete(`http://localhost:8000/api/departments/${department.id}`)
         
@@ -476,6 +540,8 @@ export default {
       } catch (error) {
         console.error('Error deleting department:', error)
         alert('Error deleting department: ' + (error.response?.data?.message || error.message))
+      } finally {
+        isLoading.value = false
       }
     }
 
@@ -487,12 +553,24 @@ export default {
       alert('Export feature would generate CSV/PDF report of current departments')
     }
 
-    onMounted(() => {
-      refreshData()
+    onMounted(async () => {
+      initDarkMode()
+      
+      if (!isLoading.value) {
+        isLoading.value = true
+        loadingStartTime.value = Date.now()
+      }
+      
+      await refreshData()
+      
+      await ensureMinimumLoading()
+      isLoading.value = false
+      loadingStartTime.value = null
     })
 
     return {
       isNavCollapsed,
+      isLoading,
       departments,
       categories,
       categoryFilter,
@@ -538,17 +616,186 @@ export default {
 }
 
 .main-content.collapsed {
-  margin-left: 70px;
+  margin-left: 60px;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 70px;
+    margin-left: 60px;
   }
   
   .main-content.collapsed {
-    margin-left: 70px;
+    margin-left: 60px;
   }
+}
+
+/* Dark mode styles */
+:global(.dark-mode) .dashboard-layout {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .main-content {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .card-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .card-body {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .h1,
+:global(.dark-mode) .h2,
+:global(.dark-mode) .h3,
+:global(.dark-mode) .h4,
+:global(.dark-mode) .h5,
+:global(.dark-mode) .h6 {
+  color: #fff !important;
+}
+
+:global(.dark-mode) .text-muted {
+  color: #b3b3b3 !important;
+}
+
+:global(.dark-mode) .btn-outline-primary {
+  border-color: #0F6F43;
+  color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-outline-primary:hover {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+  color: #fff;
+}
+
+:global(.dark-mode) .btn-success {
+  background-color: #198754;
+  border-color: #198754;
+}
+
+:global(.dark-mode) .btn-success:hover {
+  background-color: #157347;
+  border-color: #157347;
+}
+
+:global(.dark-mode) .btn-info {
+  background-color: #0c8599;
+  border-color: #0c8599;
+}
+
+:global(.dark-mode) .btn-info:hover {
+  background-color: #0a6b7c;
+  border-color: #0a6b7c;
+}
+
+:global(.dark-mode) .table {
+  color: #fff;
+}
+
+:global(.dark-mode) .table thead th {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody td {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody tr:hover td {
+  background-color: #2d2d2d;
+}
+
+:global(.dark-mode) .form-control {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-control:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .form-select {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-select:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .modal-content {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .modal-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .modal-body {
+  background-color: #1e1e1e;
+}
+
+:global(.dark-mode) .modal-footer {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .badge {
+  background-color: #0F6F43;
+}
+
+:global(.dark-mode) .dropdown-menu {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .dropdown-item {
+  color: #fff;
+}
+
+:global(.dark-mode) .dropdown-item:hover {
+  background-color: #2d2d2d;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link:hover {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-item.active .page-link {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
 }
 </style>

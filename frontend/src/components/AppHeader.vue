@@ -1,48 +1,52 @@
 <template>
-  <header class="navbar navbar-expand bg-success navbar-dark">
+  <header class="navbar navbar-expand bg-success navbar-dark py-2 px-3">
     <div class="container-fluid">
-      <div class="navbar-brand d-flex align-items-center">
-        <img src="/pnc-logo.png" alt="MiSD Logo" class="img-fluid me-2 rounded-circle" style="height: 30px; border: 1px solid white;">
-        <span class="fw-bold">MiSD Inventory Management</span>
+      <!-- Left side: User Info -->
+      <div class="d-flex align-items-center">
+        <div class="text-white">
+          <span class="fw-bold">MiSD Inventory</span>
+         
+          
+        </div>
       </div>
-      
+
+      <!-- Right side: Icons and Toggle Switch -->
       <div class="d-flex align-items-center gap-3">
-        <div class="text-white d-flex align-items-center">
-          <span class="badge bg-white text-success me-2">Admin</span>
-          <small class="text-white-50">System Administrator</small>
+        <!-- Dark Mode Toggle -->
+        <div class="form-check form-switch me-2">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            id="darkModeToggle" 
+            @click="handleDarkModeToggle"
+            :checked="isDarkMode"
+          >
+          <label class="form-check-label text-white" for="darkModeToggle" title="Toggle Dark Mode">
+            <i :class="isDarkMode ? 'bi bi-moon-fill' : 'bi bi-sun-fill'"></i>
+          </label>
         </div>
-        
-        <button class="btn btn-outline-danger btn-sm" @click="logout" title="Logout">
-          <i class="bi bi-box-arrow-right"></i>
-        </button>
-        
-        <div class="dropdown">
-          <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
-            <i class="bi bi-gear"></i>
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li><a class="dropdown-item" href="#" @click="setTheme('light')">
-              <i class="bi bi-sun me-2"></i>Light
-            </a></li>
-            <li><a class="dropdown-item" href="#" @click="setTheme('dark')">
-              <i class="bi bi-moon me-2"></i>Dark
-            </a></li>
-            <li><a class="dropdown-item" href="#" @click="setTheme('auto')">
-              <i class="bi bi-circle-half me-2"></i>Auto
-            </a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li><a class="dropdown-item text-danger" href="#" @click="logout">
-              <i class="bi bi-box-arrow-right me-2"></i>Logout
-            </a></li>
-          </ul>
+
+        <!-- On/Off Toggle Switch for Sidebar -->
+        <div class="form-check form-switch me-2">
+          <input 
+            class="form-check-input" 
+            type="checkbox" 
+            id="sidebarToggle" 
+            @click="toggleSidebar"
+            :checked="!props.isCollapsed"
+          >
+          <label class="form-check-label text-white" for="sidebarToggle"></label>
         </div>
-        
-        <button class="btn btn-outline-light btn-sm" @click="toggleMenu">
-          <i class="bi bi-list"></i>
-        </button>
-        <button class="btn btn-outline-light btn-sm" @click="openProfile">
-          <i class="bi bi-person"></i>
-        </button>
+
+        <i class="bi bi-bell-fill text-white fs-5 cursor-pointer" @click="openNotifications"></i>
+        <i class="bi bi-grid-3x3-gap-fill text-white fs-5 cursor-pointer" @click="openGrid"></i>
+        <img 
+          src="/pnc-logo.png" 
+          alt="Profile" 
+          class="rounded-circle" 
+          style="width: 30px; height: 30px; object-fit: cover; border: 1px solid white;"
+          @click="openProfile"
+        >
       </div>
     </div>
   </header>
@@ -50,17 +54,36 @@
 
 <script setup>
 import { defineEmits, ref, onMounted, onUnmounted } from 'vue'
+import { useDarkMode } from '@/composables/useDarkMode.js'
 
-const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open'])
+const props = defineProps({
+  isCollapsed: {
+    type: Boolean,
+    default: false
+  }
+})
 
-const currentTheme = ref('light')
+const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open', 'sidebar-toggle'])
+const { isDarkMode, toggleDarkMode, initDarkMode } = useDarkMode()
 
-const toggleMenu = () => {
-  emit('menu-toggle')
+const toggleSidebar = (event) => {
+  event.preventDefault()
+  const newValue = !props.isCollapsed
+  console.log('Toggle clicked, current state:', props.isCollapsed, 'new state:', newValue)
+  emit('sidebar-toggle', newValue)
 }
 
-const openSettings = () => {
-  emit('settings-open')
+const handleDarkModeToggle = () => {
+  console.log('Dark mode toggle clicked')
+  toggleDarkMode()
+}
+
+const openNotifications = () => {
+  console.log('Notifications clicked')
+}
+
+const openGrid = () => {
+  console.log('Grid clicked')
 }
 
 const openProfile = () => {
@@ -81,49 +104,8 @@ const logout = () => {
   }
 }
 
-const setTheme = (theme) => {
-  currentTheme.value = theme
-  localStorage.setItem('theme', theme)
-  applyTheme(theme)
-}
-
-const applyTheme = (theme) => {
-  const html = document.documentElement
-  const body = document.body
-  
-  if (theme === 'auto') {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    html.classList.toggle('dark-mode', prefersDark)
-    html.classList.toggle('light-mode', !prefersDark)
-    body.classList.toggle('dark-mode', prefersDark)
-    body.classList.toggle('light-mode', !prefersDark)
-  } else {
-    const isDark = theme === 'dark'
-    html.classList.toggle('dark-mode', isDark)
-    html.classList.toggle('light-mode', !isDark)
-    body.classList.toggle('dark-mode', isDark)
-    body.classList.toggle('light-mode', !isDark)
-  }
-}
-
-const handleSystemThemeChange = (e) => {
-  if (currentTheme.value === 'auto') {
-    applyTheme('auto')
-  }
-}
-
 onMounted(() => {
-  // Load saved theme or default to light
-  const savedTheme = localStorage.getItem('theme') || 'light'
-  currentTheme.value = savedTheme
-  applyTheme(savedTheme)
-  
-  // Add system theme change listener
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', handleSystemThemeChange)
-})
-
-onUnmounted(() => {
-  window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', handleSystemThemeChange)
+  initDarkMode()
 })
 </script>
 
@@ -132,92 +114,61 @@ onUnmounted(() => {
   background: #0F6F43;
   color: white;
   padding: 1rem 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
-}
-
-.navbar-brand {
+  height: auto;
+  min-height: 60px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 }
 
-.navbar-brand img {
-  height: 30px;
-  margin-right: 0.5rem;
-  border-radius: 50%;
-  border: 1px solid white;
-}
-
-.navbar-brand span {
-  font-weight: bold;
-}
-
-.dropdown-menu {
-  margin-top: 0.5rem;
-  border: none;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-  border-radius: 0.375rem;
-}
-
-.dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+.cursor-pointer {
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: #2d3748;
-  font-size: 0.9rem;
+  transition: opacity 0.2s;
 }
 
-.dropdown-item:hover {
-  background-color: #f8f9fa;
-  color: #0F6F43;
+.cursor-pointer:hover {
+  opacity: 0.8;
 }
 
-.dropdown-item i {
-  font-size: 1rem;
-  width: 16px;
-  text-align: center;
+/* Custom toggle switch styles */
+.form-check-input:checked {
+  background-color: #28a745;
+  border-color: #28a745;
 }
 
-.btn-outline-light {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: white;
+.form-check-input {
+  width: 3em;
+  height: 1.5em;
+  cursor: pointer;
 }
 
-.btn-outline-light:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-color: white;
-  color: white;
-}
-
-/* Dark mode styles for the dropdown */
-:global(.dark-mode) .dropdown-menu {
-  background: #2d3748;
-  border-color: #4a5568;
-  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
-}
-
-:global(.dark-mode) .dropdown-item {
-  color: #e2e8f0;
-}
-
-:global(.dark-mode) .dropdown-item:hover {
-  background-color: #4a5568;
-  color: #e2e8f0;
+.form-check-input:focus {
+  border-color: #28a745;
+  outline: 0;
+  box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
 }
 
 /* Dark mode styles for the navbar */
 :global(.dark-mode) .navbar {
-  background: #0F6F43 !important;
+  background: #1a1a1a !important;
   color: white !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid #333;
+}
+
+/* Dark mode toggle switch styles */
+:global(.dark-mode) .form-check-input:checked {
+  background-color: #ffc107;
+  border-color: #ffc107;
+}
+
+:global(.dark-mode) .form-check-input {
+  background-color: #495057;
+  border-color: #6c757d;
 }
 
 /* Light mode styles */

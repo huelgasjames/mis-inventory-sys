@@ -7,7 +7,11 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Users received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -410,7 +414,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
@@ -424,6 +428,12 @@ export default {
   setup() {
     console.log('Users component setup started')
     const isNavCollapsed = ref(false)
+
+    // Watch for changes in navigation state
+    watch(isNavCollapsed, (newValue, oldValue) => {
+      console.log('Users isNavCollapsed changed from', oldValue, 'to', newValue)
+    })
+    
     const users = ref([])
     const departments = ref([])
     const roleFilter = ref('')

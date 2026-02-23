@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deployment Capacity Test</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Deployment Capacity Management Test</h2>
+
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5>Available Laboratories</h5>
+            </div>
+            <div class="card-body">
+                <button class="btn btn-primary mb-3" onclick="loadLaboratories()">Load Labs</button>
+                <div id="laboratoriesList" class="row">
+                    <p class="text-muted">Click "Load Labs" to see available laboratories</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Test Laboratory Capacity</h5>
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-info mb-3" onclick="testGetLaboratories()">Get Laboratory Status</button>
+                        <button class="btn btn-success mb-3" onclick="testDeployComputer()">Deploy Computer</button>
+                        <button class="btn btn-warning mb-3" onclick="testReturnComputer()">Return Computer</button>
+                        <button class="btn btn-secondary mb-3" onclick="testGetComputers()">Get Computers</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5>Capacity Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="capacityInfo">
+                            <p class="text-muted">Click "Get Laboratory Status" to see current capacity</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>API Response</h5>
+            </div>
+            <div class="card-body">
+                <pre id="response" class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api';
+        let currentDeploymentId = null;
+        let currentComputerId = 1;
+        let currentLaboratoryId = 1;
+
+        async function loadLaboratories() {
+            try {
+                const response = await fetch(`${API_BASE}/laboratories`);
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success && result.data.length > 0) {
+                    const laboratoriesList = document.getElementById('laboratoriesList');
+                    laboratoriesList.innerHTML = '';
+                    
+                    result.data.forEach(lab => {
+                        const available = lab.capacity - (lab.current_computer_count || 0);
+                        const percentage = ((lab.current_computer_count || 0) / lab.capacity * 100).toFixed(1);
+                        const card = document.createElement('div');
+                        card.className = 'col-md-6 mb-3';
+                        card.innerHTML = `
+                            <div class="card h-100 ${available === 0 ? 'border-danger' : available <= 5 ? 'border-warning' : 'border-success'}">
+                                <div class="card-body">
+                                    <h6 class="card-title">${lab.lab_name}</h6>
+                                    <p class="card-text small">
+                                        <strong>Capacity:</strong> ${lab.current_computer_count || 0}/${lab.capacity}<br>
+                                        <strong>Available:</strong> ${available} slots<br>
+                                        <strong>Usage:</strong> ${percentage}%
+                                    </p>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar ${available === 0 ? 'bg-danger' : available <= 5 ? 'bg-warning' : 'bg-success'}" 
+                                             style="width: ${percentage}%">
+                                            ${percentage}%
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-sm btn-primary" onclick="selectLaboratory(${lab.id}, '${lab.lab_name}')">
+                                        Select Lab
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                        laboratoriesList.appendChild(card);
+                    });
+                } else {
+                    alert('No laboratories found');
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        function selectLaboratory(labId, labName) {
+            currentLaboratoryId = labId;
+            alert(`Selected laboratory: ${labName} (ID: ${labId})`);
+        }
+
+        async function testGetLaboratories() {
+            try {
+                const response = await fetch(`${API_BASE}/laboratories`);
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success && result.data.length > 0) {
+                    const lab = result.data[0];
+                    currentLaboratoryId = lab.id;
+                    updateCapacityInfo(lab);
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testGetComputers() {
+            try {
+                const response = await fetch(`${API_BASE}/computers?include=laboratory`);
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success && result.data.length > 0) {
+                    // Find an available computer
+                    const availableComputer = result.data.find(c => !c.is_deployed && c.status === 'Working');
+                    if (availableComputer) {
+                        currentComputerId = availableComputer.id;
+                        alert(`Found available computer: ${availableComputer.computer_name} (ID: ${availableComputer.id})`);
+                    } else {
+                        alert('No available working computers found');
+                    }
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+            }
+        }
+
+        async function testDeployComputer() {
+            try {
+                const deploymentData = {
+                    computer_id: currentComputerId,
+                    department_id: 1,
+                    laboratory_id: currentLaboratoryId,
+                    pc_position: `PC-${Math.floor(Math.random() * 100)}`,
+                    location: 'Test Location',
+                    deployment_date: new Date().toISOString().split('T')[0],
+                    notes: 'Test deployment',
+                    deployed_by: 'Test User',
+                    status: 'deployed'
+                };
+
+                const response = await fetch(`${API_BASE}/deployments`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(deploymentData)
+                });
+
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    currentDeploymentId = result.data.id;
+                    alert('Computer deployed successfully!');
+                    // Refresh laboratory status
+                    setTimeout(testGetLaboratories, 500);
+                } else {
+                    alert('Deployment failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        async function testReturnComputer() {
+            if (!currentDeploymentId) {
+                alert('No deployment to return. Please deploy a computer first.');
+                return;
+            }
+
+            try {
+                const returnData = {
+                    return_date: new Date().toISOString().split('T')[0],
+                    notes: 'Test return'
+                };
+
+                const response = await fetch(`${API_BASE}/deployments/${currentDeploymentId}/return`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(returnData)
+                });
+
+                const result = await response.json();
+                document.getElementById('response').textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    currentDeploymentId = null;
+                    alert('Computer returned successfully!');
+                    // Refresh laboratory status
+                    setTimeout(testGetLaboratories, 500);
+                } else {
+                    alert('Return failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                document.getElementById('response').textContent = 'Error: ' + error.message;
+                alert('Network error: ' + error.message);
+            }
+        }
+
+        function updateCapacityInfo(laboratory) {
+            const capacityInfo = document.getElementById('capacityInfo');
+            const currentCount = laboratory.current_computer_count || 0;
+            const capacity = laboratory.capacity;
+            const available = capacity - currentCount;
+            const percentage = (currentCount / capacity * 100).toFixed(1);
+            
+            capacityInfo.innerHTML = `
+                <h6>${laboratory.lab_name}</h6>
+                <p><strong>Capacity:</strong> ${currentCount}/${capacity}</p>
+                <p><strong>Available:</strong> ${available} slots</p>
+                <p><strong>Usage:</strong> ${percentage}%</p>
+                <div class="progress">
+                    <div class="progress-bar ${available === 0 ? 'bg-danger' : available <= 5 ? 'bg-warning' : 'bg-success'}" 
+                         style="width: ${percentage}%">
+                        ${percentage}%
+                    </div>
+                </div>
+                <p class="mt-2"><strong>Status:</strong> ${available === 0 ? '🔴 Full' : available <= 5 ? '🟡 Almost Full' : '🟢 Available'}</p>
+            `;
+        }
+    </script>
+</body>
+</html>

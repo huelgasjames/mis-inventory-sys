@@ -7,7 +7,8 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => isNavCollapsed = collapsed"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />

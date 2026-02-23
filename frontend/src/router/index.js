@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Login from '@/views/Login.vue'
 import Dashboard from '@/views/Dashboard.vue'
 import Components from '@/views/Components.vue'
+import ComponentManager from '@/views/ComponentManager.vue'
 import Computers from '@/views/Computers.vue'
 import Deployment from '@/views/Deployment.vue'
 import Processors from '@/views/Processors.vue'
@@ -38,6 +39,12 @@ const routes = [
     path: '/components',
     name: 'Components',
     component: Components,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/component-manager',
+    name: 'ComponentManager',
+    component: ComponentManager,
     meta: { requiresAuth: true }
   },
   {

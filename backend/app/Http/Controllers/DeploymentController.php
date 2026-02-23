@@ -86,9 +86,17 @@ class DeploymentController extends Controller
                     ], 422);
                 }
 
-                // Update computer's laboratory assignment
+                // Update computer's laboratory assignment and deployment status
                 Computer::find($validated['computer_id'])->update([
-                    'laboratory_id' => $validated['laboratory_id']
+                    'laboratory_id' => $validated['laboratory_id'],
+                    'is_deployed' => true,
+                    'deployment_status' => 'deployed'
+                ]);
+            } else {
+                // Update computer deployment status even if no laboratory
+                Computer::find($validated['computer_id'])->update([
+                    'is_deployed' => true,
+                    'deployment_status' => 'deployed'
                 ]);
             }
 
@@ -245,8 +253,13 @@ class DeploymentController extends Controller
                 'notes' => $validated['notes'] ?? $deployment->notes,
             ]);
 
-            // Update computer status to available
-            $deployment->computer->update(['status' => 'Working']);
+            // Update computer status to available and remove laboratory assignment
+            $deployment->computer->update([
+                'status' => 'Working',
+                'is_deployed' => false,
+                'deployment_status' => 'available',
+                'laboratory_id' => null
+            ]);
 
             return response()->json([
                 'success' => true,

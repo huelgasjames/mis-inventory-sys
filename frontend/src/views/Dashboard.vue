@@ -1,5 +1,8 @@
 <template>
   <div class="dashboard-layout">
+    <!-- Loading Spinner -->
+    <LoadingSpinner :is-visible="isLoading" message="Loading dashboard..." />
+
     <!-- Navigation Sidebar -->
     <AppNav :is-collapsed="isNavCollapsed" />
     
@@ -7,7 +10,11 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Dashboard received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -16,7 +23,7 @@
       <div class="container-fluid p-4">
         <!-- Dashboard Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">Inventory Dashboard</h1>
+          <h1 class="h3 mb-0" style="color: black;">Inventory Dashboard</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -269,13 +276,33 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick } from 'vue'
+import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { useDarkMode } from '@/composables/useDarkMode.js'
 
 const router = useRouter()
+const { initDarkMode } = useDarkMode()
 const isNavCollapsed = ref(false)
+const isLoading = ref(false)
+const loadingStartTime = ref(null)
+
+// Helper function to ensure minimum loading duration
+const ensureMinimumLoading = async (minDuration = 5000) => {
+  if (loadingStartTime.value) {
+    const elapsed = Date.now() - loadingStartTime.value
+    if (elapsed < minDuration) {
+      await new Promise(resolve => setTimeout(resolve, minDuration - elapsed))
+    }
+  }
+}
+
+// Watch for changes in navigation state
+watch(isNavCollapsed, (newValue, oldValue) => {
+  console.log('isNavCollapsed changed from', oldValue, 'to', newValue)
+})
 
 // Data from backend API
 const dashboardStats = ref({})
@@ -300,6 +327,10 @@ const healthChart = ref(null)
 
 // Fetch dashboard statistics
 const fetchDashboardStats = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/reports/dashboard-stats')
     const data = await response.json()
@@ -308,11 +339,19 @@ const fetchDashboardStats = async () => {
     }
   } catch (error) {
     console.error('Error fetching dashboard stats:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 // Fetch component statistics
 const fetchComponentStats = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/components/stats')
     const data = await response.json()
@@ -321,11 +360,19 @@ const fetchComponentStats = async () => {
     }
   } catch (error) {
     console.error('Error fetching component stats:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 // Fetch components
 const fetchComponents = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/components')
     const data = await response.json()
@@ -334,11 +381,19 @@ const fetchComponents = async () => {
     }
   } catch (error) {
     console.error('Error fetching components:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 // Fetch departments
 const fetchDepartments = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/departments')
     const data = await response.json()
@@ -347,11 +402,19 @@ const fetchDepartments = async () => {
     }
   } catch (error) {
     console.error('Error fetching departments:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 // Fetch users
 const fetchUsers = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/users')
     const data = await response.json()
@@ -360,11 +423,19 @@ const fetchUsers = async () => {
     }
   } catch (error) {
     console.error('Error fetching users:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 // Create computer
 const createComputer = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/computers/create', {
       method: 'POST',
@@ -387,6 +458,10 @@ const createComputer = async () => {
   } catch (error) {
     console.error('Error creating computer:', error)
     alert('Error creating computer')
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
@@ -409,12 +484,23 @@ const showCreateComputerModal = () => {
 }
 
 // Refresh all data
-const refreshData = () => {
-  fetchDashboardStats()
-  fetchComponentStats()
-  fetchComponents()
-  fetchDepartments()
-  fetchUsers()
+const refreshData = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
+  await Promise.all([
+    fetchDashboardStats(),
+    fetchComponentStats(),
+    fetchComponents(),
+    fetchDepartments(),
+    fetchUsers()
+  ])
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 }
 
 // Get activity icon
@@ -532,8 +618,19 @@ const logout = () => {
 }
 
 onMounted(async () => {
+  initDarkMode()
+  
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
   await refreshData()
   initializeCharts()
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 })
 </script>
 
@@ -572,5 +669,89 @@ onMounted(async () => {
   display: grid;
   gap: 0.5rem;
   grid-template-columns: 1fr;
+}
+
+/* Dark mode styles */
+:global(.dark-mode) .dashboard-layout {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .main-content {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .card-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .card-body {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .h1,
+:global(.dark-mode) .h2,
+:global(.dark-mode) .h3,
+:global(.dark-mode) .h4,
+:global(.dark-mode) .h5,
+:global(.dark-mode) .h6 {
+  color: #fff !important;
+}
+
+:global(.dark-mode) .text-muted {
+  color: #b3b3b3 !important;
+}
+
+:global(.dark-mode) .btn-outline-primary {
+  border-color: #0F6F43;
+  color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-outline-primary:hover {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+  color: #fff;
+}
+
+:global(.dark-mode) .btn-primary {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-primary:hover {
+  background-color: #0d5a37;
+  border-color: #0d5a37;
+}
+
+:global(.dark-mode) .bg-light {
+  background-color: #2d2d2d !important;
+}
+
+:global(.dark-mode) .badge {
+  background-color: #0F6F43;
+}
+
+:global(.dark-mode) .list-group-item {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .list-group-item:hover {
+  background-color: #2d2d2d;
+}
+
+/* Chart container dark mode */
+:global(.dark-mode) .chart-container {
+  background-color: #1e1e1e;
+  border-radius: 8px;
+  padding: 10px;
 }
 </style>

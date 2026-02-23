@@ -1,13 +1,20 @@
 <template>
   <div class="dashboard-layout">
+    <!-- Loading Spinner -->
+    <LoadingSpinner :is-visible="isLoading" message="Loading components..." />
+
     <!-- Navigation Sidebar -->
     <AppNav :is-collapsed="isNavCollapsed" />
     
     <!-- Main Content Area -->
-    <div class="main-content" :class="{ 'expanded': !isNavCollapsed }">
+    <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Components received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -15,7 +22,7 @@
       <!-- Components Content -->
       <div class="container-fluid p-4">
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">Component Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">Component Management</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -201,12 +208,35 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
+import LoadingSpinner from '@/components/LoadingSpinner.vue'
+import { useDarkMode } from '@/composables/useDarkMode.js'
 import { Modal } from 'bootstrap'
 
+const router = useRouter()
+const { initDarkMode } = useDarkMode()
+
 const isNavCollapsed = ref(false)
+const isLoading = ref(false)
+const loadingStartTime = ref(null)
+
+// Helper function to ensure minimum loading duration
+const ensureMinimumLoading = async (minDuration = 5000) => {
+  if (loadingStartTime.value) {
+    const elapsed = Date.now() - loadingStartTime.value
+    if (elapsed < minDuration) {
+      await new Promise(resolve => setTimeout(resolve, minDuration - elapsed))
+    }
+  }
+}
+
+// Watch for changes in navigation state
+watch(isNavCollapsed, (newValue, oldValue) => {
+  console.log('Components isNavCollapsed changed from', oldValue, 'to', newValue)
+})
 const activeTab = ref('processors')
 const components = ref({})
 
@@ -241,6 +271,10 @@ const getStatusClass = (status) => {
 }
 
 const fetchComponents = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
   try {
     const response = await fetch('http://localhost:8000/api/components')
     const data = await response.json()
@@ -249,10 +283,15 @@ const fetchComponents = async () => {
     }
   } catch (error) {
     console.error('Error fetching components:', error)
+  } finally {
+    await ensureMinimumLoading()
+    isLoading.value = false
+    loadingStartTime.value = null
   }
 }
 
 const createComponent = async () => {
+  isLoading.value = true
   try {
     const response = await fetch('http://localhost:8000/api/components/create', {
       method: 'POST',
@@ -275,6 +314,8 @@ const createComponent = async () => {
   } catch (error) {
     console.error('Error adding component:', error)
     alert('Error adding component')
+  } finally {
+    isLoading.value = false
   }
 }
 
@@ -284,6 +325,7 @@ const editComponent = (component) => {
 
 const deleteComponent = async (id) => {
   if (confirm('Are you sure you want to delete this component?')) {
+    isLoading.value = true
     try {
       const response = await fetch(`http://localhost:8000/api/components/${id}/delete`, {
         method: 'DELETE'
@@ -299,6 +341,8 @@ const deleteComponent = async (id) => {
     } catch (error) {
       console.error('Error deleting component:', error)
       alert('Error deleting component')
+    } finally {
+      isLoading.value = false
     }
   }
 }
@@ -319,8 +363,17 @@ const showCreateModal = () => {
   modal.show()
 }
 
-const refreshData = () => {
-  fetchComponents()
+const refreshData = async () => {
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
+  await fetchComponents()
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 }
 
 const toggleNav = () => {
@@ -335,8 +388,19 @@ const openSettings = () => {
   console.log('Opening settings')
 }
 
-onMounted(() => {
-  fetchComponents()
+onMounted(async () => {
+  initDarkMode()
+  
+  if (!isLoading.value) {
+    isLoading.value = true
+    loadingStartTime.value = Date.now()
+  }
+  
+  await fetchComponents()
+  
+  await ensureMinimumLoading()
+  isLoading.value = false
+  loadingStartTime.value = null
 })
 </script>
 
@@ -353,19 +417,213 @@ onMounted(() => {
   transition: margin-left 0.3s ease;
   display: flex;
   flex-direction: column;
+  min-height: 100vh;
 }
 
-.main-content.expanded {
-  margin-left: 70px;
+.main-content.collapsed {
+  margin-left: 60px;
 }
 
 @media (max-width: 768px) {
   .main-content {
-    margin-left: 70px;
+    margin-left: 60px;
   }
   
-  .main-content.expanded {
-    margin-left: 70px;
+  .main-content.collapsed {
+    margin-left: 60px;
   }
+}
+
+/* Dark mode styles */
+:global(.dark-mode) .dashboard-layout {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .main-content {
+  background-color: #121212;
+}
+
+:global(.dark-mode) .card {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .card-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .card-body {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .nav-tabs {
+  border-color: #333;
+}
+
+:global(.dark-mode) .nav-tabs .nav-link {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #b3b3b3;
+}
+
+:global(.dark-mode) .nav-tabs .nav-link:hover {
+  background-color: #3d3d3d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .nav-tabs .nav-link.active {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #0F6F43;
+}
+
+:global(.dark-mode) .h1,
+:global(.dark-mode) .h2,
+:global(.dark-mode) .h3,
+:global(.dark-mode) .h4,
+:global(.dark-mode) .h5,
+:global(.dark-mode) .h6 {
+  color: #fff !important;
+}
+
+:global(.dark-mode) .text-muted {
+  color: #b3b3b3 !important;
+}
+
+:global(.dark-mode) .btn-outline-primary {
+  border-color: #0F6F43;
+  color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-outline-primary:hover {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+  color: #fff;
+}
+
+:global(.dark-mode) .btn-primary {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
+}
+
+:global(.dark-mode) .btn-primary:hover {
+  background-color: #0d5a37;
+  border-color: #0d5a37;
+}
+
+:global(.dark-mode) .table {
+  color: #fff;
+}
+
+:global(.dark-mode) .table thead th {
+  background-color: #2d2d2d;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody td {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .table tbody tr:hover td {
+  background-color: #2d2d2d;
+}
+
+:global(.dark-mode) .form-control {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-control:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .form-select {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .form-select:focus {
+  background-color: #2d2d2d;
+  border-color: #0F6F43;
+  color: #fff;
+  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
+}
+
+:global(.dark-mode) .modal-content {
+  background-color: #1e1e1e;
+  color: #fff;
+}
+
+:global(.dark-mode) .modal-header {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .modal-body {
+  background-color: #1e1e1e;
+}
+
+:global(.dark-mode) .modal-footer {
+  background-color: #2d2d2d;
+  border-color: #333;
+}
+
+:global(.dark-mode) .badge {
+  background-color: #0F6F43;
+}
+
+:global(.dark-mode) .badge.bg-success {
+  background-color: #198754 !important;
+}
+
+:global(.dark-mode) .badge.bg-danger {
+  background-color: #dc3545 !important;
+}
+
+:global(.dark-mode) .badge.bg-secondary {
+  background-color: #6c757d !important;
+}
+
+:global(.dark-mode) .dropdown-menu {
+  background-color: #1e1e1e;
+  border-color: #333;
+}
+
+:global(.dark-mode) .dropdown-item {
+  color: #fff;
+}
+
+:global(.dark-mode) .dropdown-item:hover {
+  background-color: #2d2d2d;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link {
+  background-color: #1e1e1e;
+  border-color: #333;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-link:hover {
+  background-color: #2d2d2d;
+  border-color: #444;
+  color: #fff;
+}
+
+:global(.dark-mode) .pagination .page-item.active .page-link {
+  background-color: #0F6F43;
+  border-color: #0F6F43;
 }
 </style>

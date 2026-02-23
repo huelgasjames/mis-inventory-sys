@@ -16,15 +16,61 @@
       <div class="container-fluid p-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">{{ componentTitle }} Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">Component Manager</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
             </button>
-            <button class="btn btn-primary" @click="showCreateComponentModal">
-              <i class="bi bi-plus-circle me-2"></i>Add {{ componentTitle }}
-            </button>
           </div>
+        </div>
+
+        <!-- Component Type Tabs -->
+        <div class="mb-4">
+          <ul class="nav nav-tabs">
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'processors' }" href="#" @click.prevent="setComponentType('processors')">
+                <i class="bi bi-cpu me-2"></i>Processors
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'motherboards' }" href="#" @click.prevent="setComponentType('motherboards')">
+                <i class="bi bi-motherboard me-2"></i>Motherboards
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'video_cards' }" href="#" @click.prevent="setComponentType('video_cards')">
+                <i class="bi bi-gpu-card me-2"></i>Video Cards
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'dvd_roms' }" href="#" @click.prevent="setComponentType('dvd_roms')">
+                <i class="bi bi-disc me-2"></i>DVD ROMs
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'psus' }" href="#" @click.prevent="setComponentType('psus')">
+                <i class="bi bi-lightning-charge me-2"></i>PSUs
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'rams' }" href="#" @click.prevent="setComponentType('rams')">
+                <i class="bi bi-memory me-2"></i>RAM
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" :class="{ 'active': activeComponentType === 'storages' }" href="#" @click.prevent="setComponentType('storages')">
+                <i class="bi bi-hdd me-2"></i>Storage
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Current Component Type Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="mb-0" style="color: black;">{{ componentTitle }} Management</h4>
+          <button class="btn btn-primary" @click="showCreateComponentModal">
+            <i class="bi bi-plus-circle me-2"></i>Add {{ componentTitle }}
+          </button>
         </div>
 
         <!-- Statistics Cards -->
@@ -261,6 +307,7 @@ export default {
   setup() {
     const route = useRoute()
     const isNavCollapsed = ref(false)
+    const activeComponentType = ref('processors')
     const components = ref([])
     const statusFilter = ref('')
     const selectedComponent = ref(null)
@@ -271,16 +318,13 @@ export default {
     })
 
     const componentType = computed(() => {
-      const path = route.path
-      if (path.includes('processors')) return 'processors'
-      if (path.includes('motherboards')) return 'motherboards'
-      if (path.includes('rams')) return 'rams'
-      if (path.includes('storage')) return 'storages'
-      if (path.includes('video-cards')) return 'video_cards'
-      if (path.includes('psus')) return 'psus'
-      if (path.includes('dvd-roms')) return 'dvd_roms'
-      return 'processors'
+      return activeComponentType.value
     })
+
+    const setComponentType = (type) => {
+      activeComponentType.value = type
+      fetchComponents()
+    }
 
     const componentTitle = computed(() => {
       const titles = {
@@ -479,7 +523,9 @@ export default {
       viewComponent,
       editComponent,
       deleteComponent,
-      filterComponents
+      filterComponents,
+      activeComponentType,
+      setComponentType
     }
   }
 }

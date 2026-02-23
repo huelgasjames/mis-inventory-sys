@@ -7,7 +7,11 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => {
+          console.log('Processors received sidebar-toggle:', collapsed)
+          isNavCollapsed = collapsed
+        }"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -231,7 +235,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, watch, computed } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
@@ -244,6 +248,12 @@ export default {
   },
   setup() {
     const isNavCollapsed = ref(false)
+    
+    // Watch for changes in navigation state
+    watch(isNavCollapsed, (newValue, oldValue) => {
+      console.log('Processors isNavCollapsed changed from', oldValue, 'to', newValue)
+    })
+    
     const processors = ref([])
     const statusFilter = ref('')
     const selectedProcessor = ref(null)

@@ -7,7 +7,8 @@
     <div class="main-content" :class="{ 'collapsed': isNavCollapsed }">
       <!-- Header -->
       <AppHeader 
-        @menu-toggle="toggleNav"
+        :is-collapsed="isNavCollapsed"
+        @sidebar-toggle="(collapsed) => isNavCollapsed = collapsed"
         @profile-open="openProfile"
         @settings-open="openSettings"
       />
@@ -16,7 +17,7 @@
       <div class="container-fluid p-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0">DVD ROMs Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">DVD ROMs Management</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -238,7 +239,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
