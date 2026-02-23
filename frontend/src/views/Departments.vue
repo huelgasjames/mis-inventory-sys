@@ -322,7 +322,6 @@ import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import { useDarkMode } from '@/composables/useDarkMode.js'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
 export default {
@@ -334,7 +333,6 @@ export default {
   },
   setup() {
     const router = useRouter()
-    const { initDarkMode } = useDarkMode()
     
     const isNavCollapsed = ref(false)
     const isLoading = ref(false)
@@ -554,8 +552,6 @@ export default {
     }
 
     onMounted(async () => {
-      initDarkMode()
-      
       if (!isLoading.value) {
         isLoading.value = true
         loadingStartTime.value = Date.now()
@@ -630,172 +626,4 @@ export default {
   }
 }
 
-/* Dark mode styles */
-:global(.dark-mode) .dashboard-layout {
-  background-color: #121212;
-}
-
-:global(.dark-mode) .main-content {
-  background-color: #121212;
-}
-
-:global(.dark-mode) .card {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-:global(.dark-mode) .card-header {
-  background-color: #2d2d2d;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .card-body {
-  background-color: #1e1e1e;
-  color: #fff;
-}
-
-:global(.dark-mode) .h1,
-:global(.dark-mode) .h2,
-:global(.dark-mode) .h3,
-:global(.dark-mode) .h4,
-:global(.dark-mode) .h5,
-:global(.dark-mode) .h6 {
-  color: #fff !important;
-}
-
-:global(.dark-mode) .text-muted {
-  color: #b3b3b3 !important;
-}
-
-:global(.dark-mode) .btn-outline-primary {
-  border-color: #0F6F43;
-  color: #0F6F43;
-}
-
-:global(.dark-mode) .btn-outline-primary:hover {
-  background-color: #0F6F43;
-  border-color: #0F6F43;
-  color: #fff;
-}
-
-:global(.dark-mode) .btn-success {
-  background-color: #198754;
-  border-color: #198754;
-}
-
-:global(.dark-mode) .btn-success:hover {
-  background-color: #157347;
-  border-color: #157347;
-}
-
-:global(.dark-mode) .btn-info {
-  background-color: #0c8599;
-  border-color: #0c8599;
-}
-
-:global(.dark-mode) .btn-info:hover {
-  background-color: #0a6b7c;
-  border-color: #0a6b7c;
-}
-
-:global(.dark-mode) .table {
-  color: #fff;
-}
-
-:global(.dark-mode) .table thead th {
-  background-color: #2d2d2d;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .table tbody td {
-  background-color: #1e1e1e;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .table tbody tr:hover td {
-  background-color: #2d2d2d;
-}
-
-:global(.dark-mode) .form-control {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .form-control:focus {
-  background-color: #2d2d2d;
-  border-color: #0F6F43;
-  color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
-}
-
-:global(.dark-mode) .form-select {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .form-select:focus {
-  background-color: #2d2d2d;
-  border-color: #0F6F43;
-  color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
-}
-
-:global(.dark-mode) .modal-content {
-  background-color: #1e1e1e;
-  color: #fff;
-}
-
-:global(.dark-mode) .modal-header {
-  background-color: #2d2d2d;
-  border-color: #333;
-}
-
-:global(.dark-mode) .modal-body {
-  background-color: #1e1e1e;
-}
-
-:global(.dark-mode) .modal-footer {
-  background-color: #2d2d2d;
-  border-color: #333;
-}
-
-:global(.dark-mode) .badge {
-  background-color: #0F6F43;
-}
-
-:global(.dark-mode) .dropdown-menu {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-:global(.dark-mode) .dropdown-item {
-  color: #fff;
-}
-
-:global(.dark-mode) .dropdown-item:hover {
-  background-color: #2d2d2d;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-link {
-  background-color: #1e1e1e;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-link:hover {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-item.active .page-link {
-  background-color: #0F6F43;
-  border-color: #0F6F43;
-}
 </style>

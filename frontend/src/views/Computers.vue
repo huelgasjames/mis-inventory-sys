@@ -377,7 +377,7 @@
               <div class="col-md-6">
                 <label class="form-label">Asset Tag *</label>
                 <div class="input-group">
-                  <input type="text" class="form-control" v-model="newComputer.asset_tag" required readonly>
+                  <input type="text" class="form-control" v-model="newComputer.asset_tag" required>
                   <button type="button" class="btn btn-outline-secondary" @click="generateAssetTag">
                     <i class="bi bi-arrow-clockwise"></i> Generate
                   </button>
@@ -884,9 +884,6 @@ import QRCodeModal from '@/components/QRCodeModal.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
-import { useDarkMode } from '@/composables/useDarkMode.js'
-
-const { initDarkMode } = useDarkMode()
 
 const isNavCollapsed = ref(false)
 const isLoading = ref(false)
@@ -1644,6 +1641,24 @@ const clearFilters = () => {
   departmentFilter.value = ''
 }
 
+const generateAssetTag = () => {
+  // Get existing computers to determine next number
+  const existingNumbers = computers.value
+    .map(comp => comp.asset_tag)
+    .filter(tag => tag && tag.startsWith('MISD-SU-'))
+    .map(tag => parseInt(tag.replace('MISD-SU-', '')))
+    .filter(num => !isNaN(num))
+  
+  let nextNumber = existingNumbers.length > 0 ? Math.max(...existingNumbers) + 1 : 1
+  
+  // Find next available number if current one is taken
+  while (existingNumbers.includes(nextNumber)) {
+    nextNumber++
+  }
+  
+  newComputer.value.asset_tag = `MISD-SU-${nextNumber.toString().padStart(4, '0')}`
+}
+
 const showCreateModal = () => {
   generateAssetTag()
   const modal = new Modal(document.getElementById('createComputerModal'))
@@ -1789,8 +1804,6 @@ const confirmDeployment = async () => {
 }
 
 onMounted(async () => {
-  initDarkMode()
-  
   if (!isLoading.value) {
     isLoading.value = true
     loadingStartTime.value = Date.now()
@@ -1844,180 +1857,6 @@ onMounted(async () => {
   border-radius: 0.25rem;
 }
 
-/* Dark mode styles */
-:global(.dark-mode) .dashboard-layout {
-  background-color: #121212;
-}
-
-:global(.dark-mode) .main-content {
-  background-color: #121212;
-}
-
-:global(.dark-mode) .card {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-:global(.dark-mode) .card-header {
-  background-color: #2d2d2d;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .card-body {
-  background-color: #1e1e1e;
-  color: #fff;
-}
-
-:global(.dark-mode) .h1,
-:global(.dark-mode) .h2,
-:global(.dark-mode) .h3,
-:global(.dark-mode) .h4,
-:global(.dark-mode) .h5,
-:global(.dark-mode) .h6 {
-  color: #fff !important;
-}
-
-:global(.dark-mode) .text-muted {
-  color: #b3b3b3 !important;
-}
-
-:global(.dark-mode) .btn-outline-primary {
-  border-color: #0F6F43;
-  color: #0F6F43;
-}
-
-:global(.dark-mode) .btn-outline-primary:hover {
-  background-color: #0F6F43;
-  border-color: #0F6F43;
-  color: #fff;
-}
-
-:global(.dark-mode) .btn-success {
-  background-color: #198754;
-  border-color: #198754;
-}
-
-:global(.dark-mode) .btn-success:hover {
-  background-color: #157347;
-  border-color: #157347;
-}
-
-:global(.dark-mode) .btn-info {
-  background-color: #0c8599;
-  border-color: #0c8599;
-}
-
-:global(.dark-mode) .btn-info:hover {
-  background-color: #0a6b7c;
-  border-color: #0a6b7c;
-}
-
-:global(.dark-mode) .table {
-  color: #fff;
-}
-
-:global(.dark-mode) .table thead th {
-  background-color: #2d2d2d;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .table tbody td {
-  background-color: #1e1e1e;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .table tbody tr:hover td {
-  background-color: #2d2d2d;
-}
-
-:global(.dark-mode) .form-control {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .form-control:focus {
-  background-color: #2d2d2d;
-  border-color: #0F6F43;
-  color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
-}
-
-:global(.dark-mode) .form-select {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .form-select:focus {
-  background-color: #2d2d2d;
-  border-color: #0F6F43;
-  color: #fff;
-  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25);
-}
-
-:global(.dark-mode) .modal-content {
-  background-color: #1e1e1e;
-  color: #fff;
-}
-
-:global(.dark-mode) .modal-header {
-  background-color: #2d2d2d;
-  border-color: #333;
-}
-
-:global(.dark-mode) .modal-body {
-  background-color: #1e1e1e;
-}
-
-:global(.dark-mode) .modal-footer {
-  background-color: #2d2d2d;
-  border-color: #333;
-}
-
-:global(.dark-mode) .badge {
-  background-color: #0F6F43;
-}
-
-:global(.dark-mode) .progress {
-  background-color: #2d2d2d;
-}
-
-:global(.dark-mode) .dropdown-menu {
-  background-color: #1e1e1e;
-  border-color: #333;
-}
-
-:global(.dark-mode) .dropdown-item {
-  color: #fff;
-}
-
-:global(.dark-mode) .dropdown-item:hover {
-  background-color: #2d2d2d;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-link {
-  background-color: #1e1e1e;
-  border-color: #333;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-link:hover {
-  background-color: #2d2d2d;
-  border-color: #444;
-  color: #fff;
-}
-
-:global(.dark-mode) .pagination .page-item.active .page-link {
-  background-color: #0F6F43;
-  border-color: #0F6F43;
-}
-
-/* QR Code Styles */
 .qr-code-container {
   display: flex;
   justify-content: center;
@@ -2041,19 +1880,5 @@ onMounted(async () => {
 .computer-info-qr p {
   margin-bottom: 4px;
   font-size: 0.875rem;
-}
-
-/* Dark mode QR code styles */
-:global(.dark-mode) .qr-code-container {
-  background: #2d2d2d;
-  border-color: #444;
-}
-
-:global(.dark-mode) .computer-info-qr h6 {
-  color: #fff;
-}
-
-:global(.dark-mode) .computer-info-qr p {
-  color: #b3b3b3;
 }
 </style>

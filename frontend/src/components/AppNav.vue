@@ -32,38 +32,40 @@ function toggleAccordion(section) {
 
 <template>
   <aside :class="['d-flex', 'flex-column', 'flex-shrink-0', 'p-3', 'bg-white', 'border-end', { 'collapsed': props.isCollapsed }]" :style="`width: ${props.isCollapsed ? '70px' : '250px'}; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; transition: width 0.3s ease; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 5px rgba(0,0,0,0.1);`">
+    <!-- University Logo and Name -->
     <div class="mb-4 text-center">
       <router-link to="/dashboard" class="d-block text-decoration-none">
-        <img 
-          v-if="!props.isCollapsed" 
-          src="/pnc-logo.png" 
-          alt="MiSD Logo" 
-          class="img-fluid rounded-circle" 
-          style="width: 40px; height: auto; object-fit: contain;"
-        >
+        <div v-if="!props.isCollapsed" class="text-center">
+          <img 
+            src="/pnc-logo.png" 
+            alt="University Logo" 
+            class="img-fluid mb-2" 
+            style="width: 50px; height: auto; object-fit: contain;"
+          >
+          <div class="fw-bold text-dark">University of Cabuyao</div>
+        </div>
         <div v-if="props.isCollapsed" class="d-flex align-items-center justify-content-center">
           <img 
             src="/pnc-logo.png" 
-            alt="MiSD Inventory Logo" 
-            class="img-fluid me-2 rounded-circle" 
+            alt="University Logo" 
+            class="img-fluid" 
             style="width: 40px; height: auto; object-fit: contain;"
           >
         </div>
       </router-link>
     </div>
+
+    <!-- Navigation Menu -->
     <nav class="d-flex flex-column gap-1">
-      <router-link to="/dashboard" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active" title="Dashboard">
+      <router-link to="/dashboard" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-success fw-bold" active-class="active" title="Dashboard">
         <i class="bi bi-house-door-fill"></i>
         <span :class="{ 'd-none': props.isCollapsed }">Dashboard</span>
       </router-link>
-       <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active" title="Computers">
-            <i class="bi bi-pc-display"></i>
-            <span :class="{ 'd-none': props.isCollapsed }">Computers</span>
-          </router-link>
-      <router-link to="/components" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active" title="Components">
-            <i class="bi bi-cpu"></i>
-            <span :class="{ 'd-none': props.isCollapsed }">Components</span>
-          </router-link>
+      
+      <router-link to="/computers" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-success" active-class="active" title="Computers">
+        <i class="bi bi-pc-display"></i>
+        <span :class="{ 'd-none': props.isCollapsed }">Computers</span>
+      </router-link>
 
       
       <!-- Components Accordion -->
@@ -73,7 +75,7 @@ function toggleAccordion(section) {
           :class="{ 'd-none': props.isCollapsed }"
           @click="toggleAccordion('components')"
         >
-          <span>Computer Component Assets</span>
+          <span class="bi bi-pc" > Computer Components</span>
           <i :class="['bi', componentsOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !componentsOpen && !props.isCollapsed, 'show': componentsOpen || props.isCollapsed }">
@@ -116,7 +118,7 @@ function toggleAccordion(section) {
           :class="{ 'd-none': props.isCollapsed }"
           @click="toggleAccordion('management')"
         >
-          <span>Management</span>
+          <span class="bi bi-kanban-fill"> Management</span>
           <i :class="['bi', managementOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !managementOpen && !props.isCollapsed, 'show': managementOpen || props.isCollapsed }">
@@ -147,7 +149,7 @@ function toggleAccordion(section) {
             </li>
             <li class="nav-item">
               <router-link to="/component-manager" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active" title="Component Manager">
-                <i class="bi bi-gear"></i>
+                <i class="bi bi-pc-display-horizontal"></i>
                 <span :class="{ 'd-none': props.isCollapsed }">Component Manager</span>
               </router-link>
             </li>
@@ -162,7 +164,7 @@ function toggleAccordion(section) {
           :class="{ 'd-none': props.isCollapsed }"
           @click="toggleAccordion('other')"
         >
-          <span>Other</span>
+          <span class="bi bi-sliders2"> Other</span>
           <i :class="['bi', otherOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
         <div :class="{ 'collapse': !otherOpen && !props.isCollapsed, 'show': otherOpen || props.isCollapsed }">
@@ -334,68 +336,5 @@ aside.collapsed .nav-link {
   white-space: nowrap;
   z-index: 1001;
   margin-left: 0.5rem;
-}
-
-/* Dark mode styles */
-:global(.dark-mode) aside {
-  background-color: #1e1e1e !important;
-  border-color: #333 !important;
-  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.3);
-}
-
-:global(.dark-mode) .nav-link {
-  color: #b3b3b3 !important;
-}
-
-:global(.dark-mode) .nav-link:hover {
-  color: #fff !important;
-  background-color: #2d2d2d !important;
-}
-
-:global(.dark-mode) .nav-link.active {
-  color: #0F6F43 !important;
-  background-color: #2d2d2d !important;
-}
-
-:global(.dark-mode) .text-muted {
-  color: #b3b3b3 !important;
-}
-
-:global(.dark-mode) .text-muted:hover {
-  color: #0F6F43 !important;
-}
-
-:global(.dark-mode) .accordion-button {
-  background-color: #2d2d2d !important;
-  color: #fff !important;
-  border-color: #333 !important;
-}
-
-:global(.dark-mode) .accordion-button:not(.collapsed) {
-  background-color: #3d3d3d !important;
-  color: #0F6F43 !important;
-}
-
-:global(.dark-mode) .accordion-button:focus {
-  box-shadow: 0 0 0 0.25rem rgba(15, 111, 67, 0.25) !important;
-}
-
-:global(.dark-mode) .accordion-item {
-  background-color: #1e1e1e !important;
-  border-color: #333 !important;
-}
-
-:global(.dark-mode) .accordion-body {
-  background-color: #1e1e1e !important;
-}
-
-:global(.dark-mode) .img-fluid.rounded-circle {
-  border-color: #0F6F43 !important;
-  filter: brightness(1.1) contrast(1.1);
-}
-
-:global(.dark-mode) .nav-link[title]:hover::after {
-  background: #444;
-  color: #fff;
 }
 </style>

@@ -80,7 +80,6 @@
                       <label class="form-label">Default Theme</label>
                       <select class="form-select" v-model="settings.defaultTheme">
                         <option value="light">Light</option>
-                        <option value="dark">Dark</option>
                         <option value="auto">Auto</option>
                       </select>
                     </div>

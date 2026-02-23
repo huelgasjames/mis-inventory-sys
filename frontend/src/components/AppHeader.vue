@@ -1,52 +1,26 @@
 <template>
-  <header class="navbar navbar-expand bg-success navbar-dark py-2 px-3">
+  <header class="navbar navbar-expand bg-success navbar-dark py-3 px-4 w-100">
     <div class="container-fluid">
-      <!-- Left side: User Info -->
+      <!-- Left side: Logo and Title -->
       <div class="d-flex align-items-center">
-        <div class="text-white">
-          <span class="fw-bold">MiSD Inventory</span>
-         
-          
+        <div class="text-white text-center">
+          <div class="fw-bold fs-4">MiSINV</div>
+          <div class="small">MISD INVENTORY</div>
         </div>
       </div>
 
-      <!-- Right side: Icons and Toggle Switch -->
+      <!-- Right side: Admin and Icons -->
       <div class="d-flex align-items-center gap-3">
-        <!-- Dark Mode Toggle -->
-        <div class="form-check form-switch me-2">
-          <input 
-            class="form-check-input" 
-            type="checkbox" 
-            id="darkModeToggle" 
-            @click="handleDarkModeToggle"
-            :checked="isDarkMode"
-          >
-          <label class="form-check-label text-white" for="darkModeToggle" title="Toggle Dark Mode">
-            <i :class="isDarkMode ? 'bi bi-moon-fill' : 'bi bi-sun-fill'"></i>
-          </label>
-        </div>
-
-        <!-- On/Off Toggle Switch for Sidebar -->
-        <div class="form-check form-switch me-2">
-          <input 
-            class="form-check-input" 
-            type="checkbox" 
-            id="sidebarToggle" 
-            @click="toggleSidebar"
-            :checked="!props.isCollapsed"
-          >
-          <label class="form-check-label text-white" for="sidebarToggle"></label>
-        </div>
-
-        <i class="bi bi-bell-fill text-white fs-5 cursor-pointer" @click="openNotifications"></i>
-        <i class="bi bi-grid-3x3-gap-fill text-white fs-5 cursor-pointer" @click="openGrid"></i>
-        <img 
-          src="/pnc-logo.png" 
-          alt="Profile" 
-          class="rounded-circle" 
-          style="width: 30px; height: 30px; object-fit: cover; border: 1px solid white;"
-          @click="openProfile"
-        >
+        <span class="text-white me-3">Admin</span>
+        
+        <!-- Hamburger Menu -->
+        <i class="bi bi-list text-white fs-5 cursor-pointer" @click="toggleSidebar"></i>
+        
+        <!-- Settings Icon -->
+        <i class="bi bi-gear-fill text-white fs-5 cursor-pointer" @click="openSettings"></i>
+        
+        <!-- User Profile Icon -->
+        <i class="bi bi-person-circle text-white fs-5 cursor-pointer" @click="openProfile"></i>
       </div>
     </div>
   </header>
@@ -54,7 +28,6 @@
 
 <script setup>
 import { defineEmits, ref, onMounted, onUnmounted } from 'vue'
-import { useDarkMode } from '@/composables/useDarkMode.js'
 
 const props = defineProps({
   isCollapsed: {
@@ -64,7 +37,6 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open', 'sidebar-toggle'])
-const { isDarkMode, toggleDarkMode, initDarkMode } = useDarkMode()
 
 const toggleSidebar = (event) => {
   event.preventDefault()
@@ -73,10 +45,6 @@ const toggleSidebar = (event) => {
   emit('sidebar-toggle', newValue)
 }
 
-const handleDarkModeToggle = () => {
-  console.log('Dark mode toggle clicked')
-  toggleDarkMode()
-}
 
 const openNotifications = () => {
   console.log('Notifications clicked')
@@ -104,25 +72,23 @@ const logout = () => {
   }
 }
 
-onMounted(() => {
-  initDarkMode()
-})
 </script>
 
 <style scoped>
 .navbar {
   background: #0F6F43;
   color: white;
-  padding: 1rem 2rem;
+  padding: 1.5rem 2rem;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   position: sticky;
   top: 0;
   z-index: 1000;
   height: auto;
-  min-height: 60px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
 }
 
 .cursor-pointer {
@@ -152,24 +118,6 @@ onMounted(() => {
   box-shadow: 0 0 0 0.25rem rgba(40, 167, 69, 0.25);
 }
 
-/* Dark mode styles for the navbar */
-:global(.dark-mode) .navbar {
-  background: #1a1a1a !important;
-  color: white !important;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  border-bottom: 1px solid #333;
-}
-
-/* Dark mode toggle switch styles */
-:global(.dark-mode) .form-check-input:checked {
-  background-color: #ffc107;
-  border-color: #ffc107;
-}
-
-:global(.dark-mode) .form-check-input {
-  background-color: #495057;
-  border-color: #6c757d;
-}
 
 /* Light mode styles */
 :global(.light-mode) .navbar {

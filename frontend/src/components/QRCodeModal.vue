@@ -357,25 +357,4 @@ onMounted(() => {
   font-weight: 600;
   font-size: 1.1rem;
 }
-
-/* Dark mode styles */
-:global(.dark-mode) .modal-content {
-  background-color: #1e1e1e;
-  color: #fff;
-}
-
-:global(.dark-mode) .modal-header {
-  background: linear-gradient(135deg, #0F6F43, #0d5a37);
-  color: white;
-}
-
-:global(.dark-mode) .qr-code-container {
-  background: #2d2d2d;
-  border-color: #444;
-}
-
-:global(.dark-mode) .modal-footer {
-  background-color: #2d2d2d;
-  border-color: #333;
-}
 </style>

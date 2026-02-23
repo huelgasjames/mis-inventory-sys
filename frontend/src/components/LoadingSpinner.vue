@@ -90,35 +90,4 @@ const props = defineProps({
     transform: scale(1.05);
   }
 }
-
-/* Dark mode support */
-:global(.dark-mode) .loading-overlay {
-  background-color: rgba(0, 0, 0, 0.95);
-}
-
-:global(.dark-mode) .loading-text {
-  color: #28a745;
-}
-
-:global(.dark-mode) .loading-logo {
-  filter: brightness(1.1) contrast(1.1);
-}
-
-/* Enhanced dark mode animation */
-:global(.dark-mode) .loading-content {
-  animation: fadeInDark 0.3s ease-in;
-}
-
-@keyframes fadeInDark {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-    filter: brightness(0.8);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-    filter: brightness(1);
-  }
-}
 </style>
