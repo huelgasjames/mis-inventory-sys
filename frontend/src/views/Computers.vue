@@ -1395,7 +1395,7 @@ const generateQRCode = () => {
       generated_by: 'MIS Inventory System',
       
       // Direct PDF Download URL - This will directly download PDF when QR is scanned
-      pdf_download_url: `http://localhost:8000/api/computers/${selectedComputer.value.id}/pdf/download`
+      pdf_download_url: `${import.meta.env.VITE_API_URL || 'https://your-backend-domain.com'}/api/computers/${selectedComputer.value.id}/pdf/download`
     }
 
     // Generate QR code using online API
