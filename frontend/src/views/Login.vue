@@ -23,7 +23,7 @@
         <div class="text-center mb-4">
           <img src="/pnc-logo.png" alt="University of Cabuyao" class="university-logo-small">
           <h1 class="university-title-small">University of Cabuyao</h1>
-          <p class="system-title-small">Pinnacle Learning Management System</p>
+          <p class="system-title-small">MiSD Inventory Management System</p>
         </div>
         
         <!-- Login Form -->
@@ -37,7 +37,7 @@
               <input 
                 type="text" 
                 class="form-control" 
-                placeholder="Pinnacle Account"
+                placeholder="Username / Email"
                 v-model="username"
                 required
               >
@@ -53,7 +53,7 @@
               <input 
                 :type="showPassword ? 'text' : 'password'" 
                 class="form-control" 
-                placeholder="Pinnacle Password"
+                placeholder="Password"
                 v-model="password"
                 required
               >

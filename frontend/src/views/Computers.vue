@@ -1837,13 +1837,227 @@ onMounted(async () => {
 }
 
 /* Responsive adjustments */
-@media (max-width: 768px) {
+@media (max-width: 1200px) {
+  .col-lg-3 {
+    margin-bottom: 1.5rem;
+  }
+}
+
+@media (max-width: 992px) {
   .main-content {
-    margin-left: 60px;
+    margin-left: 70px;
   }
   
   .main-content.collapsed {
-    margin-left: 60px;
+    margin-left: 70px;
+  }
+  
+  .col-lg-3 {
+    margin-bottom: 1rem;
+  }
+  
+  .card-body {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.collapsed {
+    margin-left: 0;
+  }
+  
+  .container-fluid {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .d-flex.justify-content-between {
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch !important;
+  }
+  
+  .d-flex.gap-2 {
+    flex-wrap: wrap;
+    gap: 0.5rem !important;
+  }
+  
+  .btn {
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .h3 {
+    font-size: 1.5rem;
+  }
+  
+  .card-body {
+    padding: 1rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 1.5rem !important;
+  }
+  
+  .fs-4 {
+    font-size: 1.25rem !important;
+  }
+  
+  .table {
+    font-size: 0.8rem;
+  }
+  
+  .table th {
+    font-size: 0.75rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .table td {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem !important;
+  }
+  
+  .btn-sm {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  
+  .col-md-6 {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+  
+  .btn {
+    font-size: 0.85rem;
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .small {
+    font-size: 0.75rem;
+  }
+  
+  .card-body {
+    padding: 0.75rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 1rem !important;
+    margin-right: 0.75rem !important;
+  }
+  
+  .table {
+    font-size: 0.75rem;
+  }
+  
+  .table th {
+    font-size: 0.7rem;
+    padding: 0.4rem 0.5rem !important;
+  }
+  
+  .table td {
+    font-size: 0.75rem;
+    padding: 0.4rem 0.5rem !important;
+  }
+  
+  .btn-sm {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .badge {
+    font-size: 0.6rem;
+    padding: 0.25rem 0.4rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .h3 {
+    font-size: 1.25rem;
+  }
+  
+  .btn {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .card-body {
+    padding: 0.5rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 0.75rem !important;
+    margin-right: 0.5rem !important;
+  }
+  
+  .table {
+    font-size: 0.7rem;
+  }
+  
+  .table th {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.4rem !important;
+  }
+  
+  .table td {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.4rem !important;
+  }
+  
+  .btn-sm {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.3rem;
+  }
+  
+  .badge {
+    font-size: 0.55rem;
+    padding: 0.2rem 0.3rem;
+  }
+  
+  .modal-content {
+    margin: 0.25rem;
+  }
+  
+  .modal-body {
+    padding: 1rem !important;
+  }
+  
+  .modal-footer {
+    padding: 0.75rem 1rem !important;
+  }
+}
+
+/* Landscape mobile optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+  .container-fluid {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+  
+  .card-body {
+    padding: 0.75rem !important;
+  }
+  
+  .rounded-circle.p-3 {
+    padding: 0.75rem !important;
+    margin-right: 0.5rem !important;
   }
 }
 
