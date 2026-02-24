@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "name": "mis-inventory-backend",
+  "buildCommand": "chmod +x vercel-build.sh && ./vercel-build.sh",
+  "builds": [
+    {
+      "src": "api/index.php",
+      "use": "@vercel/php"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/index.php"
+    }
+  ],
+  "env": {
+    "APP_ENV": "production",
+    "APP_DEBUG": "false",
+    "APP_URL": "https://mis-inventory-sys.vercel.app",
+    "DB_CONNECTION": "sqlite",
+    "DB_DATABASE": "/tmp/database.sqlite",
+    "CACHE_DRIVER": "array",
+    "SESSION_DRIVER": "array",
+    "QUEUE_CONNECTION": "sync",
+    "LOG_CHANNEL": "stderr",
+    "LOG_LEVEL": "error",
+    "APP_KEY": "base64:oDjjB8+w3vw4YAM0s2Ptcow2WRaUg1lt57ukgmWovWk="
+  },
+  "functions": {
+    "api/index.php": {
+      "maxDuration": 30
+    }
+  }
+}
