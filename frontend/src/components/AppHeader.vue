@@ -19,8 +19,23 @@
         <!-- Settings Icon -->
         <i class="bi bi-gear-fill text-white fs-5 cursor-pointer" @click="openSettings"></i>
         
-        <!-- User Profile Icon -->
-        <i class="bi bi-person-circle text-white fs-5 cursor-pointer" @click="openProfile"></i>
+        <!-- User Profile Icon with Dropdown -->
+        <div class="dropdown position-relative">
+          <i class="bi bi-person-circle text-white fs-5 cursor-pointer" @click="toggleProfileDropdown"></i>
+          
+          <!-- Dropdown Menu -->
+          <div v-if="showProfileDropdown" class="dropdown-menu show position-absolute end-0" style="right: 0; top: 100%; margin-top: 0.5rem;">
+            <div class="dropdown-header text-muted small px-3 py-2">
+              <i class="bi bi-person me-2"></i>
+              <span v-if="user">{{ user.name || 'Admin User' }}</span>
+              <span v-else>Admin User</span>
+            </div>
+            <div class="dropdown-divider"></div>
+            <a class="dropdown-item" href="#" @click="logout">
+              <i class="bi bi-box-arrow-right me-2"></i>Logout
+            </a>
+          </div>
+        </div>
       </div>
     </div>
   </header>
@@ -37,6 +52,41 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open', 'sidebar-toggle'])
+
+// Reactive variables
+const showProfileDropdown = ref(false)
+const user = ref(null)
+
+// Get user data from localStorage
+onMounted(() => {
+  try {
+    const userData = localStorage.getItem('user')
+    if (userData) {
+      user.value = JSON.parse(userData)
+    }
+  } catch (error) {
+    console.error('Error parsing user data:', error)
+  }
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', handleClickOutside)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+})
+
+const handleClickOutside = (event) => {
+  const dropdown = event.target.closest('.dropdown')
+  if (!dropdown) {
+    showProfileDropdown.value = false
+  }
+}
+
+const toggleProfileDropdown = (event) => {
+  event.stopPropagation()
+  showProfileDropdown.value = !showProfileDropdown.value
+}
 
 const toggleSidebar = (event) => {
   event.preventDefault()
@@ -59,14 +109,17 @@ const openProfile = () => {
 }
 
 const logout = () => {
-  // Clear authentication data
-  localStorage.removeItem('token')
-  localStorage.removeItem('user')
-  sessionStorage.removeItem('token')
-  sessionStorage.removeItem('user')
+  showProfileDropdown.value = false
   
   // Show confirmation
   if (confirm('Are you sure you want to logout?')) {
+    // Clear authentication data
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    localStorage.removeItem('isAuthenticated')
+    sessionStorage.removeItem('token')
+    sessionStorage.removeItem('user')
+    
     // Redirect to login page
     window.location.href = '/login'
   }
@@ -275,5 +328,58 @@ const logout = () => {
 :global(.light-mode) .navbar {
   background: #0F6F43;
   color: white;
+}
+
+/* Dropdown Menu Styles */
+.dropdown-menu {
+  background: white;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  z-index: 1050;
+  animation: fadeInDown 0.2s ease-out;
+}
+
+.dropdown-header {
+  background: #f8f9fa;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 600;
+  color: #495057;
+}
+
+.dropdown-item {
+  color: #495057;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease;
+  border: none;
+  background: transparent;
+}
+
+.dropdown-item:hover {
+  background: #0F6F43;
+  color: white;
+  text-decoration: none;
+}
+
+.dropdown-item i {
+  width: 16px;
+  text-align: center;
+}
+
+.dropdown-divider {
+  margin: 0;
+  border-top: 1px solid #e9ecef;
+}
+
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
