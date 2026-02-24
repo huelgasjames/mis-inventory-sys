@@ -20,6 +20,23 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+// API root endpoint
+Route::get('/', function () {
+    return response()->json([
+        'message' => 'MIS Inventory System API',
+        'version' => '1.0.0',
+        'endpoints' => [
+            'auth' => '/api/login, /api/logout, /api/me',
+            'inventory' => '/api/assets, /api/computers, /api/departments',
+            'components' => '/api/components',
+            'computers' => '/api/computers',
+            'laboratories' => '/api/laboratories',
+            'reports' => '/api/reports',
+            'deployments' => '/api/deployments'
+        ]
+    ]);
+});
+
 // Authentication routes
 Route::post('/login', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
