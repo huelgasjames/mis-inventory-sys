@@ -670,6 +670,7 @@ export default {
 
     return {
       isNavCollapsed,
+      isLoading,
       deployments,
       deploymentStats,
       departments,

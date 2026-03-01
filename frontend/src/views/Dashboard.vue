@@ -116,9 +116,29 @@
                 <div class="row g-2">
                   <div v-for="(count, component) in componentStats.available_components" :key="component" class="col-6">
                     <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
-                      <span class="small text-capitalize">{{ component.replace('_', ' ') }}</span>
-                      <span class="badge bg-primary">{{ count }}</span>
+                      <div class="d-flex align-items-center">
+                        <i :class="getComponentIcon(component)" class="me-2"></i>
+                        <span class="small text-capitalize">{{ component.replace('_', ' ') }}</span>
+                      </div>
+                      <div class="d-flex align-items-center gap-1">
+                        <span class="badge bg-primary">{{ count }}</span>
+                        <span class="small text-muted">/ {{ componentStats.total_components?.[component] || 0 }}</span>
+                      </div>
                     </div>
+                  </div>
+                </div>
+                <div class="mt-3 pt-3 border-top">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <span class="small fw-semibold">Total Available</span>
+                    <span class="badge bg-success">
+                      {{ Object.values(componentStats.available_components || {}).reduce((sum, count) => sum + count, 0) }}
+                    </span>
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center mt-1">
+                    <span class="small fw-semibold">Total Components</span>
+                    <span class="badge bg-info">
+                      {{ Object.values(componentStats.total_components || {}).reduce((sum, count) => sum + count, 0) }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -266,7 +286,7 @@
               </div>
             </div>
             <div class="mt-3">
-              <button type="submit" class="btn btn-primary">Create Computer</button>
+              <button type="submit" class="btn btn-primary" @click="createComputerAsset">Create Computer</button>
             </div>
           </form>
         </div>
@@ -276,30 +296,28 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch, computed } from 'vue'
+import { ref, onMounted, nextTick, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import Chart from 'chart.js/auto'
-import axios from 'axios'
+import { useInventoryData } from '@/composables/useInventoryData'
 
 const router = useRouter()
 const isNavCollapsed = ref(false)
-const isLoading = ref(false)
-const loadingStartTime = ref(null)
 
-// Watch for changes in navigation state
-watch(isNavCollapsed, (newValue, oldValue) => {
-  console.log('isNavCollapsed changed from', oldValue, 'to', newValue)
-})
-
-// Data from backend API
-const dashboardStats = ref({})
-const componentStats = ref({})
-const components = ref({})
-const departments = ref([])
-const users = ref([])
+// Use centralized data fetching
+const {
+  isLoading,
+  dashboardStats,
+  componentStats,
+  components,
+  departments,
+  users,
+  refreshAllData,
+  createComputer
+} = useInventoryData()
 
 // New computer form
 const newComputer = ref({
@@ -315,148 +333,19 @@ const newComputer = ref({
 const repairChart = ref(null)
 const healthChart = ref(null)
 
-// Fetch dashboard statistics
-const fetchDashboardStats = async () => {
-  try {
-    const response = await axios.get('http://localhost:8000/api/reports/dashboard-stats')
-    if (response.data.success) {
-      dashboardStats.value = response.data.data
-      console.log('Dashboard stats loaded:', dashboardStats.value)
-    } else {
-      console.error('Error fetching dashboard stats:', response.data.message)
-      // Use mock data as fallback
-      dashboardStats.value = {
-        overview: { total_assets: 0, total_computers: 0, total_departments: 0, total_laboratories: 0 },
-        status_breakdown: { available: 0, deployed: 0, under_repair: 0, defective: 0 },
-        recent_activities: [],
-        monthly_repairs: [],
-        component_health: []
-      }
-    }
-  } catch (error) {
-    console.error('Error fetching dashboard stats:', error)
-    // Use mock data as fallback
-    dashboardStats.value = {
-      overview: { total_assets: 0, total_computers: 0, total_departments: 0, total_laboratories: 0 },
-      status_breakdown: { available: 0, deployed: 0, under_repair: 0, defective: 0 },
-      recent_activities: [],
-      monthly_repairs: [],
-      component_health: []
-    }
-  }
-}
-// Fetch component statistics
-const fetchComponentStats = async () => {
-  try {
-    // Use mock data for components
-    componentStats.value = {
-      total_processors: 85,
-      total_memory: 90,
-      total_storage: 75,
-      total_graphics: 60,
-      healthy_percentage: 85
-    }
-    console.log('Using mock component stats:', componentStats.value)
-  } catch (error) {
-    console.error('Error setting component stats:', error)
-  }
-}
-
-// Fetch components
-const fetchComponents = async () => {
-  try {
-    // Use mock data for components list
-    components.value = {
-      processors: [
-        { id: 1, model: 'Intel Core i7-10700' },
-        { id: 2, model: 'AMD Ryzen 9 5900X' },
-        { id: 3, model: 'Intel Core i5-11600K' },
-        { id: 4, model: 'AMD Ryzen 7 5800X' }
-      ],
-      motherboards: [
-        { id: 1, model: 'ASRock X570 Taichi' },
-        { id: 2, model: 'ASUS PRIME Z590-A' },
-        { id: 3, model: 'MSI MPG X570 GAMING PLUS' },
-        { id: 4, model: 'GIGABYTE B550 AORUS MASTER' }
-      ],
-      rams: [
-        { id: 1, capacity: '16GB DDR4' },
-        { id: 2, capacity: '32GB DDR4' },
-        { id: 3, capacity: '64GB DDR4' },
-        { id: 4, capacity: '128GB DDR4' }
-      ],
-      storages: [
-        { id: 1, capacity: '512GB NVMe SSD' },
-        { id: 2, capacity: '1TB NVMe SSD' },
-        { id: 3, capacity: '2TB NVMe SSD' },
-        { id: 4, capacity: '4TB NVMe SSD' }
-      ]
-    }
-    console.log('Using mock components data:', components.value)
-  } catch (error) {
-    console.error('Error setting components data:', error)
-  }
-}
-
-// Fetch departments
-const fetchDepartments = async () => {
-  try {
-    // Use mock data for departments
-    departments.value = [
-      { id: 1, name: 'Computer Lab' },
-      { id: 2, name: 'Library' },
-      { id: 3, name: 'Office' },
-      { id: 4, name: 'Classroom' }
-    ]
-    console.log('Using mock departments data:', departments.value)
-  } catch (error) {
-    console.error('Error setting departments data:', error)
-  }
-}
-
-// Fetch users
-const fetchUsers = async () => {
-  try {
-    // Use mock data for users
-    users.value = [
-      { id: 1, name: 'John Doe' },
-      { id: 2, name: 'Jane Doe' },
-      { id: 3, name: 'Bob Smith' },
-      { id: 4, name: 'Alice Johnson' }
-    ]
-    console.log('Using mock users data:', users.value)
-  } catch (error) {
-    console.error('Error setting users data:', error)
-  }
-}
 
 // Create computer
-const createComputer = async () => {
-  isLoading.value = true
+const createComputerAsset = async () => {
   try {
-    const response = await fetch('http://localhost:8000/api/computers/create', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      body: JSON.stringify(newComputer.value)
-    })
+    await createComputer(newComputer.value)
     
-    const data = await response.json()
-    if (data.success) {
-      alert('Computer created successfully!')
-      bootstrap.Modal.getInstance(document.getElementById('createComputerModal')).hide()
-      resetComputerForm()
-      refreshData()
-    } else {
-      alert('Error creating computer: ' + data.message)
-    }
+    alert('Computer created successfully!')
+    bootstrap.Modal.getInstance(document.getElementById('createComputerModal')).hide()
+    resetComputerForm()
+    // Data is automatically refreshed by the composable
   } catch (error) {
     console.error('Error creating computer:', error)
-    alert('Error creating computer')
-  } finally {
-    isLoading.value = false
+    alert('Error creating computer: ' + (error.message || 'Unknown error'))
   }
 }
 
@@ -478,25 +367,35 @@ const showCreateComputerModal = () => {
   modal.show()
 }
 
-// Refresh all data
+// Refresh all data using centralized service
 const refreshData = async () => {
-  if (!isLoading.value) {
-    isLoading.value = true
-    loadingStartTime.value = Date.now()
-  }
   try {
-    await Promise.all([
-      fetchDashboardStats(),
-      fetchComponentStats(),
-      fetchComponents(),
-      fetchDepartments(),
-      fetchUsers()
-    ])
+    await refreshAllData({ showLoading: true, minLoadingDuration: 1000 })
+    initializeCharts()
   } catch (error) {
     console.error('Error refreshing data:', error)
-  } finally {
-    isLoading.value = false
-    loadingStartTime.value = null
+  }
+}
+
+// Get component icon
+const getComponentIcon = (component) => {
+  switch (component) {
+    case 'processors':
+      return 'bi bi-cpu text-primary'
+    case 'motherboards':
+      return 'bi bi-motherboard text-success'
+    case 'rams':
+      return 'bi bi-memory text-info'
+    case 'storages':
+      return 'bi bi-hdd text-warning'
+    case 'video_cards':
+      return 'bi bi-gpu-card text-dark'
+    case 'psus':
+      return 'bi bi-lightning-charge text-dark'
+    case 'dvd_roms':
+      return 'bi bi-disc text-secondary'
+    default:
+      return 'bi bi-box text-muted'
   }
 }
 
@@ -615,24 +514,7 @@ const logout = () => {
 }
 
 onMounted(async () => {
-  if (!isLoading.value) {
-    isLoading.value = true
-    loadingStartTime.value = Date.now()
-  }
-  
   await refreshData()
-  initializeCharts()
-  
-  // Ensure minimum loading duration
-  if (loadingStartTime.value) {
-    const elapsed = Date.now() - loadingStartTime.value
-    if (elapsed < 1000) {
-      await new Promise(resolve => setTimeout(resolve, 1000 - elapsed))
-    }
-  }
-  
-  isLoading.value = false
-  loadingStartTime.value = null
 })
 </script>
 

@@ -96,6 +96,10 @@ const toggleSidebar = (event) => {
 }
 
 
+const openSettings = () => {
+  emit('settings-open')
+}
+
 const openNotifications = () => {
   console.log('Notifications clicked')
 }
@@ -337,7 +341,7 @@ const logout = () => {
   border-radius: 8px;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
   min-width: 200px;
-  z-index: 1050;
+  z-index: 9999;
   animation: fadeInDown 0.2s ease-out;
 }
 

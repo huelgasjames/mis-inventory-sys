@@ -217,14 +217,46 @@
           <form @submit.prevent="createComponent">
             <div class="mb-3">
               <label class="form-label">{{ componentType === 'rams' ? 'Capacity' : componentType === 'storages' ? 'Capacity' : componentType === 'psus' ? 'Wattage' : componentType === 'dvd_roms' ? 'Type' : 'Model' }} *</label>
-              <input 
-                v-if="componentType === 'psus'" 
-                type="number" 
-                class="form-control" 
+              <select 
+                v-if="componentType === 'rams'" 
+                class="form-select" 
                 v-model="newComponent.value" 
-                placeholder="e.g., 450"
                 required
               >
+                <option value="">Select Capacity</option>
+                <option value="4GB">4GB</option>
+                <option value="8GB">8GB</option>
+                <option value="16GB">16GB</option>
+                <option value="32GB">32GB</option>
+              </select>
+              <select 
+                v-else-if="componentType === 'psus'" 
+                class="form-select" 
+                v-model="newComponent.value" 
+                required
+              >
+                <option value="">Select Wattage</option>
+                <option value="350">350W</option>
+                <option value="450">450W</option>
+                <option value="550">550W</option>
+                <option value="650">650W</option>
+                <option value="750">750W</option>
+                <option value="850">850W</option>
+                <option value="1000">1000W</option>
+              </select>
+              <select 
+                v-else-if="componentType === 'dvd_roms'" 
+                class="form-select" 
+                v-model="newComponent.value" 
+                required
+              >
+                <option value="">Select Type</option>
+                <option value="CD-ROM">CD-ROM</option>
+                <option value="DVD-ROM">DVD-ROM</option>
+                <option value="DVD-RW">DVD-RW</option>
+                <option value="Blu-ray">Blu-ray</option>
+                <option value="Blu-ray RW">Blu-ray RW</option>
+              </select>
               <input 
                 v-else 
                 type="text" 
@@ -289,6 +321,86 @@
       </div>
     </div>
   </div>
+
+  <!-- Edit Component Modal -->
+  <div class="modal fade" id="editComponentModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit {{ componentTitle }}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form @submit.prevent="updateComponent">
+            <div class="mb-3">
+              <label class="form-label">{{ componentType === 'rams' ? 'Capacity' : componentType === 'storages' ? 'Capacity' : componentType === 'psus' ? 'Wattage' : componentType === 'dvd_roms' ? 'Type' : 'Model' }} *</label>
+              <select 
+                v-if="componentType === 'rams'" 
+                class="form-select" 
+                v-model="editComponentData.value" 
+                required
+              >
+                <option value="">Select Capacity</option>
+                <option value="4GB">4GB</option>
+                <option value="8GB">8GB</option>
+                <option value="16GB">16GB</option>
+                <option value="32GB">32GB</option>
+              </select>
+              <select 
+                v-else-if="componentType === 'psus'" 
+                class="form-select" 
+                v-model="editComponentData.value" 
+                required
+              >
+                <option value="">Select Wattage</option>
+                <option value="350">350W</option>
+                <option value="450">450W</option>
+                <option value="550">550W</option>
+                <option value="650">650W</option>
+                <option value="750">750W</option>
+                <option value="850">850W</option>
+                <option value="1000">1000W</option>
+              </select>
+              <select 
+                v-else-if="componentType === 'dvd_roms'" 
+                class="form-select" 
+                v-model="editComponentData.value" 
+                required
+              >
+                <option value="">Select Type</option>
+                <option value="CD-ROM">CD-ROM</option>
+                <option value="DVD-ROM">DVD-ROM</option>
+                <option value="DVD-RW">DVD-RW</option>
+                <option value="Blu-ray">Blu-ray</option>
+                <option value="Blu-ray RW">Blu-ray RW</option>
+              </select>
+              <input 
+                v-else 
+                type="text" 
+                class="form-control" 
+                v-model="editComponentData.value" 
+                :placeholder="getPlaceholder()"
+                required
+              >
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Status *</label>
+              <select class="form-select" v-model="editComponentData.status" required>
+                <option value="">Select Status</option>
+                <option value="Available">Available</option>
+                <option value="In Use">In Use</option>
+                <option value="Defective">Defective</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" @click="updateComponent">Update {{ componentTitle }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -297,6 +409,7 @@ import { useRoute } from 'vue-router'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
+import { Modal } from 'bootstrap'
 
 export default {
   name: 'ComponentManager',
@@ -313,6 +426,12 @@ export default {
     const selectedComponent = ref(null)
     
     const newComponent = ref({
+      value: '',
+      status: 'Available'
+    })
+    
+    const editingComponent = ref(null)
+    const editComponentData = ref({
       value: '',
       status: 'Available'
     })
@@ -427,25 +546,25 @@ export default {
     }
 
     const showCreateComponentModal = () => {
-      const modal = new bootstrap.Modal(document.getElementById('createComponentModal'))
+      const modal = new Modal(document.getElementById('createComponentModal'))
       modal.show()
     }
 
     const createComponent = async () => {
       try {
-        const endpoint = `http://localhost:8000/api/components/${componentType.value}`
+        const endpoint = `http://localhost:8000/api/components/${componentType.value.replace('_', '-')}`
         const payload = componentType.value === 'psus' 
-          ? { wattage: newComponent.value, status: newComponent.status }
+          ? { wattage: newComponent.value.value, status: newComponent.value.status }
           : componentType.value === 'rams' || componentType.value === 'storages'
-          ? { capacity: newComponent.value, status: newComponent.status }
+          ? { capacity: newComponent.value.value, status: newComponent.value.status }
           : componentType.value === 'dvd_roms'
-          ? { type_field: newComponent.value, status: newComponent.status }
-          : { model: newComponent.value, status: newComponent.status }
+          ? { type_field: newComponent.value.value, status: newComponent.value.status }
+          : { model: newComponent.value.value, status: newComponent.value.status }
 
         const response = await axios.post(endpoint, payload)
         
         if (response.data.success) {
-          bootstrap.Modal.getInstance(document.getElementById('createComponentModal')).hide()
+          Modal.getInstance(document.getElementById('createComponentModal')).hide()
           await refreshData()
           
           // Reset form
@@ -464,20 +583,57 @@ export default {
 
     const viewComponent = (component) => {
       selectedComponent.value = component
-      const modal = new bootstrap.Modal(document.getElementById('viewComponentModal'))
+      const modal = new Modal(document.getElementById('viewComponentModal'))
       modal.show()
     }
 
     const editComponent = (component) => {
-      // For now, just show the component details
-      viewComponent(component)
+      editingComponent.value = component
+      editComponentData.value = {
+        value: getComponentDisplayValue(component),
+        status: component.status
+      }
+      const modal = new Modal(document.getElementById('editComponentModal'))
+      modal.show()
+    }
+
+    const updateComponent = async () => {
+      try {
+        const endpoint = `http://localhost:8000/api/components/${componentType.value.replace('_', '-')}/${editingComponent.value.id}`
+        const payload = componentType.value === 'psus' 
+          ? { wattage: editComponentData.value.value, status: editComponentData.value.status }
+          : componentType.value === 'rams' || componentType.value === 'storages'
+          ? { capacity: editComponentData.value.value, status: editComponentData.value.status }
+          : componentType.value === 'dvd_roms'
+          ? { type_field: editComponentData.value.value, status: editComponentData.value.status }
+          : { model: editComponentData.value.value, status: editComponentData.value.status }
+
+        const response = await axios.put(endpoint, payload)
+        
+        if (response.data.success) {
+          Modal.getInstance(document.getElementById('editComponentModal')).hide()
+          await refreshData()
+          
+          // Reset form
+          editingComponent.value = null
+          editComponentData.value = {
+            value: '',
+            status: 'Available'
+          }
+          
+          alert(`${componentTitle.value.slice(0, -1)} updated successfully!`)
+        }
+      } catch (error) {
+        console.error('Error updating component:', error)
+        alert(`Error updating ${componentTitle.value.slice(0, -1)}: ` + (error.response?.data?.message || error.message))
+      }
     }
 
     const deleteComponent = async (component) => {
       if (!confirm(`Are you sure you want to delete this ${componentTitle.value.slice(0, -1)}?`)) return
       
       try {
-        const response = await axios.delete(`http://localhost:8000/api/components/${componentType.value}/${component.id}`)
+        const response = await axios.delete(`http://localhost:8000/api/components/${componentType.value.replace('_', '-')}/${component.id}`)
         
         if (response.data.success) {
           await refreshData()
@@ -503,6 +659,8 @@ export default {
       statusFilter,
       selectedComponent,
       newComponent,
+      editingComponent,
+      editComponentData,
       componentType,
       componentTitle,
       componentIcon,
@@ -520,6 +678,7 @@ export default {
       refreshData,
       showCreateComponentModal,
       createComponent,
+      updateComponent,
       viewComponent,
       editComponent,
       deleteComponent,

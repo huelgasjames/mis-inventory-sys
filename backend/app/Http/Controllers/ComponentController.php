@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Processor;
 use App\Models\Motherboard;
 use App\Models\Ram;
-use App\Models\Storage;
+use App\Models\Storage as StorageModel;
 use App\Models\VideoCard;
 use App\Models\Psu;
 use App\Models\DvdRom;
@@ -26,7 +26,7 @@ class ComponentController extends Controller
                     'processors' => Processor::all(),
                     'motherboards' => Motherboard::all(),
                     'rams' => Ram::all(),
-                    'storages' => Storage::all(),
+                    'storages' => StorageModel::all(),
                     'video_cards' => VideoCard::all(),
                     'psus' => Psu::all(),
                     'dvd_roms' => DvdRom::all(),
@@ -248,7 +248,7 @@ class ComponentController extends Controller
             'status' => 'required|in:Available,In Use,Defective',
         ]);
 
-        $storage = Storage::create($validated);
+        $storage = StorageModel::create($validated);
 
         return response()->json([
             'success' => true,

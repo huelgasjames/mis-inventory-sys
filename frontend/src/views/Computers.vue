@@ -884,6 +884,8 @@ import QRCodeModal from '@/components/QRCodeModal.vue'
 import { ref, computed, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { Modal } from 'bootstrap'
+import * as XLSX from 'xlsx'
+import { saveAs } from 'file-saver'
 
 const isNavCollapsed = ref(false)
 const isLoading = ref(false)
@@ -1679,7 +1681,141 @@ const refreshData = async () => {
 }
 
 const exportComputers = () => {
-  alert('Export feature would generate CSV/PDF report of current computers')
+  try {
+    // Show loading state
+    isLoading.value = true
+    
+    // Get the filtered computers data
+    const computersToExport = filteredComputers.value
+    
+    if (computersToExport.length === 0) {
+      alert('No computers to export. Please adjust your filters or add computers first.')
+      isLoading.value = false
+      return
+    }
+    
+    // Prepare data for Excel export
+    const exportData = computersToExport.map((computer, index) => ({
+      'No.': index + 1,
+      'Asset Tag': computer.asset_tag || 'N/A',
+      'PC Number': computer.pc_number || 'N/A',
+      'Computer Name': computer.computer_name || 'N/A',
+      'Serial Number': computer.serial_number || 'N/A',
+      'Department': computer.department?.name || computer.department?.department_name || 'N/A',
+      'Processor': computer.processor?.model || 'N/A',
+      'Motherboard': computer.motherboard?.model || 'N/A',
+      'RAM': computer.ram?.capacity || 'N/A',
+      'Storage': computer.storage?.capacity || 'N/A',
+      'Video Card': computer.video_card?.model || 'N/A',
+      'PSU': computer.psu?.wattage ? `${computer.psu.wattage}W` : 'N/A',
+      'DVD ROM': computer.dvd_rom?.model || 'N/A',
+      'Status': computer.status || 'N/A',
+      'Assigned To': computer.assigned_user?.name || 'Unassigned',
+      'Location': computer.location || 'Not specified',
+      'Deployed To': computer.laboratory?.lab_name || 
+                   (computer.assigned_user?.name || 'Not Deployed'),
+      'Description': computer.description || 'No description'
+    }))
+    
+    // Create workbook
+    const wb = XLSX.utils.book_new()
+    
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(exportData, {
+      header: [
+        'No.', 'Asset Tag', 'PC Number', 'Computer Name', 'Serial Number',
+        'Department', 'Processor', 'Motherboard', 'RAM', 'Storage',
+        'Video Card', 'PSU', 'DVD ROM', 'Status', 'Assigned To', 
+        'Location', 'Deployed To', 'Description'
+      ]
+    })
+    
+    // Set column widths
+    const colWidths = [
+      { wch: 8 },   // No.
+      { wch: 15 },  // Asset Tag
+      { wch: 12 },  // PC Number
+      { wch: 20 },  // Computer Name
+      { wch: 15 },  // Serial Number
+      { wch: 18 },  // Department
+      { wch: 20 },  // Processor
+      { wch: 20 },  // Motherboard
+      { wch: 12 },  // RAM
+      { wch: 12 },  // Storage
+      { wch: 18 },  // Video Card
+      { wch: 10 },  // PSU
+      { wch: 15 },  // DVD ROM
+      { wch: 12 },  // Status
+      { wch: 15 },  // Assigned To
+      { wch: 15 },  // Location
+      { wch: 18 },  // Deployed To
+      { wch: 30 }   // Description
+    ]
+    ws['!cols'] = colWidths
+    
+    // Style the header row
+    const headerRange = XLSX.utils.decode_range(ws['!ref'] || 'A1')
+    for (let col = headerRange.s.c; col <= headerRange.e.c; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col })
+      if (ws[cellAddress]) {
+        ws[cellAddress].s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '4F81BD' } },
+          alignment: { horizontal: 'center', vertical: 'center' }
+        }
+      }
+    }
+    
+    // Add worksheet to workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Computer Inventory')
+    
+    // Create summary sheet
+    const summaryData = [
+      { 'Metric': 'Total Computers', 'Count': totalComputers.value },
+      { 'Metric': 'Working Computers', 'Count': workingComputers.value },
+      { 'Metric': 'Defective Computers', 'Count': defectiveComputers.value },
+      { 'Metric': 'For Disposal', 'Count': disposalComputers.value },
+      { 'Metric': 'Export Date', 'Count': new Date().toLocaleDateString() },
+      { 'Metric': 'Export Time', 'Count': new Date().toLocaleTimeString() }
+    ]
+    
+    const summaryWs = XLSX.utils.json_to_sheet(summaryData, {
+      header: ['Metric', 'Count']
+    })
+    summaryWs['!cols'] = [{ wch: 20 }, { wch: 15 }]
+    
+    // Style summary sheet header
+    for (let col = 0; col <= 1; col++) {
+      const cellAddress = XLSX.utils.encode_cell({ r: 0, c: col })
+      if (summaryWs[cellAddress]) {
+        summaryWs[cellAddress].s = {
+          font: { bold: true, color: { rgb: 'FFFFFF' } },
+          fill: { fgColor: { rgb: '4F81BD' } },
+          alignment: { horizontal: 'center', vertical: 'center' }
+        }
+      }
+    }
+    
+    XLSX.utils.book_append_sheet(wb, summaryWs, 'Summary')
+    
+    // Generate Excel file
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+    
+    // Create blob and save
+    const blob = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const fileName = `Computer_Inventory_${new Date().toISOString().split('T')[0].replace(/-/g, '')}.xlsx`
+    
+    saveAs(blob, fileName)
+    
+    // Show success message
+    alert(`Successfully exported ${computersToExport.length} computers to ${fileName}`)
+    
+  } catch (error) {
+    console.error('Export error:', error)
+    alert('Failed to export computers. Please try again.')
+  } finally {
+    isLoading.value = false
+  }
 }
 
 const toggleNav = () => {

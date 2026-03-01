@@ -23,7 +23,7 @@
       <div class="container-fluid p-4">
         <!-- Page Header -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0" style="color: black;">Department Management</h1>
+          <h1 class="h3 mb-0" style="color: black;">Department Categories</h1>
           <div class="d-flex gap-2">
             <button class="btn btn-outline-primary" @click="refreshData">
               <i class="bi bi-arrow-clockwise me-2"></i>Refresh
@@ -47,7 +47,7 @@
                     <i class="bi bi-building text-primary fs-4"></i>
                   </div>
                   <div>
-                    <h6 class="text-muted mb-1">Total Departments</h6>
+                    <h6 class="text-muted mb-1">Total Categories</h6>
                     <h3 class="mb-0">{{ departments.length }}</h3>
                   </div>
                 </div>
@@ -108,7 +108,7 @@
         <div class="card border-0 shadow-sm">
           <div class="card-header bg-white border-bottom">
             <div class="d-flex justify-content-between align-items-center">
-              <h5 class="card-title mb-0">Departments Directory</h5>
+              <h5 class="card-title mb-0">Department Categories Directory</h5>
               <div class="d-flex gap-2">
                 <input type="text" class="form-control form-control-sm" placeholder="Quick search..." v-model="searchQuery">
                 <button class="btn btn-outline-primary btn-sm" @click="showCreateDepartmentModal">
@@ -172,7 +172,7 @@
                         <button class="btn btn-outline-warning" @click="editDepartment(department)">
                           <i class="bi bi-pencil"></i>
                         </button>
-                        <button class="btn btn-outline-danger" @click="deleteDepartment(department)">
+                        <button class="btn btn-outline-danger" @click="deleteDepartmentRecord(department)">
                           <i class="bi bi-trash"></i>
                         </button>
                       </div>
@@ -220,7 +220,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="createDepartment">Add Department</button>
+          <button type="button" class="btn btn-primary" @click="createDepartmentRecord">Add Department</button>
         </div>
       </div>
     </div>
@@ -309,7 +309,7 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" class="btn btn-primary" @click="updateDepartment">Update Department</button>
+          <button type="button" class="btn btn-primary" @click="updateDepartmentRecord">Update Department</button>
         </div>
       </div>
     </div>
@@ -322,8 +322,8 @@ import { useRouter } from 'vue-router'
 import AppHeader from '@/components/AppHeader.vue'
 import AppNav from '@/components/AppNav.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
-import axios from 'axios'
 import { Modal } from 'bootstrap'
+import { useInventoryData } from '@/composables/useInventoryData'
 export default {
   name: 'Departments',
   components: {
@@ -335,30 +335,28 @@ export default {
     const router = useRouter()
     
     const isNavCollapsed = ref(false)
-    const isLoading = ref(false)
-    const loadingStartTime = ref(null)
     
-    // Helper function to ensure minimum loading duration
-    const ensureMinimumLoading = async (minDuration = 5000) => {
-      if (loadingStartTime.value) {
-        const elapsed = Date.now() - loadingStartTime.value
-        if (elapsed < minDuration) {
-          await new Promise(resolve => setTimeout(resolve, minDuration - elapsed))
-        }
-      }
-    }
+    // Use centralized data fetching
+    const {
+      isLoading,
+      departments,
+      categories,
+      refreshAllData,
+      createDepartment,
+      updateDepartment,
+      deleteDepartment
+    } = useInventoryData()
     
     // Watch for changes in navigation state
     watch(isNavCollapsed, (newValue, oldValue) => {
       console.log('Departments isNavCollapsed changed from', oldValue, 'to', newValue)
     })
-    const departments = ref([])
-    const categories = ref([])
+    
     const categoryFilter = ref('')
     const searchQuery = ref('')
     const selectedDepartment = ref(null)
     const editingDepartment = ref({})
-    
+
     const newDepartment = ref({
       name: '',
       description: '',
@@ -402,65 +400,13 @@ export default {
     const totalComputers = computed(() => departments.value.reduce((sum, d) => sum + (d.total_computers || 0), 0))
     const totalUsers = computed(() => departments.value.reduce((sum, d) => sum + (d.total_users || 0), 0))
 
-    const fetchDepartments = async () => {
-      if (!isLoading.value) {
-        isLoading.value = true
-        loadingStartTime.value = Date.now()
-      }
-      try {
-        console.log('Fetching departments from API...')
-        const response = await axios.get('http://localhost:8000/api/departments')
-        console.log('Departments API response:', response.data)
-        
-        if (response.data.success) {
-          departments.value = response.data.data || []
-          console.log('Departments loaded:', departments.value.length)
-        } else {
-          console.warn('Departments API returned unsuccessful response')
-          departments.value = []
-        }
-      } catch (error) {
-        console.error('Error fetching departments:', error)
-        departments.value = []
-      } finally {
-        await ensureMinimumLoading(5000)
-        isLoading.value = false
-        loadingStartTime.value = null
-      }
-    }
-
-    const fetchCategories = async () => {
-      if (!isLoading.value) {
-        isLoading.value = true
-        loadingStartTime.value = Date.now()
-      }
-      try {
-        const response = await axios.get('http://localhost:8000/api/department-categories')
-        if (response.data.success) {
-          categories.value = response.data.data || []
-        } else {
-          categories.value = []
-        }
-      } catch (error) {
-        console.error('Error fetching categories:', error)
-        categories.value = []
-      } finally {
-        await ensureMinimumLoading(5000)
-        isLoading.value = false
-      }
-    }
-
+    // Refresh data using centralized service
     const refreshData = async () => {
-      if (!isLoading.value) {
-        isLoading.value = true
-        loadingStartTime.value = Date.now()
+      try {
+        await refreshAllData({ showLoading: true, minLoadingDuration: 1000 })
+      } catch (error) {
+        console.error('Error refreshing data:', error)
       }
-      
-      await Promise.all([fetchDepartments(), fetchCategories()])
-      
-      await ensureMinimumLoading()
-      isLoading.value = false
-      loadingStartTime.value = null
     }
 
     const showCreateDepartmentModal = () => {
@@ -468,29 +414,24 @@ export default {
       modal.show()
     }
 
-    const createDepartment = async () => {
-      isLoading.value = true
+    const createDepartmentRecord = async () => {
       try {
-        const response = await axios.post('http://localhost:8000/api/departments', newDepartment.value)
+        await createDepartment(newDepartment.value)
         
-        if (response.data.success) {
-          Modal.getInstance(document.getElementById('createDepartmentModal')).hide()
-          await refreshData()
-          
-          // Reset form
-          newDepartment.value = {
-            name: '',
-            description: '',
-            category_id: ''
-          }
-          
-          alert('Department created successfully!')
+        Modal.getInstance(document.getElementById('createDepartmentModal')).hide()
+        
+        // Reset form
+        newDepartment.value = {
+          name: '',
+          description: '',
+          category_id: ''
         }
+        
+        alert('Department created successfully!')
+        // Data is automatically refreshed by the composable
       } catch (error) {
         console.error('Error creating department:', error)
-        alert('Error creating department: ' + (error.response?.data?.message || error.message))
-      } finally {
-        isLoading.value = false
+        alert('Error creating department: ' + (error.message || 'Unknown error'))
       }
     }
 
@@ -506,40 +447,29 @@ export default {
       modal.show()
     }
 
-    const updateDepartment = async () => {
-      isLoading.value = true
+    const updateDepartmentRecord = async () => {
       try {
-        const response = await axios.put(`http://localhost:8000/api/departments/${editingDepartment.value.id}`, editingDepartment.value)
+        await updateDepartment(editingDepartment.value.id, editingDepartment.value)
         
-        if (response.data.success) {
-          Modal.getInstance(document.getElementById('editDepartmentModal')).hide()
-          await refreshData()
-          alert('Department updated successfully!')
-        }
+        Modal.getInstance(document.getElementById('editDepartmentModal')).hide()
+        alert('Department updated successfully!')
+        // Data is automatically refreshed by the composable
       } catch (error) {
         console.error('Error updating department:', error)
-        alert('Error updating department: ' + (error.response?.data?.message || error.message))
-      } finally {
-        isLoading.value = false
+        alert('Error updating department: ' + (error.message || 'Unknown error'))
       }
     }
 
-    const deleteDepartment = async (department) => {
+    const deleteDepartmentRecord = async (department) => {
       if (!confirm('Are you sure you want to delete this department?')) return
       
-      isLoading.value = true
       try {
-        const response = await axios.delete(`http://localhost:8000/api/departments/${department.id}`)
-        
-        if (response.data.success) {
-          await refreshData()
-          alert('Department deleted successfully!')
-        }
+        await deleteDepartment(department.id)
+        alert('Department deleted successfully!')
+        // Data is automatically refreshed by the composable
       } catch (error) {
         console.error('Error deleting department:', error)
-        alert('Error deleting department: ' + (error.response?.data?.message || error.message))
-      } finally {
-        isLoading.value = false
+        alert('Error deleting department: ' + (error.message || 'Unknown error'))
       }
     }
 
@@ -552,16 +482,7 @@ export default {
     }
 
     onMounted(async () => {
-      if (!isLoading.value) {
-        isLoading.value = true
-        loadingStartTime.value = Date.now()
-      }
-      
       await refreshData()
-      
-      await ensureMinimumLoading()
-      isLoading.value = false
-      loadingStartTime.value = null
     })
 
     return {
@@ -584,11 +505,11 @@ export default {
       openSettings,
       refreshData,
       showCreateDepartmentModal,
-      createDepartment,
+      createDepartmentRecord,
       viewDepartment,
       editDepartment,
-      updateDepartment,
-      deleteDepartment,
+      updateDepartmentRecord,
+      deleteDepartmentRecord,
       filterDepartments,
       exportDepartments
     }

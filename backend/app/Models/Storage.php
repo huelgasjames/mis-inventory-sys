@@ -14,6 +14,7 @@ class Storage extends Model
         'name',
         'brand',
         'model',
+        'capacity',
         'quantity',
         'unit',
         'asset_tag',
