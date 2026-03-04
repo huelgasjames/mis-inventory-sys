@@ -15,6 +15,35 @@ use Illuminate\Http\JsonResponse;
 class ComponentController extends Controller
 {
     /**
+     * Debug endpoint to check computer and laboratory data
+     */
+    public function debugComputers(): JsonResponse
+    {
+        try {
+            // Get a sample of computers with their laboratory data
+            $computers = \App\Models\Computer::with('laboratory')->limit(5)->get();
+            
+            // Get all laboratories
+            $laboratories = \App\Models\Laboratory::all();
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'sample_computers' => $computers,
+                    'laboratories' => $laboratories,
+                    'computer_count' => \App\Models\Computer::count(),
+                    'lab_count' => \App\Models\Laboratory::count()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Debug error: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Get all components
      */
     public function index(): JsonResponse
@@ -23,13 +52,13 @@ class ComponentController extends Controller
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'processors' => Processor::all(),
-                    'motherboards' => Motherboard::all(),
-                    'rams' => Ram::all(),
-                    'storages' => StorageModel::all(),
-                    'video_cards' => VideoCard::all(),
-                    'psus' => Psu::all(),
-                    'dvd_roms' => DvdRom::all(),
+                    'processors' => Processor::with('computers.laboratory')->get(),
+                    'motherboards' => Motherboard::with('computers.laboratory')->get(),
+                    'rams' => Ram::with('computers.laboratory')->get(),
+                    'storages' => StorageModel::with('computers.laboratory')->get(),
+                    'video_cards' => VideoCard::with('computers.laboratory')->get(),
+                    'psus' => Psu::with('computers.laboratory')->get(),
+                    'dvd_roms' => DvdRom::with('computers.laboratory')->get(),
                 ]
             ]);
         } catch (\Exception $e) {
@@ -111,7 +140,7 @@ class ComponentController extends Controller
                 ]);
             }
 
-            $component = Storage::find($id);
+            $component = StorageModel::find($id);
             if ($component) {
                 $component->delete();
                 return response()->json([
@@ -170,7 +199,7 @@ class ComponentController extends Controller
                 'total_processors' => Processor::count(),
                 'total_motherboards' => Motherboard::count(),
                 'total_rams' => Ram::count(),
-                'total_storages' => Storage::count(),
+                'total_storages' => StorageModel::count(),
                 'total_video_cards' => VideoCard::count(),
                 'total_psus' => Psu::count(),
                 'total_dvd_roms' => DvdRom::count(),
@@ -187,6 +216,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'model' => 'required|string',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $processor = Processor::create($validated);
@@ -206,6 +236,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'model' => 'required|string',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $motherboard = Motherboard::create($validated);
@@ -227,6 +258,7 @@ class ComponentController extends Controller
             'type' => 'nullable|string|in:DDR3,DDR4,DDR5,LPDDR4,LPDDR5',
             'speed' => 'nullable|string|max:50',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $ram = Ram::create($validated);
@@ -246,6 +278,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'capacity' => 'required|string',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $storage = StorageModel::create($validated);
@@ -265,6 +298,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'model' => 'required|string',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $videoCard = VideoCard::create($validated);
@@ -284,6 +318,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'wattage' => 'required|in:350,450,550,650,750,850,1000',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $psu = Psu::create($validated);
@@ -303,6 +338,7 @@ class ComponentController extends Controller
         $validated = $request->validate([
             'type_field' => 'required|in:CD-ROM,DVD-ROM,DVD-RW,Blu-ray,Blu-ray RW',
             'status' => 'required|in:Available,In Use,Defective',
+            'quantity' => 'required|integer|min:1',
         ]);
 
         $dvdRom = DvdRom::create($validated);
@@ -374,12 +410,12 @@ class ComponentController extends Controller
             case 'rams':
                 return Ram::find($id);
             case 'storages':
-                return Storage::find($id);
-            case 'video_cards':
+                return StorageModel::find($id);
+            case 'video-cards':
                 return VideoCard::find($id);
             case 'psus':
                 return Psu::find($id);
-            case 'dvd_roms':
+            case 'dvd-roms':
                 return DvdRom::find($id);
             default:
                 return null;
@@ -392,7 +428,7 @@ class ComponentController extends Controller
             'processors' => Processor::where('status', 'Available')->count(),
             'motherboards' => Motherboard::where('status', 'Available')->count(),
             'rams' => Ram::where('status', 'Available')->count(),
-            'storages' => Storage::where('status', 'Available')->count(),
+            'storages' => StorageModel::where('status', 'Available')->count(),
             'video_cards' => VideoCard::where('status', 'Available')->count(),
             'psus' => Psu::where('status', 'Available')->count(),
             'dvd_roms' => DvdRom::where('status', 'Available')->count(),

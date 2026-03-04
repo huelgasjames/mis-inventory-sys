@@ -15,9 +15,11 @@ class Ram extends Model
         'type',
         'speed',
         'status',
+        'quantity',
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

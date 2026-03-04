@@ -13,9 +13,11 @@ class Psu extends Model
     protected $fillable = [
         'wattage',
         'status',
+        'quantity',
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

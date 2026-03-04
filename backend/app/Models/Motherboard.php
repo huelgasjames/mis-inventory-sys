@@ -13,9 +13,11 @@ class Motherboard extends Model
     protected $fillable = [
         'model',
         'status',
+        'quantity',
     ];
 
     protected $casts = [
+        'quantity' => 'integer',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

@@ -162,7 +162,10 @@
                   <tr>
                     <th>ID</th>
                     <th>{{ componentType === 'rams' ? 'Capacity' : componentType === 'storages' ? 'Capacity' : componentType === 'psus' ? 'Wattage' : componentType === 'dvd_roms' ? 'Type' : 'Model' }}</th>
+                    <th>Quantity</th>
+                    <th>Majority Lab</th>
                     <th>Status</th>
+                    <th>Computer</th>
                     <th>Created Date</th>
                     <th>Actions</th>
                   </tr>
@@ -177,8 +180,46 @@
                       </div>
                     </td>
                     <td>
-                      <span :class="getStatusBadgeClass(component.status)">
-                        {{ component.status }}
+                      <div class="d-flex align-items-center">
+                        <span class="badge bg-primary">{{ getComputerCount(component) }}</span>
+                        <small class="text-muted ms-2">computers</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div v-if="getMajorityLab(component)">
+                        <span class="badge bg-success">
+                          <i class="bi bi-building me-1"></i>
+                          {{ getMajorityLab(component).name }}
+                        </span>
+                        <small class="text-muted ms-1">({{ getMajorityLab(component).count }})</small>
+                      </div>
+                      <span v-else class="text-muted">
+                        <i class="bi bi-dash-circle me-1"></i>Computer Lab
+                      </span>
+                    </td>
+                    <td>
+                      <select 
+                        class="form-select form-select-sm" 
+                        v-model="component.status" 
+                        @change="updateComponentStatus(component)"
+                        :class="getStatusSelectClass(component.status)"
+                      >
+                        <option value="Available">Available</option>
+                        <option value="In Use">In Use</option>
+                        <option value="Defective">Defective</option>
+                      </select>
+                    </td>
+                    <td>
+                      <div v-if="component.computers && component.computers.length > 0">
+                        <div v-for="computer in component.computers" :key="computer.id" class="mb-1">
+                          <span class="badge bg-info text-dark">
+                            <i class="bi bi-pc-display me-1"></i>
+                            {{ getComputerDisplayName(computer) }}
+                          </span>
+                        </div>
+                      </div>
+                      <span v-else class="text-muted">
+                        <i class="bi bi-dash-circle me-1"></i>Not Installed
                       </span>
                     </td>
                     <td>{{ formatDate(component.created_at) }}</td>
@@ -303,10 +344,31 @@
             <div class="form-control bg-light">{{ getComponentDisplayValue(selectedComponent) }}</div>
           </div>
           <div class="mb-3">
+            <label class="form-label">Installed Computers</label>
+            <div class="form-control bg-light">{{ getComputerCount(selectedComponent) }} computers</div>
+          </div>
+          <div class="mb-3">
             <label class="form-label">Status</label>
             <div class="form-control bg-light">
               <span :class="getStatusBadgeClass(selectedComponent.status)">
                 {{ selectedComponent.status }}
+              </span>
+            </div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Installed Computer</label>
+            <div class="form-control bg-light">
+              <div v-if="selectedComponent.computers && selectedComponent.computers.length > 0">
+                <div v-for="computer in selectedComponent.computers" :key="computer.id" class="mb-2">
+                  <span class="badge bg-info text-dark me-2">
+                    <i class="bi bi-pc-display me-1"></i>
+                    {{ getComputerDisplayName(computer) }}
+                  </span>
+                  <small class="text-muted">{{ computer.laboratory?.lab_name || 'Computer Lab' }}</small>
+                </div>
+              </div>
+              <span v-else class="text-muted">
+                <i class="bi bi-dash-circle me-1"></i>Not Installed
               </span>
             </div>
           </div>
@@ -492,6 +554,15 @@ export default {
       return classes[status] || 'badge bg-secondary'
     }
 
+    const getStatusSelectClass = (status) => {
+      const classes = {
+        'Available': 'form-select-success',
+        'In Use': 'form-select-warning', 
+        'Defective': 'form-select-danger'
+      }
+      return classes[status] || ''
+    }
+
     const formatDate = (dateString) => {
       if (!dateString) return '-'
       return new Date(dateString).toLocaleDateString()
@@ -508,6 +579,54 @@ export default {
         return component.type_field || component.model || '-'
       }
       return component.model || '-'
+    }
+
+    const getComputerCount = (component) => {
+      if (!component.computers || component.computers.length === 0) {
+        return 0
+      }
+      return component.computers.length
+    }
+
+    const getMajorityLab = (component) => {
+      if (!component.computers || component.computers.length === 0) {
+        return null
+      }
+      
+      // Debug: Log the computers data to see what we have
+      console.log('Computers for component:', component.model, component.computers)
+      
+      // Count computers by laboratory
+      const labCounts = {}
+      component.computers.forEach(computer => {
+        // Debug: Log each computer's laboratory data
+        console.log('Computer:', computer.computer_name, 'Lab:', computer.laboratory)
+        
+        const labName = computer.laboratory?.lab_name || 'Computer Lab'
+        labCounts[labName] = (labCounts[labName] || 0) + 1
+      })
+      
+      console.log('Lab counts:', labCounts)
+      
+      // Find the lab with the highest count
+      let maxCount = 0
+      let majorityLab = null
+      
+      Object.entries(labCounts).forEach(([labName, count]) => {
+        if (count > maxCount) {
+          maxCount = count
+          majorityLab = { name: labName, count }
+        }
+      })
+      
+      console.log('Majority lab:', majorityLab)
+      return majorityLab
+    }
+
+    const getComputerDisplayName = (computer) => {
+      const computerName = computer.computer_name || `PC-${computer.pc_number}` || `Computer #${computer.id}`
+      const labName = computer.laboratory?.lab_name
+      return labName ? `${labName} - ${computerName}` : computerName
     }
 
     const getPlaceholder = () => {
@@ -531,6 +650,16 @@ export default {
     const availableCount = computed(() => components.value.filter(c => c.status === 'Available').length)
     const inUseCount = computed(() => components.value.filter(c => c.status === 'In Use').length)
     const defectiveCount = computed(() => components.value.filter(c => c.status === 'Defective').length)
+
+    const debugComputerData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/components/debug')
+        console.log('Debug Data:', response.data)
+        return response.data
+      } catch (error) {
+        console.error('Debug error:', error)
+      }
+    }
 
     const fetchComponents = async () => {
       try {
@@ -629,6 +758,26 @@ export default {
       }
     }
 
+    const updateComponentStatus = async (component) => {
+      try {
+        const endpoint = `http://localhost:8000/api/components/${componentType.value.replace('_', '-')}/${component.id}`
+        const payload = { status: component.status }
+
+        const response = await axios.put(endpoint, payload)
+        
+        if (!response.data.success) {
+          // Revert the status if the update failed
+          await fetchComponents()
+          alert(`Error updating status: ${response.data.message}`)
+        }
+      } catch (error) {
+        console.error('Error updating component status:', error)
+        // Revert the status if there was an error
+        await fetchComponents()
+        alert(`Error updating status: ` + (error.response?.data?.message || error.message))
+      }
+    }
+
     const deleteComponent = async (component) => {
       if (!confirm(`Are you sure you want to delete this ${componentTitle.value.slice(0, -1)}?`)) return
       
@@ -651,6 +800,7 @@ export default {
 
     onMounted(() => {
       fetchComponents()
+      debugComputerData() // Add debug call
     })
 
     return {
@@ -672,13 +822,18 @@ export default {
       openProfile,
       openSettings,
       getStatusBadgeClass,
+      getStatusSelectClass,
       formatDate,
       getComponentDisplayValue,
+      getComputerCount,
+      getMajorityLab,
+      getComputerDisplayName,
       getPlaceholder,
       refreshData,
       showCreateComponentModal,
       createComponent,
       updateComponent,
+      updateComponentStatus,
       viewComponent,
       editComponent,
       deleteComponent,
@@ -707,6 +862,37 @@ export default {
 
 .main-content.collapsed {
   margin-left: 70px;
+}
+
+/* Status select styling */
+.form-select-success {
+  border-color: #198754;
+  color: #198754;
+}
+
+.form-select-success:focus {
+  border-color: #198754;
+  box-shadow: 0 0 0 0.2rem rgba(25, 135, 84, 0.25);
+}
+
+.form-select-warning {
+  border-color: #ffc107;
+  color: #ffc107;
+}
+
+.form-select-warning:focus {
+  border-color: #ffc107;
+  box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+}
+
+.form-select-danger {
+  border-color: #dc3545;
+  color: #dc3545;
+}
+
+.form-select-danger:focus {
+  border-color: #dc3545;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
 }
 
 /* Responsive adjustments */

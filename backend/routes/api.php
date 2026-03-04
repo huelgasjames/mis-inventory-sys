@@ -60,6 +60,7 @@ Route::put('/assets/{id}', [InventoryController::class, 'updateAsset']);
 Route::delete('/assets/{id}', [InventoryController::class, 'deleteAsset']);
 
 // Component management routes
+Route::get('/components/debug', [ComponentController::class, 'debugComputers']);
 Route::get('/components', [ComponentController::class, 'index']);
 Route::get('/components/stats', [ComponentController::class, 'stats']);
 Route::post('/components/create', [ComponentController::class, 'create']);
