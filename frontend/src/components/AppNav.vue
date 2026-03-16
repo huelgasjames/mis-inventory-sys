@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
 
 const props = defineProps({
   isCollapsed: {
@@ -12,9 +12,57 @@ const props = defineProps({
 const componentsOpen = ref(false)
 const managementOpen = ref(false)
 const otherOpen = ref(false)
+const isMobile = ref(false)
+const isMobileMenuOpen = ref(false)
+
+// Check if mobile
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+  // Auto-hide sidebar on mobile
+  if (isMobile.value) {
+    isMobileMenuOpen.value = false
+  }
+}
+
+// Handle window resize
+const handleResize = () => {
+  checkMobile()
+}
+
+// Toggle mobile menu
+const toggleMobileMenu = () => {
+  if (!isMobile.value) return
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+// Close mobile menu
+const closeMobileMenu = () => {
+  if (isMobile.value) {
+    isMobileMenuOpen.value = false
+  }
+}
+
+// Handle escape key
+const handleEscape = (event) => {
+  if (event.key === 'Escape' && isMobileMenuOpen.value) {
+    closeMobileMenu()
+  }
+}
+
+onMounted(() => {
+  checkMobile()
+  window.addEventListener('resize', handleResize)
+  window.addEventListener('keydown', handleEscape)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+  window.removeEventListener('keydown', handleEscape)
+})
 
 function toggleAccordion(section) {
-  if (props.isCollapsed) return
+  // Only prevent accordion if sidebar is collapsed in desktop view
+  if (props.isCollapsed && !isMobile.value) return
   
   switch(section) {
     case 'components':
@@ -28,10 +76,56 @@ function toggleAccordion(section) {
       break
   }
 }
+
+// Computed width and shadow functions
+const getSidebarWidth = () => {
+  if (isMobile.value) {
+    return isMobileMenuOpen.value ? '280px' : '0px'
+  }
+  return props.isCollapsed ? '70px' : '250px'
+}
+
+const getSidebarShadow = () => {
+  if (isMobile.value && isMobileMenuOpen.value) {
+    return '2px 0 15px rgba(0, 0, 0, 0.3)'
+  }
+  return '2px 0 5px rgba(0,0,0,0.1)'
+}
 </script>
 
 <template>
-  <aside :class="['d-flex', 'flex-column', 'flex-shrink-0', 'p-3', 'bg-white', 'border-end', { 'collapsed': props.isCollapsed }]" :style="`width: ${props.isCollapsed ? '70px' : '250px'}; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; transition: width 0.3s ease; overflow-y: auto; overflow-x: hidden; box-shadow: 2px 0 5px rgba(0,0,0,0.1);`">
+  <!-- Mobile Menu Overlay -->
+  <div 
+    v-if="isMobile && isMobileMenuOpen" 
+    class="mobile-overlay"
+    @click="closeMobileMenu"
+  ></div>
+  
+  <!-- Mobile Menu Toggle Button -->
+  <button 
+    v-if="isMobile"
+    class="mobile-menu-toggle"
+    @click="toggleMobileMenu"
+    :class="{ 'active': isMobileMenuOpen }"
+  >
+    <span></span>
+    <span></span>
+    <span></span>
+  </button>
+  
+  <aside :class="[
+    'd-flex', 
+    'flex-column', 
+    'flex-shrink-0', 
+    'p-3', 
+    'bg-white', 
+    'border-end', 
+    { 
+      'collapsed': props.isCollapsed,
+      'mobile-hidden': isMobile && !isMobileMenuOpen,
+      'mobile-open': isMobile && isMobileMenuOpen
+    }
+  ]" :style="`width: ${getSidebarWidth()}; height: 100vh; position: fixed; top: 0; left: 0; z-index: 1000; transition: all 0.3s ease; overflow-y: auto; overflow-x: hidden; box-shadow: ${getSidebarShadow()};`">
     <!-- University Logo and Name -->
     <div class="mb-4 text-center">
       <router-link to="/dashboard" class="d-block text-decoration-none">
@@ -78,7 +172,7 @@ function toggleAccordion(section) {
           <span class="bi bi-pc" > Computer Components</span>
           <i :class="['bi', componentsOpen ? 'bi-chevron-down' : 'bi-chevron-right']"></i>
         </div>
-        <div :class="{ 'collapse': !componentsOpen && !props.isCollapsed, 'show': componentsOpen || props.isCollapsed }">
+        <div :class="{ 'collapse': !componentsOpen && !props.isCollapsed && !(isMobile && isMobileMenuOpen), 'show': componentsOpen || props.isCollapsed || (isMobile && isMobileMenuOpen) }">
           <router-link to="/processors" class="nav-link text-decoration-none d-flex align-items-center gap-3 px-3 py-2 rounded text-dark hover-bg-light" active-class="active" title="Processors">
             <i class="bi bi-cpu"></i>
             <span :class="{ 'd-none': props.isCollapsed }">Processors</span>
@@ -183,6 +277,74 @@ function toggleAccordion(section) {
 </template>
 
 <style scoped>
+/* Mobile overlay */
+.mobile-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  backdrop-filter: blur(2px);
+}
+
+/* Mobile menu toggle button */
+.mobile-menu-toggle {
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: #0F6F43;
+  border: none;
+  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(15, 111, 67, 0.3);
+}
+
+.mobile-menu-toggle:hover {
+  background: #0a5234;
+  transform: scale(1.05);
+}
+
+.mobile-menu-toggle span {
+  width: 20px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-toggle.active span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+
+.mobile-menu-toggle.active span:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -6px);
+}
+
+/* Mobile sidebar states */
+.mobile-hidden {
+  transform: translateX(-100%) !important;
+  width: 0px !important;
+}
+
+.mobile-open {
+  transform: translateX(0) !important;
+  box-shadow: 2px 0 15px rgba(0, 0, 0, 0.3) !important;
+}
 aside {
   width: 250px;
   overflow-y: auto;
@@ -342,9 +504,65 @@ aside.collapsed .nav-link {
 
 @media (max-width: 768px) {
   aside {
-    width: 60px !important;
+    width: 0px !important;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease, width 0.3s ease;
+  }
+  
+  aside:not(.collapsed) {
+    width: 280px !important;
+    transform: translateX(0);
+    box-shadow: 2px 0 10px rgba(0,0,0,0.2);
+  }
+  
+  .nav-link {
+    padding: 1rem;
+    font-size: 0.9rem;
+    min-height: 55px;
+  }
+  
+  .nav-link i {
+    font-size: 1.1rem;
+    min-width: 24px;
+  }
+  
+  .nav-link span {
+    font-size: 0.9rem;
+  }
+  
+  .text-muted.small {
+    font-size: 0.8rem;
+  }
+  
+  .img-fluid {
+    width: 45px;
+  }
+  
+  .fw-bold {
+    font-size: 0.9rem;
+  }
+  
+  /* Mobile overlay background */
+  aside::before {
+    content: '';
     position: fixed;
-    z-index: 1000;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: -1;
+    display: none;
+  }
+  
+  aside:not(.collapsed)::before {
+    display: block;
+  }
+}
+
+@media (max-width: 576px) {
+  aside {
+    width: 0px !important;
   }
   
   aside:not(.collapsed) {
@@ -352,13 +570,14 @@ aside.collapsed .nav-link {
   }
   
   .nav-link {
-    padding: 0.75rem;
+    padding: 0.8rem;
     font-size: 0.85rem;
+    min-height: 50px;
   }
   
   .nav-link i {
     font-size: 1rem;
-    min-width: 60px;
+    min-width: 20px;
   }
   
   .nav-link span {
@@ -366,22 +585,21 @@ aside.collapsed .nav-link {
   }
   
   .text-muted.small {
-    font-size: 0.7rem;
+    font-size: 0.75rem;
   }
   
   .img-fluid {
     width: 40px;
-    height: auto;
   }
   
   .fw-bold {
-    font-size: 0.8rem;
+    font-size: 0.85rem;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 480px) {
   aside {
-    width: 50px !important;
+    width: 0px !important;
   }
   
   aside:not(.collapsed) {
@@ -389,13 +607,14 @@ aside.collapsed .nav-link {
   }
   
   .nav-link {
-    padding: 0.6rem;
+    padding: 0.7rem;
     font-size: 0.8rem;
+    min-height: 48px;
   }
   
   .nav-link i {
-    font-size: 0.9rem;
-    min-width: 50px;
+    font-size: 0.95rem;
+    min-width: 18px;
   }
   
   .nav-link span {
@@ -403,7 +622,7 @@ aside.collapsed .nav-link {
   }
   
   .text-muted.small {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
   
   .img-fluid {
@@ -411,43 +630,13 @@ aside.collapsed .nav-link {
   }
   
   .fw-bold {
-    font-size: 0.75rem;
-  }
-}
-
-@media (max-width: 480px) {
-  aside {
-    width: 45px !important;
+    font-size: 0.8rem;
   }
   
-  aside:not(.collapsed) {
-    width: 220px !important;
-  }
-  
+  /* Touch-friendly tap targets */
   .nav-link {
-    padding: 0.5rem;
-    font-size: 0.75rem;
-  }
-  
-  .nav-link i {
-    font-size: 0.85rem;
-    min-width: 45px;
-  }
-  
-  .nav-link span {
-    font-size: 0.75rem;
-  }
-  
-  .text-muted.small {
-    font-size: 0.6rem;
-  }
-  
-  .img-fluid {
-    width: 30px;
-  }
-  
-  .fw-bold {
-    font-size: 0.7rem;
+    min-height: 48px;
+    min-width: 48px;
   }
 }
 

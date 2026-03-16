@@ -2,16 +2,18 @@
   <header class="navbar navbar-expand bg-success navbar-dark py-3 px-4 w-100">
     <div class="container-fluid">
       <!-- Left side: Logo and Title -->
-      <div class="d-flex align-items-center">
+      <div class="d-flex align-items-center flex-shrink-0">
         <div class="text-white text-center">
           <div class="fw-bold fs-4">MiSINV</div>
-          <div class="small">MISD INVENTORY</div>
+          <div class="small d-none d-sm-block">MISD INVENTORY</div>
+          <div class="small d-block d-sm-none">INVENTORY</div>
         </div>
       </div>
 
       <!-- Right side: Admin and Icons -->
-      <div class="d-flex align-items-center gap-3">
-        <span class="text-white me-3">Admin</span>
+      <div class="d-flex align-items-center gap-3 flex-shrink-0">
+        <span class="text-white me-3 d-none d-md-flex">Admin</span>
+        <span class="text-white me-2 d-flex d-md-none">A</span>
         
         <!-- Hamburger Menu -->
         <i class="bi bi-list text-white fs-5 cursor-pointer" @click="toggleSidebar"></i>
@@ -24,7 +26,7 @@
           <i class="bi bi-person-circle text-white fs-5 cursor-pointer" @click="toggleProfileDropdown"></i>
           
           <!-- Dropdown Menu -->
-          <div v-if="showProfileDropdown" class="dropdown-menu show position-absolute end-0" style="right: 0; top: 100%; margin-top: 0.5rem;">
+          <div v-if="showProfileDropdown" class="dropdown-menu show position-absolute end-0" :style="dropdownStyles">
             <div class="dropdown-header text-muted small px-3 py-2">
               <i class="bi bi-person me-2"></i>
               <span v-if="user">{{ user.name || 'Admin User' }}</span>
@@ -42,7 +44,7 @@
 </template>
 
 <script setup>
-import { defineEmits, ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 const props = defineProps({
   isCollapsed: {
@@ -56,9 +58,37 @@ const emit = defineEmits(['menu-toggle', 'settings-open', 'profile-open', 'sideb
 // Reactive variables
 const showProfileDropdown = ref(false)
 const user = ref(null)
+const isMobile = ref(false)
+
+// Check if mobile
+const checkMobile = () => {
+  isMobile.value = window.innerWidth < 768
+}
+
+// Calculate dropdown position based on screen size
+const dropdownStyles = computed(() => {
+  if (isMobile.value) {
+    return {
+      right: '0',
+      left: 'auto',
+      top: '100%',
+      marginTop: '0.5rem',
+      minWidth: '180px',
+      maxWidth: '90vw'
+    }
+  }
+  return {
+    right: '0',
+    left: 'auto',
+    top: '100%',
+    marginTop: '0.5rem'
+  }
+})
 
 // Get user data from localStorage
 onMounted(() => {
+  checkMobile()
+  
   try {
     const userData = localStorage.getItem('user')
     if (userData) {
@@ -70,10 +100,13 @@ onMounted(() => {
   
   // Close dropdown when clicking outside
   document.addEventListener('click', handleClickOutside)
+  // Handle window resize
+  window.addEventListener('resize', checkMobile)
 })
 
 onUnmounted(() => {
   document.removeEventListener('click', handleClickOutside)
+  window.removeEventListener('resize', checkMobile)
 })
 
 const handleClickOutside = (event) => {
@@ -150,11 +183,16 @@ const logout = () => {
 
 .cursor-pointer {
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity 0.2s, transform 0.2s;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .cursor-pointer:hover {
   opacity: 0.8;
+}
+
+.cursor-pointer:active {
+  transform: scale(0.95);
 }
 
 /* Responsive header */
@@ -308,6 +346,12 @@ const logout = () => {
   span.text-white {
     display: none;
   }
+  
+  /* Touch-friendly tap targets */
+  .cursor-pointer {
+    padding: 0.25rem;
+    margin: -0.25rem;
+  }
 }
 
 /* Custom toggle switch styles */
@@ -334,7 +378,7 @@ const logout = () => {
   color: white;
 }
 
-/* Dropdown Menu Styles */
+/* Dropdown Menu Responsive Styles */
 .dropdown-menu {
   background: white;
   border: 1px solid #e9ecef;
@@ -343,6 +387,32 @@ const logout = () => {
   min-width: 200px;
   z-index: 9999;
   animation: fadeInDown 0.2s ease-out;
+}
+
+@media (max-width: 768px) {
+  .dropdown-menu {
+    min-width: 180px;
+    max-width: 90vw;
+    right: 0 !important;
+    left: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .dropdown-menu {
+    min-width: 160px;
+    max-width: 85vw;
+    font-size: 0.875rem;
+  }
+  
+  .dropdown-item {
+    padding: 0.4rem 0.8rem;
+  }
+  
+  .dropdown-header {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
 }
 
 .dropdown-header {

@@ -22,78 +22,78 @@
       <!-- Dashboard Content -->
       <div class="container-fluid p-4">
         <!-- Dashboard Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h1 class="h3 mb-0" style="color: black;">Inventory Dashboard</h1>
-          <div class="d-flex gap-2">
-            <button class="btn btn-outline-primary" @click="refreshData">
-              <i class="bi bi-arrow-clockwise me-2"></i>Refresh
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-column flex-md-row gap-3">
+          <h1 class="h3 mb-0 text-center text-md-start" style="color: black;">Inventory Dashboard</h1>
+          <div class="d-flex gap-2 w-100 w-md-auto justify-content-center">
+            <button class="btn btn-outline-primary flex-fill flex-md-grow-0" @click="refreshData">
+              <i class="bi bi-arrow-clockwise me-2 d-none d-md-inline"></i>Refresh
             </button>
-            <button class="btn btn-primary" @click="showCreateComputerModal">
-              <i class="bi bi-plus-circle me-2"></i>Create Computer
+            <button class="btn btn-primary flex-fill flex-md-grow-0" @click="showCreateComputerModal">
+              <i class="bi bi-plus-circle me-2 d-none d-md-inline"></i>Create Computer
             </button>
           </div>
         </div>
 
         <!-- Overview Stats Cards -->
         <div class="row g-3 mb-4">
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body">
+          <div class="col-lg-3 col-md-6 col-sm-6 mb-3 mb-sm-0">
+            <div class="card border-0 shadow-sm h-100 mobile-stat-card">
+              <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center">
-                  <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-pc-display text-primary fs-4"></i>
+                  <div class="rounded-circle bg-primary bg-opacity-10 p-2 p-md-3 me-2 me-md-3 flex-shrink-0">
+                    <i class="bi bi-pc-display text-primary fs-5 fs-md-4"></i>
                   </div>
-                  <div>
-                    <h6 class="text-muted mb-1">Total Assets</h6>
-                    <h3 class="mb-0">{{ dashboardStats.overview?.total_assets || 0 }}</h3>
+                  <div class="flex-grow-1 min-w-0">
+                    <h6 class="text-muted mb-1 small text-md-normal">Total Assets</h6>
+                    <h3 class="mb-0 fs-4 fs-md-3">{{ dashboardStats.overview?.total_assets || 0 }}</h3>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body">
+          <div class="col-lg-3 col-md-6 col-sm-6 mb-3 mb-sm-0">
+            <div class="card border-0 shadow-sm h-100 mobile-stat-card">
+              <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center">
-                  <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-check-circle text-success fs-4"></i>
+                  <div class="rounded-circle bg-success bg-opacity-10 p-2 p-md-3 me-2 me-md-3 flex-shrink-0">
+                    <i class="bi bi-check-circle text-success fs-5 fs-md-4"></i>
                   </div>
-                  <div>
-                    <h6 class="text-muted mb-1">Available</h6>
-                    <h3 class="mb-0">{{ dashboardStats.status_breakdown?.available || 0 }}</h3>
+                  <div class="flex-grow-1 min-w-0">
+                    <h6 class="text-muted mb-1 small text-md-normal">Available</h6>
+                    <h3 class="mb-0 fs-4 fs-md-3">{{ dashboardStats.status_breakdown?.available || 0 }}</h3>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body">
+          <div class="col-lg-3 col-md-6 col-sm-6 mb-3 mb-sm-0">
+            <div class="card border-0 shadow-sm h-100 mobile-stat-card">
+              <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center">
-                  <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-building text-info fs-4"></i>
+                  <div class="rounded-circle bg-info bg-opacity-10 p-2 p-md-3 me-2 me-md-3 flex-shrink-0">
+                    <i class="bi bi-building text-info fs-5 fs-md-4"></i>
                   </div>
-                  <div>
-                    <h6 class="text-muted mb-1">Deployed</h6>
-                    <h3 class="mb-0">{{ dashboardStats.status_breakdown?.deployed || 0 }}</h3>
+                  <div class="flex-grow-1 min-w-0">
+                    <h6 class="text-muted mb-1 small text-md-normal">Deployed</h6>
+                    <h3 class="mb-0 fs-4 fs-md-3">{{ dashboardStats.status_breakdown?.deployed || 0 }}</h3>
                   </div>
                 </div>
               </div>
             </div>
           </div>
           
-          <div class="col-lg-3 col-md-6">
-            <div class="card border-0 shadow-sm h-100">
-              <div class="card-body">
+          <div class="col-lg-3 col-md-6 col-sm-6 mb-3 mb-sm-0">
+            <div class="card border-0 shadow-sm h-100 mobile-stat-card">
+              <div class="card-body p-3 p-md-4">
                 <div class="d-flex align-items-center">
-                  <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
-                    <i class="bi bi-tools text-warning fs-4"></i>
+                  <div class="rounded-circle bg-warning bg-opacity-10 p-2 p-md-3 me-2 me-md-3 flex-shrink-0">
+                    <i class="bi bi-tools text-warning fs-5 fs-md-4"></i>
                   </div>
-                  <div>
-                    <h6 class="text-muted mb-1">Under Repair</h6>
-                    <h3 class="mb-0">{{ dashboardStats.status_breakdown?.under_repair || 0 }}</h3>
+                  <div class="flex-grow-1 min-w-0">
+                    <h6 class="text-muted mb-1 small text-md-normal">Under Repair</h6>
+                    <h3 class="mb-0 fs-4 fs-md-3">{{ dashboardStats.status_breakdown?.under_repair || 0 }}</h3>
                   </div>
                 </div>
               </div>
@@ -104,41 +104,75 @@
         <!-- Main Dashboard Grid -->
         <div class="row g-4">
           <!-- Component Inventory Section -->
-          <div class="col-lg-4">
-            <div class="card border-0 shadow-sm">
+          <div class="col-lg-6 col-md-12 mb-4">
+            <div class="card border-0 shadow-sm h-100">
               <div class="card-header bg-white border-bottom">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="card-title mb-0">Component Inventory</h5>
-                  <router-link to="/components" class="btn btn-sm btn-outline-primary">View All</router-link>
-                </div>
+                <h5 class="card-title mb-0">Inventory</h5>
               </div>
               <div class="card-body">
-                <div class="row g-2">
-                  <div v-for="(count, component) in componentStats.available_components" :key="component" class="col-6">
-                    <div class="d-flex justify-content-between align-items-center p-2 bg-light rounded">
-                      <div class="d-flex align-items-center">
-                        <i :class="getComponentIcon(component)" class="me-2"></i>
-                        <span class="small text-capitalize">{{ component.replace('_', ' ') }}</span>
-                      </div>
-                      <div class="d-flex align-items-center gap-1">
-                        <span class="badge bg-primary">{{ count }}</span>
-                        <span class="small text-muted">/ {{ componentStats.total_components?.[component] || 0 }}</span>
+                <div class="row g-3">
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-motherboard text-primary me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">Motherboards</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.motherboards || 0 }}</div>
                       </div>
                     </div>
                   </div>
-                </div>
-                <div class="mt-3 pt-3 border-top">
-                  <div class="d-flex justify-content-between align-items-center">
-                    <span class="small fw-semibold">Total Available</span>
-                    <span class="badge bg-success">
-                      {{ Object.values(componentStats.available_components || {}).reduce((sum, count) => sum + count, 0) }}
-                    </span>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-hdd text-success me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">Storages</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.storages || 0 }}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div class="d-flex justify-content-between align-items-center mt-1">
-                    <span class="small fw-semibold">Total Components</span>
-                    <span class="badge bg-info">
-                      {{ Object.values(componentStats.total_components || {}).reduce((sum, count) => sum + count, 0) }}
-                    </span>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-lightning-charge text-warning me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">PSUs</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.psus || 0 }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-gpu-card text-info me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">Video Cards</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.video_cards || 0 }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-memory text-danger me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">RAM</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.rams || 0 }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-cpu text-secondary me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">Processors</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.processors || 0 }}</div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-6 col-sm-4 col-md-3 mb-3">
+                    <div class="d-flex align-items-center p-3 border rounded mobile-inventory-item">
+                      <i class="bi bi-disc text-dark me-2 me-md-3 fs-4"></i>
+                      <div class="flex-grow-1">
+                        <div class="fw-semibold small text-md-normal">DVD ROMs</div>
+                        <div class="text-muted small">{{ dashboardStats.components?.dvd_roms || 0 }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -556,11 +590,11 @@ onMounted(async () => {
 
 @media (max-width: 992px) {
   .main-content {
-    margin-left: 70px;
+    margin-left: 0;
   }
   
   .main-content.collapsed {
-    margin-left: 70px;
+    margin-left: 0;
   }
   
   .col-lg-3 {
@@ -588,6 +622,7 @@ onMounted(async () => {
   .container-fluid {
     padding-left: 1rem !important;
     padding-right: 1rem !important;
+    padding-top: 0.5rem !important;
   }
   
   .d-flex.justify-content-between {
@@ -603,9 +638,10 @@ onMounted(async () => {
   
   .btn {
     font-size: 0.9rem;
-    padding: 0.5rem 1rem;
+    padding: 0.6rem 1rem;
     flex: 1;
     min-width: 120px;
+    min-height: 44px;
   }
   
   .h3 {
@@ -620,73 +656,74 @@ onMounted(async () => {
     padding: 1.5rem !important;
   }
   
-  .fs-4 {
-    font-size: 1.25rem !important;
-  }
-  
-  .h3.mb-0 {
-    font-size: 1.75rem;
-  }
-  
-  .row.g-3 {
-    gap: 1rem;
-  }
-  
-  .row.g-4 {
-    gap: 1rem;
+  /* Chart containers */
+  .chart-container {
+    height: 200px !important;
   }
 }
 
-@media (max-width: 576px) {
+@media (max-width: 767.98px) {
+  .main-content {
+    margin-left: 0;
+  }
+  
+  .main-content.collapsed {
+    margin-left: 0;
+  }
+  
   .container-fluid {
     padding-left: 0.75rem !important;
     padding-right: 0.75rem !important;
+    padding-top: 0.5rem !important;
   }
   
-  .col-6 {
-    flex: 0 0 100%;
-    max-width: 100%;
+  .mobile-stat-card {
+    margin-bottom: 0.75rem;
   }
   
-  .btn {
-    font-size: 0.85rem;
-    padding: 0.4rem 0.8rem;
+  .mobile-inventory-item {
+    min-height: 45px;
+    padding: 0.5rem !important;
   }
   
-  .small {
-    font-size: 0.75rem;
-  }
-  
-  .card-body {
+  .rounded-circle.p-2 {
     padding: 0.75rem !important;
+    margin-right: 0.75rem !important;
   }
   
   .rounded-circle.p-3 {
     padding: 1rem !important;
-    margin-right: 0.75rem !important;
+    margin-right: 1rem !important;
   }
   
+  /* Chart containers */
   .chart-container {
-    height: 200px !important;
-  }
-  
-  .list-group-item {
-    padding: 0.75rem 0;
-  }
-  
-  .row.g-3 {
-    gap: 0.75rem;
-  }
-  
-  .row.g-4 {
-    gap: 0.75rem;
+    height: 180px !important;
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 575.98px) {
   .container-fluid {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
+    padding-top: 0.5rem !important;
+  }
+  
+  .mobile-stat-card {
+    margin-bottom: 0.5rem;
+  }
+  
+  .mobile-inventory-item {
+    min-height: 40px;
+    padding: 0.5rem !important;
+  }
+  
+  .row.g-3 > * {
+    margin-bottom: 0.75rem;
+  }
+  
+  .row.g-4 > * {
+    margin-bottom: 1rem;
   }
   
   .h3 {
@@ -697,38 +734,55 @@ onMounted(async () => {
     font-size: 1.5rem;
   }
   
-  .btn {
-    font-size: 0.8rem;
-    padding: 0.3rem 0.6rem;
+  .card-body {
+    padding: 0.75rem !important;
   }
   
-  .card-body {
+  .rounded-circle.p-2 {
     padding: 0.5rem !important;
+    margin-right: 0.5rem !important;
   }
   
   .rounded-circle.p-3 {
     padding: 0.75rem !important;
-    margin-right: 0.5rem !important;
+    margin-right: 0.75rem !important;
   }
   
-  .fs-4 {
-    font-size: 1rem !important;
+  .btn {
+    min-height: 44px;
+    min-width: 44px;
+    font-size: 0.85rem;
   }
   
+  /* Chart containers */
   .chart-container {
-    height: 150px !important;
+    height: 160px !important;
   }
-  
-  .row.g-3 {
-    gap: 0.5rem;
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  .mobile-stat-card,
+  .mobile-inventory-item,
+  .btn {
+    min-height: 48px;
+    min-width: 48px;
   }
-  
-  .row.g-4 {
-    gap: 0.5rem;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .mobile-stat-card,
+  .mobile-inventory-item {
+    border: 2px solid currentColor;
   }
-  
-  .d-grid {
-    gap: 0.5rem;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-stat-card,
+  .mobile-inventory-item {
+    transition: none;
   }
 }
 
@@ -737,6 +791,7 @@ onMounted(async () => {
   .container-fluid {
     padding-left: 0.5rem !important;
     padding-right: 0.5rem !important;
+    padding-top: 0.25rem !important;
   }
   
   .card-body {
@@ -745,11 +800,16 @@ onMounted(async () => {
   
   .rounded-circle.p-3 {
     padding: 0.75rem !important;
-  margin-right: 0.5rem !important;
+    margin-right: 0.5rem !important;
   }
   
   .row.g-3 {
     gap: 0.5rem;
+  }
+  
+  /* Chart containers */
+  .chart-container {
+    height: 150px !important;
   }
 }
 
@@ -758,5 +818,39 @@ onMounted(async () => {
   display: grid;
   gap: 0.5rem;
   grid-template-columns: 1fr;
+}
+
+/* iPhone SE specific optimizations */
+@media (max-width: 375px) {
+  .container-fluid {
+    padding-left: 0.4rem !important;
+    padding-right: 0.4rem !important;
+  }
+  
+  .h3 {
+    font-size: 1.1rem;
+  }
+  
+  .card-body {
+    padding: 0.6rem !important;
+  }
+  
+  .btn {
+    font-size: 0.8rem;
+    padding: 0.5rem 0.8rem;
+  }
+  
+  .mobile-stat-card .h3 {
+    font-size: 1.2rem;
+  }
+  
+  .mobile-inventory-item {
+    font-size: 0.8rem;
+  }
+  
+  /* Chart containers */
+  .chart-container {
+    height: 140px !important;
+  }
 }
 </style>

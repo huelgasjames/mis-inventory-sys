@@ -11,6 +11,17 @@
 
     <!-- Login Form Overlay -->
     <div class="login-form-overlay">
+      <!-- Dark Mode Toggle -->
+      <div class="dark-mode-toggle position-absolute top-0 end-0 p-3">
+        <button 
+          class="btn btn-sm btn-outline-secondary rounded-circle"
+          @click="toggleDarkMode"
+          :title="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'"
+        >
+          <i :class="isDarkMode ? 'bi bi-sun' : 'bi bi-moon'"></i>
+        </button>
+      </div>
+      
       <div class="login-form-container">
         <!-- Student Login Header -->
         <div class="text-center mb-4">
@@ -101,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import '@/assets/login.css'
 
@@ -112,6 +123,28 @@ const password = ref('')
 const showPassword = ref(false)
 const isLoading = ref(false)
 const errorMessage = ref('')
+const isDarkMode = ref(false)
+
+// Check for saved dark mode preference
+onMounted(() => {
+  const savedDarkMode = localStorage.getItem('darkMode')
+  if (savedDarkMode === 'true') {
+    isDarkMode.value = true
+    document.body.classList.add('dark-mode')
+  }
+})
+
+// Toggle dark mode
+const toggleDarkMode = () => {
+  isDarkMode.value = !isDarkMode.value
+  if (isDarkMode.value) {
+    document.body.classList.add('dark-mode')
+    localStorage.setItem('darkMode', 'true')
+  } else {
+    document.body.classList.remove('dark-mode')
+    localStorage.setItem('darkMode', 'false')
+  }
+}
 
 const handleLogin = async () => {
   try {
@@ -441,4 +474,111 @@ const handleLogin = async () => {
 .form-group:nth-child(2) { animation-delay: 0.2s; }
 .form-group:nth-child(3) { animation-delay: 0.3s; }
 .form-group:nth-child(4) { animation-delay: 0.4s; }
+</style>
+
+<style>
+/* Dark Mode Styles - Global Styles */
+body.dark-mode .login-container {
+  background: #0a0a0a;
+}
+
+body.dark-mode .login-form-overlay {
+  background: linear-gradient(135deg, rgba(15, 15, 15, 0.95) 0%, rgba(20, 20, 20, 0.9) 100%);
+}
+
+body.dark-mode .login-form-container {
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+}
+
+body.dark-mode .university-title-small {
+  color: #4ade80;
+}
+
+body.dark-mode .system-title-small {
+  color: #9ca3af;
+}
+
+body.dark-mode .input-group-lg {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+body.dark-mode .input-group-lg:focus-within {
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.2);
+  border-color: #4ade80;
+}
+
+body.dark-mode .input-group-text {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #000;
+}
+
+body.dark-mode .form-control {
+  background: #2a2a2a;
+  color: #fff;
+}
+
+body.dark-mode .form-control:focus {
+  background: #333;
+}
+
+body.dark-mode .form-control::placeholder {
+  color: #9ca3af;
+}
+
+body.dark-mode .forgot-password {
+  color: #4ade80;
+}
+
+body.dark-mode .forgot-password:hover {
+  color: #22c55e;
+}
+
+body.dark-mode .login-btn {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #000;
+  box-shadow: 0 4px 20px rgba(74, 222, 128, 0.3);
+}
+
+body.dark-mode .login-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+  box-shadow: 0 6px 25px rgba(74, 222, 128, 0.4);
+}
+
+body.dark-mode .alert-danger {
+  background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+  border: 1px solid #991b1b;
+  color: #fca5a5;
+}
+
+body.dark-mode .dark-mode-toggle .btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+body.dark-mode .dark-mode-toggle .btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+/* Light mode toggle button styles */
+.dark-mode-toggle .btn {
+  background: rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  color: #333;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.dark-mode-toggle .btn:hover {
+  background: rgba(0, 0, 0, 0.2);
+  border-color: rgba(0, 0, 0, 0.3);
+  transform: scale(1.1);
+}
 </style>

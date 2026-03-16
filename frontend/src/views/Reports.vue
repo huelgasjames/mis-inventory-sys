@@ -256,6 +256,7 @@ import { ref, onMounted, nextTick } from 'vue'
 import AppNav from '@/components/AppNav.vue'
 import AppHeader from '@/components/AppHeader.vue'
 import axios from 'axios'
+import Chart from 'chart.js/auto'
 
 export default {
   name: 'Reports',
@@ -341,8 +342,54 @@ export default {
 
     const fetchReportData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8000/api/reports/${selectedReportType.value}`)
-        reportData.value = response.data.data || []
+        let endpoint
+        switch (selectedReportType.value) {
+          case 'pcs_per_department':
+            endpoint = 'http://localhost:8000/api/reports/pcs-per-department'
+            break
+          case 'pcs_per_laboratory':
+            endpoint = 'http://localhost:8000/api/reports/pcs-per-laboratory'
+            break
+          case 'component_usage':
+            endpoint = 'http://localhost:8000/api/reports/component-usage'
+            break
+          case 'repair_history':
+            endpoint = 'http://localhost:8000/api/reports/repair-history'
+            break
+          case 'deployment_history':
+            endpoint = 'http://localhost:8000/api/reports/deployment-history'
+            break
+          default:
+            endpoint = 'http://localhost:8000/api/reports/pcs-per-department'
+        }
+        
+        const response = await axios.get(endpoint)
+        let data = response.data.data || []
+        
+        // Transform data to match expected format for frontend
+        if (selectedReportType.value === 'pcs_per_department') {
+          data = data.map(item => ({
+            name: item.department,
+            count: item.total_computers
+          }))
+        } else if (selectedReportType.value === 'pcs_per_laboratory') {
+          data = data.map(item => ({
+            name: item.laboratory,
+            count: item.total_computers
+          }))
+        } else if (selectedReportType.value === 'component_usage') {
+          data = Object.entries(data).map(([key, value]) => ({
+            name: key.charAt(0).toUpperCase() + key.slice(1),
+            count: value.total
+          }))
+        } else if (selectedReportType.value === 'repair_history' || selectedReportType.value === 'deployment_history') {
+          data = data.slice(0, 10).map(item => ({
+            name: item.computer_name || item.asset_tag,
+            count: 1
+          }))
+        }
+        
+        reportData.value = data
       } catch (error) {
         console.error('Error fetching report data:', error)
         // Fallback data
@@ -358,7 +405,15 @@ export default {
     const fetchReportStats = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/reports/dashboard-stats')
-        reportStats.value = response.data.data?.overview || {}
+        const stats = response.data.data
+        
+        // Transform stats to match expected format
+        reportStats.value = {
+          total_assets: stats.overview?.total_assets || 0,
+          working: stats.status_breakdown?.available || 0,
+          under_repair: stats.status_breakdown?.under_repair || 0,
+          defective: stats.status_breakdown?.defective || 0
+        }
       } catch (error) {
         console.error('Error fetching report stats:', error)
         // Fallback data
@@ -374,7 +429,21 @@ export default {
     const fetchRecentActivities = async () => {
       try {
         const response = await axios.get('http://localhost:8000/api/reports/dashboard-stats')
-        recentActivities.value = response.data.data?.recent_activities || []
+        const activities = response.data.data?.recent_activities || []
+        
+        // Transform activities to match expected format
+        recentActivities.value = activities.map((activity, index) => ({
+          id: index + 1,
+          type: activity.type,
+          description: activity.description,
+          timestamp: new Date(activity.timestamp).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          })
+        }))
       } catch (error) {
         console.error('Error fetching recent activities:', error)
         // Fallback data
@@ -402,26 +471,85 @@ export default {
 
       const ctx = reportChart.value.getContext('2d')
       
-      // Simple chart implementation (in production, you'd use Chart.js)
+      // Prepare chart data
+      const labels = reportData.value.map(item => item.name || item.department || item.component)
+      const data = reportData.value.map(item => item.count)
+      
+      // Determine chart type based on report type
+      let chartType = 'bar'
+      let chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: selectedReportType.value === 'component_usage'
+          },
+          title: {
+            display: true,
+            text: getReportTitle()
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+
+      // Use pie chart for component usage
+      if (selectedReportType.value === 'component_usage') {
+        chartType = 'pie'
+        chartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right'
+            },
+            title: {
+              display: true,
+              text: getReportTitle()
+            }
+          }
+        }
+      }
+
+      // Use line chart for history data
+      if (selectedReportType.value === 'repair_history' || selectedReportType.value === 'deployment_history') {
+        chartType = 'line'
+        chartOptions.scales.y.beginAtZero = true
+      }
+
       const chartData = {
-        labels: reportData.value.map(item => item.name || item.department || item.component),
+        labels: labels,
         datasets: [{
           label: getReportTitle(),
-          data: reportData.value.map(item => item.count),
+          data: data,
           backgroundColor: [
             '#0F6F43',
-            '#004D7A',
+            '#004D7A', 
             '#FF6B35',
             '#8B5CF6',
             '#10B981',
-            '#F59E0B'
+            '#F59E0B',
+            '#EF4444',
+            '#3B82F6'
           ],
-          borderWidth: 1
+          borderColor: chartType === 'line' ? '#0F6F43' : undefined,
+          borderWidth: chartType === 'line' ? 2 : 1,
+          tension: chartType === 'line' ? 0.4 : undefined
         }]
       }
 
-      // This is a placeholder - in production you'd use Chart.js
-      console.log('Chart data:', chartData)
+      // Create new chart
+      chartInstance = new Chart(ctx, {
+        type: chartType,
+        data: chartData,
+        options: chartOptions
+      })
     }
 
     const refreshData = async () => {
