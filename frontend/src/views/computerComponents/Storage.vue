@@ -175,6 +175,10 @@
               <input type="text" class="form-control" v-model="newStorage.capacity" placeholder="e.g., 512GB SSD" required>
             </div>
             <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input type="number" class="form-control" v-model="newStorage.quantity" min="1" required placeholder="Enter quantity">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Status *</label>
               <select class="form-select" v-model="newStorage.status" required>
                 <option value="">Select Status</option>
@@ -251,6 +255,7 @@ export default {
     
     const newStorage = ref({
       capacity: '',
+      quantity: 1,
       status: 'Available'
     })
 
@@ -324,6 +329,7 @@ export default {
           // Reset form
           newStorage.value = {
             capacity: '',
+            quantity: 1,
             status: 'Available'
           }
           

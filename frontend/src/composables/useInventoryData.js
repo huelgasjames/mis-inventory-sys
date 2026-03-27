@@ -298,10 +298,15 @@ export function useInventoryData() {
   // CRUD operations
   const createDepartment = async (departmentData) => {
     try {
+      console.log('Creating department with data:', departmentData)
+      console.log('API endpoint:', '/departments')
+      
       const response = await apiCall('/departments', {
         method: 'POST',
         data: departmentData
       })
+      
+      console.log('API response:', response)
       
       if (response.success) {
         // Refresh departments data after creation
@@ -311,6 +316,12 @@ export function useInventoryData() {
       throw new Error(response.message || 'Failed to create department')
     } catch (error) {
       console.error('Error creating department:', error)
+      console.error('Full error details:', {
+        message: error.message,
+        response: error.response,
+        status: error.response?.status,
+        data: error.response?.data
+      })
       throw error
     }
   }

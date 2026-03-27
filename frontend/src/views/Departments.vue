@@ -415,8 +415,27 @@ export default {
     }
 
     const createDepartmentRecord = async () => {
+      // Frontend validation
+      if (!newDepartment.value.name || newDepartment.value.name.trim() === '') {
+        alert('Department name is required')
+        return
+      }
+      
+      if (newDepartment.value.name.length > 255) {
+        alert('Department name must be less than 255 characters')
+        return
+      }
+      
       try {
-        await createDepartment(newDepartment.value)
+        // Clean up the data before sending
+        const departmentData = {
+          name: newDepartment.value.name.trim(),
+          description: newDepartment.value.description?.trim() || null,
+          category_id: newDepartment.value.category_id || null
+        }
+        
+        console.log('Sending department data:', departmentData)
+        await createDepartment(departmentData)
         
         Modal.getInstance(document.getElementById('createDepartmentModal')).hide()
         
@@ -431,7 +450,29 @@ export default {
         // Data is automatically refreshed by the composable
       } catch (error) {
         console.error('Error creating department:', error)
-        alert('Error creating department: ' + (error.message || 'Unknown error'))
+        console.error('Error response:', error.response)
+        console.error('Error status:', error.response?.status)
+        console.error('Error data:', error.response?.data)
+        
+        // Handle validation errors specifically
+        if (error.response?.status === 422) {
+          const errors = error.response.data?.errors || {}
+          let errorMessage = 'Validation failed:\n'
+          
+          if (errors.name) {
+            errorMessage += `- Name: ${errors.name[0]}\n`
+          }
+          if (errors.category_id) {
+            errorMessage += `- Category: ${errors.category_id[0]}\n`
+          }
+          if (errors.description) {
+            errorMessage += `- Description: ${errors.description[0]}\n`
+          }
+          
+          alert(errorMessage)
+        } else {
+          alert('Error creating department: ' + (error.response?.data?.message || error.message || 'Unknown error'))
+        }
       }
     }
 

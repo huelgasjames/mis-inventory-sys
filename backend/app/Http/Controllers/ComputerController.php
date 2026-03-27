@@ -18,7 +18,9 @@ class ComputerController extends Controller
     public function index(): JsonResponse
     {
         try {
-            $computers = Computer::with(['department', 'processor', 'motherboard', 'ram', 'storage', 'videoCard', 'dvdRom', 'psu', 'assignedUser'])->get();
+            $computers = Computer::with(['department', 'processor', 'motherboard', 'ram', 'storage', 'videoCard', 'dvdRom', 'psu', 'assignedUser', 'laboratory', 'deployments' => function($query) {
+            $query->where('status', 'deployed')->with(['department', 'laboratory', 'user']);
+        }])->get();
             
             return response()->json([
                 'success' => true,

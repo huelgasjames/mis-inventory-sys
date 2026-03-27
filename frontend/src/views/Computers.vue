@@ -175,7 +175,15 @@
                         </span>
                       </td>
                       <td>
-                        <span v-if="computer.laboratory" class="badge bg-primary">
+                        <span v-if="computer.deployment_location && computer.deployment_location.laboratory" class="badge bg-primary">
+                          <i class="bi bi-house-door me-1"></i>
+                          {{ computer.deployment_location.laboratory.lab_name }}
+                        </span>
+                        <span v-else-if="computer.deployment_location && computer.deployment_location.user" class="badge bg-success">
+                          <i class="bi bi-person me-1"></i>
+                          {{ computer.deployment_location.user.name }}
+                        </span>
+                        <span v-else-if="computer.laboratory" class="badge bg-primary">
                           <i class="bi bi-house-door me-1"></i>
                           {{ computer.laboratory.lab_name }}
                         </span>

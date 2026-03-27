@@ -200,6 +200,10 @@
               <input type="text" class="form-control" v-model="newRAM.speed" placeholder="e.g., 3200MHz">
             </div>
             <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input type="number" class="form-control" v-model="newRAM.quantity" min="1" required placeholder="Enter quantity">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Status *</label>
               <select class="form-select" v-model="newRAM.status" required>
                 <option value="">Select Status</option>
@@ -286,6 +290,7 @@ export default {
       capacity: '16GB',
       type: 'DDR4',
       speed: '3200MHz',
+      quantity: 1,
       status: 'Available'
     })
 
@@ -371,6 +376,7 @@ export default {
             capacity: '16GB',
             type: 'DDR4',
             speed: '3200MHz',
+            quantity: 1,
             status: 'Available'
           }
           

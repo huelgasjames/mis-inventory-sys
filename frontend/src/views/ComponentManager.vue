@@ -127,6 +127,22 @@
             <div class="card border-0 shadow-sm h-100">
               <div class="card-body">
                 <div class="d-flex align-items-center">
+                  <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                    <i class="bi bi-cpu text-info fs-4"></i>
+                  </div>
+                  <div>
+                    <h6 class="text-muted mb-1">Installed</h6>
+                    <h3 class="mb-0">{{ installedCount }}</h3>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-lg-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+              <div class="card-body">
+                <div class="d-flex align-items-center">
                   <div class="rounded-circle bg-danger bg-opacity-10 p-3 me-3">
                     <i class="bi bi-x-circle text-danger fs-4"></i>
                   </div>
@@ -163,6 +179,7 @@
                     <th>ID</th>
                     <th>{{ componentType === 'rams' ? 'Capacity' : componentType === 'storages' ? 'Capacity' : componentType === 'psus' ? 'Wattage' : componentType === 'dvd_roms' ? 'Type' : 'Model' }}</th>
                     <th>Quantity</th>
+                    <th>Installed</th>
                     <th>Majority Lab</th>
                     <th>Status</th>
                     <th>Computer</th>
@@ -181,8 +198,14 @@
                     </td>
                     <td>
                       <div class="d-flex align-items-center">
-                        <span class="badge bg-primary">{{ getComputerCount(component) }}</span>
-                        <small class="text-muted ms-2">computers</small>
+                        <span class="badge bg-primary">{{ component.quantity || 1 }}</span>
+                        <small class="text-muted ms-2">units</small>
+                      </div>
+                    </td>
+                    <td>
+                      <div class="d-flex align-items-center">
+                        <span class="badge bg-info">{{ getComputerCount(component) }}</span>
+                        <small class="text-muted ms-2">installed</small>
                       </div>
                     </td>
                     <td>
@@ -305,6 +328,17 @@
                 v-model="newComponent.value" 
                 :placeholder="getPlaceholder()"
                 required
+              >
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input 
+                type="number" 
+                class="form-control" 
+                v-model="newComponent.quantity" 
+                min="1" 
+                required 
+                placeholder="Enter quantity"
               >
             </div>
             <div class="mb-3">
@@ -489,6 +523,7 @@ export default {
     
     const newComponent = ref({
       value: '',
+      quantity: 1,
       status: 'Available'
     })
     
@@ -650,6 +685,11 @@ export default {
     const availableCount = computed(() => components.value.filter(c => c.status === 'Available').length)
     const inUseCount = computed(() => components.value.filter(c => c.status === 'In Use').length)
     const defectiveCount = computed(() => components.value.filter(c => c.status === 'Defective').length)
+    const installedCount = computed(() => {
+      return components.value.reduce((total, component) => {
+        return total + getComputerCount(component)
+      }, 0)
+    })
 
     const debugComputerData = async () => {
       try {
@@ -683,12 +723,12 @@ export default {
       try {
         const endpoint = `http://localhost:8000/api/components/${componentType.value.replace('_', '-')}`
         const payload = componentType.value === 'psus' 
-          ? { wattage: newComponent.value.value, status: newComponent.value.status }
+          ? { wattage: newComponent.value.value, quantity: newComponent.value.quantity, status: newComponent.value.status }
           : componentType.value === 'rams' || componentType.value === 'storages'
-          ? { capacity: newComponent.value.value, status: newComponent.value.status }
+          ? { capacity: newComponent.value.value, quantity: newComponent.value.quantity, status: newComponent.value.status }
           : componentType.value === 'dvd_roms'
-          ? { type_field: newComponent.value.value, status: newComponent.value.status }
-          : { model: newComponent.value.value, status: newComponent.value.status }
+          ? { type_field: newComponent.value.value, quantity: newComponent.value.quantity, status: newComponent.value.status }
+          : { model: newComponent.value.value, quantity: newComponent.value.quantity, status: newComponent.value.status }
 
         const response = await axios.post(endpoint, payload)
         
@@ -699,6 +739,7 @@ export default {
           // Reset form
           newComponent.value = {
             value: '',
+            quantity: 1,
             status: 'Available'
           }
           
@@ -818,6 +859,7 @@ export default {
       availableCount,
       inUseCount,
       defectiveCount,
+      installedCount,
       toggleNav,
       openProfile,
       openSettings,

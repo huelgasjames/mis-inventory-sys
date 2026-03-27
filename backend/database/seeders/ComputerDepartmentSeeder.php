@@ -25,13 +25,7 @@ class ComputerDepartmentSeeder extends Seeder
         // Create Computer Science Department
         $computerDept = Department::create([
             'name' => 'Computer Science Department',
-            'code' => 'CS',
             'description' => 'Department responsible for computer science education and IT infrastructure',
-            'head_of_department' => null, // Will be assigned later
-            'location' => 'Main Building',
-            'contact_number' => '123-456-7890',
-            'email' => 'cs.department@university.edu',
-            'is_active' => true,
             'category_id' => $technicalCategory->id,
         ]);
 

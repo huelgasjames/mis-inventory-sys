@@ -38,7 +38,10 @@ class Computer extends Model
         'warranty_expiry' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_deployed' => 'boolean',
     ];
+
+    protected $appends = ['is_deployed', 'deployment_location'];
 
     /**
      * Get laboratory this computer belongs to
@@ -141,7 +144,71 @@ class Computer extends Model
      */
     public function isDeployed(): bool
     {
-        return $this->deployments()->where('status', 'deployed')->exists();
+        // Check if computer has an active deployment record
+        $hasActiveDeployment = $this->deployments()->where('status', 'deployed')->exists();
+        
+        // Also check if computer is assigned to a laboratory or user
+        $hasLabAssignment = $this->laboratory_id !== null;
+        $hasUserAssignment = $this->assigned_to !== null;
+        
+        return $hasActiveDeployment || $hasLabAssignment || $hasUserAssignment;
+    }
+
+    /**
+     * Get the current deployment location
+     */
+    public function getCurrentDeploymentLocation()
+    {
+        // First check if there's an active deployment record
+        $activeDeployment = $this->deployments()->where('status', 'deployed')->first();
+        if ($activeDeployment) {
+            return [
+                'type' => 'deployment',
+                'location' => $activeDeployment->location,
+                'department' => $activeDeployment->department,
+                'laboratory' => $activeDeployment->laboratory,
+                'user' => $activeDeployment->user
+            ];
+        }
+        
+        // If no active deployment, check direct assignments
+        if ($this->laboratory) {
+            return [
+                'type' => 'laboratory',
+                'location' => $this->laboratory->lab_name,
+                'department' => $this->department,
+                'laboratory' => $this->laboratory,
+                'user' => null
+            ];
+        }
+        
+        if ($this->assignedUser) {
+            return [
+                'type' => 'user',
+                'location' => $this->location,
+                'department' => $this->department,
+                'laboratory' => null,
+                'user' => $this->assignedUser
+            ];
+        }
+        
+        return null;
+    }
+
+    /**
+     * Get the is_deployed attribute
+     */
+    public function getIsDeployedAttribute(): bool
+    {
+        return $this->isDeployed();
+    }
+
+    /**
+     * Get the deployment_location attribute
+     */
+    public function getDeploymentLocationAttribute()
+    {
+        return $this->getCurrentDeploymentLocation();
     }
 
     /**

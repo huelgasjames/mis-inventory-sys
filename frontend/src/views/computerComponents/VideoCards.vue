@@ -175,6 +175,10 @@
               <input type="text" class="form-control" v-model="newVideoCard.model" placeholder="e.g., NVIDIA GTX 1650" required>
             </div>
             <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input type="number" class="form-control" v-model="newVideoCard.quantity" min="1" required placeholder="Enter quantity">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Status *</label>
               <select class="form-select" v-model="newVideoCard.status" required>
                 <option value="">Select Status</option>
@@ -251,6 +255,7 @@ export default {
     
     const newVideoCard = ref({
       model: 'NVIDIA GTX 1650',
+      quantity: 1,
       status: 'Available'
     })
 
@@ -334,6 +339,7 @@ export default {
           // Reset form
           newVideoCard.value = {
             model: 'NVIDIA GTX 1650',
+            quantity: 1,
             status: 'Available'
           }
           

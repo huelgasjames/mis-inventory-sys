@@ -178,6 +178,10 @@
               <input type="text" class="form-control" v-model="newProcessor.model" required>
             </div>
             <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input type="number" class="form-control" v-model="newProcessor.quantity" min="1" required placeholder="Enter quantity">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Status *</label>
               <select class="form-select" v-model="newProcessor.status" required>
                 <option value="">Select Status</option>
@@ -260,6 +264,7 @@ export default {
     
     const newProcessor = ref({
       model: 'Intel Core i5-12400',
+      quantity: 1,
       status: 'Available'
     })
 
@@ -337,6 +342,7 @@ export default {
           // Reset form
           newProcessor.value = {
             model: 'Intel Core i5-12400',
+            quantity: 1,
             status: 'Available'
           }
           

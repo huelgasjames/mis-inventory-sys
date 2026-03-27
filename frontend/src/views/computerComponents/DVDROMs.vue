@@ -183,6 +183,10 @@
               </select>
             </div>
             <div class="mb-3">
+              <label class="form-label">Quantity *</label>
+              <input type="number" class="form-control" v-model="newDVDROM.quantity" min="1" required placeholder="Enter quantity">
+            </div>
+            <div class="mb-3">
               <label class="form-label">Status *</label>
               <select class="form-select" v-model="newDVDROM.status" required>
                 <option value="">Select Status</option>
@@ -259,6 +263,7 @@ export default {
     
     const newDVDROM = ref({
       type_field: 'DVD-RW',
+      quantity: 1,
       status: 'Available'
     })
 
@@ -342,6 +347,7 @@ export default {
           // Reset form
           newDVDROM.value = {
             type_field: 'DVD-RW',
+            quantity: 1,
             status: 'Available'
           }
           

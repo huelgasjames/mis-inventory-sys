@@ -24,7 +24,6 @@ class DatabaseSeeder extends Seeder
             ComputerSeeder::class,
             AdminUserSeeder::class,
             ComponentSeeder::class,
-            InventorySeeder::class,
         ]);
     }
 }
